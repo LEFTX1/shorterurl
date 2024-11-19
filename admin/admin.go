@@ -23,7 +23,11 @@ func main() {
 	server := rest.MustNewServer(c.RestConf)
 	defer server.Stop()
 
-	ctx := svc.NewServiceContext(c)
+	// 创建服务上下文（现在会处理错误）
+	ctx, err := svc.NewServiceContext(c)
+	if err != nil {
+		panic(fmt.Sprintf("create service context failed: %v", err))
+	}
 	handler.RegisterHandlers(server, ctx)
 
 	fmt.Printf("Starting server at %s:%d...\n", c.Host, c.Port)

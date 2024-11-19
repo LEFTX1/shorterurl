@@ -19,72 +19,72 @@ import (
 	"go-zero-shorterurl/admin/internal/dal/model"
 )
 
-func newGroup(db *gorm.DB, opts ...gen.DOOption) group {
-	_group := group{}
+func newTGroup(db *gorm.DB, opts ...gen.DOOption) tGroup {
+	_tGroup := tGroup{}
 
-	_group.groupDo.UseDB(db, opts...)
-	_group.groupDo.UseModel(&model.Group{})
+	_tGroup.tGroupDo.UseDB(db, opts...)
+	_tGroup.tGroupDo.UseModel(&model.TGroup{})
 
-	tableName := _group.groupDo.TableName()
-	_group.ALL = field.NewAsterisk(tableName)
-	_group.ID = field.NewInt64(tableName, "id")
-	_group.CreateTime = field.NewTime(tableName, "create_time")
-	_group.UpdateTime = field.NewTime(tableName, "update_time")
-	_group.DelFlag = field.NewInt8(tableName, "del_flag")
-	_group.Gid = field.NewString(tableName, "gid")
-	_group.Name = field.NewString(tableName, "name")
-	_group.Username = field.NewString(tableName, "username")
-	_group.SortOrder = field.NewInt32(tableName, "sort_order")
+	tableName := _tGroup.tGroupDo.TableName()
+	_tGroup.ALL = field.NewAsterisk(tableName)
+	_tGroup.ID = field.NewInt64(tableName, "id")
+	_tGroup.Gid = field.NewString(tableName, "gid")
+	_tGroup.Name = field.NewString(tableName, "name")
+	_tGroup.Username = field.NewString(tableName, "username")
+	_tGroup.SortOrder = field.NewInt32(tableName, "sort_order")
+	_tGroup.CreateTime = field.NewTime(tableName, "create_time")
+	_tGroup.UpdateTime = field.NewTime(tableName, "update_time")
+	_tGroup.DelFlag = field.NewBool(tableName, "del_flag")
 
-	_group.fillFieldMap()
+	_tGroup.fillFieldMap()
 
-	return _group
+	return _tGroup
 }
 
-type group struct {
-	groupDo
+type tGroup struct {
+	tGroupDo
 
 	ALL        field.Asterisk
-	ID         field.Int64
-	CreateTime field.Time
-	UpdateTime field.Time
-	DelFlag    field.Int8
-	Gid        field.String
-	Name       field.String
-	Username   field.String
-	SortOrder  field.Int32
+	ID         field.Int64  // ID
+	Gid        field.String // 分组标识
+	Name       field.String // 分组名称
+	Username   field.String // 创建分组用户名
+	SortOrder  field.Int32  // 分组排序
+	CreateTime field.Time   // 创建时间
+	UpdateTime field.Time   // 修改时间
+	DelFlag    field.Bool   // 删除标识 0：未删除 1：已删除
 
 	fieldMap map[string]field.Expr
 }
 
-func (g group) Table(newTableName string) *group {
-	g.groupDo.UseTable(newTableName)
-	return g.updateTableName(newTableName)
+func (t tGroup) Table(newTableName string) *tGroup {
+	t.tGroupDo.UseTable(newTableName)
+	return t.updateTableName(newTableName)
 }
 
-func (g group) As(alias string) *group {
-	g.groupDo.DO = *(g.groupDo.As(alias).(*gen.DO))
-	return g.updateTableName(alias)
+func (t tGroup) As(alias string) *tGroup {
+	t.tGroupDo.DO = *(t.tGroupDo.As(alias).(*gen.DO))
+	return t.updateTableName(alias)
 }
 
-func (g *group) updateTableName(table string) *group {
-	g.ALL = field.NewAsterisk(table)
-	g.ID = field.NewInt64(table, "id")
-	g.CreateTime = field.NewTime(table, "create_time")
-	g.UpdateTime = field.NewTime(table, "update_time")
-	g.DelFlag = field.NewInt8(table, "del_flag")
-	g.Gid = field.NewString(table, "gid")
-	g.Name = field.NewString(table, "name")
-	g.Username = field.NewString(table, "username")
-	g.SortOrder = field.NewInt32(table, "sort_order")
+func (t *tGroup) updateTableName(table string) *tGroup {
+	t.ALL = field.NewAsterisk(table)
+	t.ID = field.NewInt64(table, "id")
+	t.Gid = field.NewString(table, "gid")
+	t.Name = field.NewString(table, "name")
+	t.Username = field.NewString(table, "username")
+	t.SortOrder = field.NewInt32(table, "sort_order")
+	t.CreateTime = field.NewTime(table, "create_time")
+	t.UpdateTime = field.NewTime(table, "update_time")
+	t.DelFlag = field.NewBool(table, "del_flag")
 
-	g.fillFieldMap()
+	t.fillFieldMap()
 
-	return g
+	return t
 }
 
-func (g *group) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
-	_f, ok := g.fieldMap[fieldName]
+func (t *tGroup) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
+	_f, ok := t.fieldMap[fieldName]
 	if !ok || _f == nil {
 		return nil, false
 	}
@@ -92,224 +92,285 @@ func (g *group) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	return _oe, ok
 }
 
-func (g *group) fillFieldMap() {
-	g.fieldMap = make(map[string]field.Expr, 8)
-	g.fieldMap["id"] = g.ID
-	g.fieldMap["create_time"] = g.CreateTime
-	g.fieldMap["update_time"] = g.UpdateTime
-	g.fieldMap["del_flag"] = g.DelFlag
-	g.fieldMap["gid"] = g.Gid
-	g.fieldMap["name"] = g.Name
-	g.fieldMap["username"] = g.Username
-	g.fieldMap["sort_order"] = g.SortOrder
+func (t *tGroup) fillFieldMap() {
+	t.fieldMap = make(map[string]field.Expr, 8)
+	t.fieldMap["id"] = t.ID
+	t.fieldMap["gid"] = t.Gid
+	t.fieldMap["name"] = t.Name
+	t.fieldMap["username"] = t.Username
+	t.fieldMap["sort_order"] = t.SortOrder
+	t.fieldMap["create_time"] = t.CreateTime
+	t.fieldMap["update_time"] = t.UpdateTime
+	t.fieldMap["del_flag"] = t.DelFlag
 }
 
-func (g group) clone(db *gorm.DB) group {
-	g.groupDo.ReplaceConnPool(db.Statement.ConnPool)
-	return g
+func (t tGroup) clone(db *gorm.DB) tGroup {
+	t.tGroupDo.ReplaceConnPool(db.Statement.ConnPool)
+	return t
 }
 
-func (g group) replaceDB(db *gorm.DB) group {
-	g.groupDo.ReplaceDB(db)
-	return g
+func (t tGroup) replaceDB(db *gorm.DB) tGroup {
+	t.tGroupDo.ReplaceDB(db)
+	return t
 }
 
-type groupDo struct{ gen.DO }
+type tGroupDo struct{ gen.DO }
 
-func (g groupDo) Debug() *groupDo {
-	return g.withDO(g.DO.Debug())
+type ITGroupDo interface {
+	gen.SubQuery
+	Debug() ITGroupDo
+	WithContext(ctx context.Context) ITGroupDo
+	WithResult(fc func(tx gen.Dao)) gen.ResultInfo
+	ReplaceDB(db *gorm.DB)
+	ReadDB() ITGroupDo
+	WriteDB() ITGroupDo
+	As(alias string) gen.Dao
+	Session(config *gorm.Session) ITGroupDo
+	Columns(cols ...field.Expr) gen.Columns
+	Clauses(conds ...clause.Expression) ITGroupDo
+	Not(conds ...gen.Condition) ITGroupDo
+	Or(conds ...gen.Condition) ITGroupDo
+	Select(conds ...field.Expr) ITGroupDo
+	Where(conds ...gen.Condition) ITGroupDo
+	Order(conds ...field.Expr) ITGroupDo
+	Distinct(cols ...field.Expr) ITGroupDo
+	Omit(cols ...field.Expr) ITGroupDo
+	Join(table schema.Tabler, on ...field.Expr) ITGroupDo
+	LeftJoin(table schema.Tabler, on ...field.Expr) ITGroupDo
+	RightJoin(table schema.Tabler, on ...field.Expr) ITGroupDo
+	Group(cols ...field.Expr) ITGroupDo
+	Having(conds ...gen.Condition) ITGroupDo
+	Limit(limit int) ITGroupDo
+	Offset(offset int) ITGroupDo
+	Count() (count int64, err error)
+	Scopes(funcs ...func(gen.Dao) gen.Dao) ITGroupDo
+	Unscoped() ITGroupDo
+	Create(values ...*model.TGroup) error
+	CreateInBatches(values []*model.TGroup, batchSize int) error
+	Save(values ...*model.TGroup) error
+	First() (*model.TGroup, error)
+	Take() (*model.TGroup, error)
+	Last() (*model.TGroup, error)
+	Find() ([]*model.TGroup, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.TGroup, err error)
+	FindInBatches(result *[]*model.TGroup, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Pluck(column field.Expr, dest interface{}) error
+	Delete(...*model.TGroup) (info gen.ResultInfo, err error)
+	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
+	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
+	Updates(value interface{}) (info gen.ResultInfo, err error)
+	UpdateColumn(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
+	UpdateColumnSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
+	UpdateColumns(value interface{}) (info gen.ResultInfo, err error)
+	UpdateFrom(q gen.SubQuery) gen.Dao
+	Attrs(attrs ...field.AssignExpr) ITGroupDo
+	Assign(attrs ...field.AssignExpr) ITGroupDo
+	Joins(fields ...field.RelationField) ITGroupDo
+	Preload(fields ...field.RelationField) ITGroupDo
+	FirstOrInit() (*model.TGroup, error)
+	FirstOrCreate() (*model.TGroup, error)
+	FindByPage(offset int, limit int) (result []*model.TGroup, count int64, err error)
+	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
+	Scan(result interface{}) (err error)
+	Returning(value interface{}, columns ...string) ITGroupDo
+	UnderlyingDB() *gorm.DB
+	schema.Tabler
 }
 
-func (g groupDo) WithContext(ctx context.Context) *groupDo {
-	return g.withDO(g.DO.WithContext(ctx))
+func (t tGroupDo) Debug() ITGroupDo {
+	return t.withDO(t.DO.Debug())
 }
 
-func (g groupDo) ReadDB() *groupDo {
-	return g.Clauses(dbresolver.Read)
+func (t tGroupDo) WithContext(ctx context.Context) ITGroupDo {
+	return t.withDO(t.DO.WithContext(ctx))
 }
 
-func (g groupDo) WriteDB() *groupDo {
-	return g.Clauses(dbresolver.Write)
+func (t tGroupDo) ReadDB() ITGroupDo {
+	return t.Clauses(dbresolver.Read)
 }
 
-func (g groupDo) Session(config *gorm.Session) *groupDo {
-	return g.withDO(g.DO.Session(config))
+func (t tGroupDo) WriteDB() ITGroupDo {
+	return t.Clauses(dbresolver.Write)
 }
 
-func (g groupDo) Clauses(conds ...clause.Expression) *groupDo {
-	return g.withDO(g.DO.Clauses(conds...))
+func (t tGroupDo) Session(config *gorm.Session) ITGroupDo {
+	return t.withDO(t.DO.Session(config))
 }
 
-func (g groupDo) Returning(value interface{}, columns ...string) *groupDo {
-	return g.withDO(g.DO.Returning(value, columns...))
+func (t tGroupDo) Clauses(conds ...clause.Expression) ITGroupDo {
+	return t.withDO(t.DO.Clauses(conds...))
 }
 
-func (g groupDo) Not(conds ...gen.Condition) *groupDo {
-	return g.withDO(g.DO.Not(conds...))
+func (t tGroupDo) Returning(value interface{}, columns ...string) ITGroupDo {
+	return t.withDO(t.DO.Returning(value, columns...))
 }
 
-func (g groupDo) Or(conds ...gen.Condition) *groupDo {
-	return g.withDO(g.DO.Or(conds...))
+func (t tGroupDo) Not(conds ...gen.Condition) ITGroupDo {
+	return t.withDO(t.DO.Not(conds...))
 }
 
-func (g groupDo) Select(conds ...field.Expr) *groupDo {
-	return g.withDO(g.DO.Select(conds...))
+func (t tGroupDo) Or(conds ...gen.Condition) ITGroupDo {
+	return t.withDO(t.DO.Or(conds...))
 }
 
-func (g groupDo) Where(conds ...gen.Condition) *groupDo {
-	return g.withDO(g.DO.Where(conds...))
+func (t tGroupDo) Select(conds ...field.Expr) ITGroupDo {
+	return t.withDO(t.DO.Select(conds...))
 }
 
-func (g groupDo) Order(conds ...field.Expr) *groupDo {
-	return g.withDO(g.DO.Order(conds...))
+func (t tGroupDo) Where(conds ...gen.Condition) ITGroupDo {
+	return t.withDO(t.DO.Where(conds...))
 }
 
-func (g groupDo) Distinct(cols ...field.Expr) *groupDo {
-	return g.withDO(g.DO.Distinct(cols...))
+func (t tGroupDo) Order(conds ...field.Expr) ITGroupDo {
+	return t.withDO(t.DO.Order(conds...))
 }
 
-func (g groupDo) Omit(cols ...field.Expr) *groupDo {
-	return g.withDO(g.DO.Omit(cols...))
+func (t tGroupDo) Distinct(cols ...field.Expr) ITGroupDo {
+	return t.withDO(t.DO.Distinct(cols...))
 }
 
-func (g groupDo) Join(table schema.Tabler, on ...field.Expr) *groupDo {
-	return g.withDO(g.DO.Join(table, on...))
+func (t tGroupDo) Omit(cols ...field.Expr) ITGroupDo {
+	return t.withDO(t.DO.Omit(cols...))
 }
 
-func (g groupDo) LeftJoin(table schema.Tabler, on ...field.Expr) *groupDo {
-	return g.withDO(g.DO.LeftJoin(table, on...))
+func (t tGroupDo) Join(table schema.Tabler, on ...field.Expr) ITGroupDo {
+	return t.withDO(t.DO.Join(table, on...))
 }
 
-func (g groupDo) RightJoin(table schema.Tabler, on ...field.Expr) *groupDo {
-	return g.withDO(g.DO.RightJoin(table, on...))
+func (t tGroupDo) LeftJoin(table schema.Tabler, on ...field.Expr) ITGroupDo {
+	return t.withDO(t.DO.LeftJoin(table, on...))
 }
 
-func (g groupDo) Group(cols ...field.Expr) *groupDo {
-	return g.withDO(g.DO.Group(cols...))
+func (t tGroupDo) RightJoin(table schema.Tabler, on ...field.Expr) ITGroupDo {
+	return t.withDO(t.DO.RightJoin(table, on...))
 }
 
-func (g groupDo) Having(conds ...gen.Condition) *groupDo {
-	return g.withDO(g.DO.Having(conds...))
+func (t tGroupDo) Group(cols ...field.Expr) ITGroupDo {
+	return t.withDO(t.DO.Group(cols...))
 }
 
-func (g groupDo) Limit(limit int) *groupDo {
-	return g.withDO(g.DO.Limit(limit))
+func (t tGroupDo) Having(conds ...gen.Condition) ITGroupDo {
+	return t.withDO(t.DO.Having(conds...))
 }
 
-func (g groupDo) Offset(offset int) *groupDo {
-	return g.withDO(g.DO.Offset(offset))
+func (t tGroupDo) Limit(limit int) ITGroupDo {
+	return t.withDO(t.DO.Limit(limit))
 }
 
-func (g groupDo) Scopes(funcs ...func(gen.Dao) gen.Dao) *groupDo {
-	return g.withDO(g.DO.Scopes(funcs...))
+func (t tGroupDo) Offset(offset int) ITGroupDo {
+	return t.withDO(t.DO.Offset(offset))
 }
 
-func (g groupDo) Unscoped() *groupDo {
-	return g.withDO(g.DO.Unscoped())
+func (t tGroupDo) Scopes(funcs ...func(gen.Dao) gen.Dao) ITGroupDo {
+	return t.withDO(t.DO.Scopes(funcs...))
 }
 
-func (g groupDo) Create(values ...*model.Group) error {
+func (t tGroupDo) Unscoped() ITGroupDo {
+	return t.withDO(t.DO.Unscoped())
+}
+
+func (t tGroupDo) Create(values ...*model.TGroup) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return g.DO.Create(values)
+	return t.DO.Create(values)
 }
 
-func (g groupDo) CreateInBatches(values []*model.Group, batchSize int) error {
-	return g.DO.CreateInBatches(values, batchSize)
+func (t tGroupDo) CreateInBatches(values []*model.TGroup, batchSize int) error {
+	return t.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (g groupDo) Save(values ...*model.Group) error {
+func (t tGroupDo) Save(values ...*model.TGroup) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return g.DO.Save(values)
+	return t.DO.Save(values)
 }
 
-func (g groupDo) First() (*model.Group, error) {
-	if result, err := g.DO.First(); err != nil {
+func (t tGroupDo) First() (*model.TGroup, error) {
+	if result, err := t.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.Group), nil
+		return result.(*model.TGroup), nil
 	}
 }
 
-func (g groupDo) Take() (*model.Group, error) {
-	if result, err := g.DO.Take(); err != nil {
+func (t tGroupDo) Take() (*model.TGroup, error) {
+	if result, err := t.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.Group), nil
+		return result.(*model.TGroup), nil
 	}
 }
 
-func (g groupDo) Last() (*model.Group, error) {
-	if result, err := g.DO.Last(); err != nil {
+func (t tGroupDo) Last() (*model.TGroup, error) {
+	if result, err := t.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.Group), nil
+		return result.(*model.TGroup), nil
 	}
 }
 
-func (g groupDo) Find() ([]*model.Group, error) {
-	result, err := g.DO.Find()
-	return result.([]*model.Group), err
+func (t tGroupDo) Find() ([]*model.TGroup, error) {
+	result, err := t.DO.Find()
+	return result.([]*model.TGroup), err
 }
 
-func (g groupDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.Group, err error) {
-	buf := make([]*model.Group, 0, batchSize)
-	err = g.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
+func (t tGroupDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.TGroup, err error) {
+	buf := make([]*model.TGroup, 0, batchSize)
+	err = t.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
 	})
 	return results, err
 }
 
-func (g groupDo) FindInBatches(result *[]*model.Group, batchSize int, fc func(tx gen.Dao, batch int) error) error {
-	return g.DO.FindInBatches(result, batchSize, fc)
+func (t tGroupDo) FindInBatches(result *[]*model.TGroup, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+	return t.DO.FindInBatches(result, batchSize, fc)
 }
 
-func (g groupDo) Attrs(attrs ...field.AssignExpr) *groupDo {
-	return g.withDO(g.DO.Attrs(attrs...))
+func (t tGroupDo) Attrs(attrs ...field.AssignExpr) ITGroupDo {
+	return t.withDO(t.DO.Attrs(attrs...))
 }
 
-func (g groupDo) Assign(attrs ...field.AssignExpr) *groupDo {
-	return g.withDO(g.DO.Assign(attrs...))
+func (t tGroupDo) Assign(attrs ...field.AssignExpr) ITGroupDo {
+	return t.withDO(t.DO.Assign(attrs...))
 }
 
-func (g groupDo) Joins(fields ...field.RelationField) *groupDo {
+func (t tGroupDo) Joins(fields ...field.RelationField) ITGroupDo {
 	for _, _f := range fields {
-		g = *g.withDO(g.DO.Joins(_f))
+		t = *t.withDO(t.DO.Joins(_f))
 	}
-	return &g
+	return &t
 }
 
-func (g groupDo) Preload(fields ...field.RelationField) *groupDo {
+func (t tGroupDo) Preload(fields ...field.RelationField) ITGroupDo {
 	for _, _f := range fields {
-		g = *g.withDO(g.DO.Preload(_f))
+		t = *t.withDO(t.DO.Preload(_f))
 	}
-	return &g
+	return &t
 }
 
-func (g groupDo) FirstOrInit() (*model.Group, error) {
-	if result, err := g.DO.FirstOrInit(); err != nil {
+func (t tGroupDo) FirstOrInit() (*model.TGroup, error) {
+	if result, err := t.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.Group), nil
+		return result.(*model.TGroup), nil
 	}
 }
 
-func (g groupDo) FirstOrCreate() (*model.Group, error) {
-	if result, err := g.DO.FirstOrCreate(); err != nil {
+func (t tGroupDo) FirstOrCreate() (*model.TGroup, error) {
+	if result, err := t.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.Group), nil
+		return result.(*model.TGroup), nil
 	}
 }
 
-func (g groupDo) FindByPage(offset int, limit int) (result []*model.Group, count int64, err error) {
-	result, err = g.Offset(offset).Limit(limit).Find()
+func (t tGroupDo) FindByPage(offset int, limit int) (result []*model.TGroup, count int64, err error) {
+	result, err = t.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
 	}
@@ -319,29 +380,29 @@ func (g groupDo) FindByPage(offset int, limit int) (result []*model.Group, count
 		return
 	}
 
-	count, err = g.Offset(-1).Limit(-1).Count()
+	count, err = t.Offset(-1).Limit(-1).Count()
 	return
 }
 
-func (g groupDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
-	count, err = g.Count()
+func (t tGroupDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
+	count, err = t.Count()
 	if err != nil {
 		return
 	}
 
-	err = g.Offset(offset).Limit(limit).Scan(result)
+	err = t.Offset(offset).Limit(limit).Scan(result)
 	return
 }
 
-func (g groupDo) Scan(result interface{}) (err error) {
-	return g.DO.Scan(result)
+func (t tGroupDo) Scan(result interface{}) (err error) {
+	return t.DO.Scan(result)
 }
 
-func (g groupDo) Delete(models ...*model.Group) (result gen.ResultInfo, err error) {
-	return g.DO.Delete(models)
+func (t tGroupDo) Delete(models ...*model.TGroup) (result gen.ResultInfo, err error) {
+	return t.DO.Delete(models)
 }
 
-func (g *groupDo) withDO(do gen.Dao) *groupDo {
-	g.DO = *do.(*gen.DO)
-	return g
+func (t *tGroupDo) withDO(do gen.Dao) *tGroupDo {
+	t.DO = *do.(*gen.DO)
+	return t
 }

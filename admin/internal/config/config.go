@@ -1,10 +1,16 @@
 package config
 
-import "github.com/zeromicro/go-zero/rest"
+import (
+	"github.com/zeromicro/go-zero/rest"
+)
 
 type Config struct {
 	rest.RestConf
-	MySQL struct {
-		DataSource string
+	DB struct {
+		Host     string
+		Port     int
+		User     string
+		Password string
+		Database string
 	}
 }

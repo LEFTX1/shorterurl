@@ -2,5 +2,9 @@ Name: admin-api
 Host: 0.0.0.0
 Port: 8888
 
-MySQL:
-  DataSource: root:123456@tcp(localhost:3306)/link?charset=utf8mb4&parseTime=True&loc=Local
+DB:
+  Host: localhost
+  Port: 3306
+  User: root
+  Password: "123456"
+  Database: link
