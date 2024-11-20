@@ -9,16 +9,16 @@ import (
 	"go-zero-shorterurl/admin/internal/types"
 )
 
-func CreateGroupHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func SortGroupHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req types.GroupCreateReq
+		var req types.ShortLinkGroupSortReq
 		if err := httpx.Parse(r, &req); err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 			return
 		}
 
-		l := group.NewCreateGroupLogic(r.Context(), svcCtx)
-		err := l.CreateGroup(&req)
+		l := group.NewSortGroupLogic(r.Context(), svcCtx)
+		err := l.SortGroup(&req)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {

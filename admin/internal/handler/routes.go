@@ -13,29 +13,12 @@ import (
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
-	// 公开接口，不需要认证
-	server.AddRoutes(
-		[]rest.Route{
-			{
-				Method:  http.MethodPost,
-				Path:    "/api/v1/users/login",
-				Handler: user.UserLoginHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/api/v1/users/register",
-				Handler: user.UserRegisterHandler(serverCtx),
-			},
-		},
-	)
-
-	// 分组相关接口
 	server.AddRoutes(
 		[]rest.Route{
 			{
 				Method:  http.MethodPost,
 				Path:    "/api/v1/groups",
-				Handler: group.CreateGroupHandler(serverCtx),
+				Handler: group.SaveGroupHandler(serverCtx),
 			},
 			{
 				Method:  http.MethodPut,
@@ -48,30 +31,38 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: group.ListGroupsHandler(serverCtx),
 			},
 			{
-				Method:  http.MethodDelete,
-				Path:    "/api/v1/groups/:gid",
-				Handler: group.DeleteGroupHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPut,
+				Method:  http.MethodPatch,
 				Path:    "/api/v1/groups/sort",
-				Handler: group.SortGroupsHandler(serverCtx),
+				Handler: group.SortGroupHandler(serverCtx),
 			},
 		},
 	)
 
-	// 回收站接口
 	server.AddRoutes(
 		[]rest.Route{
 			{
+				Method:  http.MethodPost,
+				Path:    "/api/v1/recycle-bin",
+				Handler: recycle.SaveRecycleBinHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodDelete,
+				Path:    "/api/v1/recycle-bin",
+				Handler: recycle.RemoveFromRecycleBinHandler(serverCtx),
+			},
+			{
 				Method:  http.MethodGet,
-				Path:    "/api/v1/recycle-bin/list",
+				Path:    "/api/v1/recycle-bin",
 				Handler: recycle.ListRecycleBinHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPut,
+				Path:    "/api/v1/recycle-bin/recover",
+				Handler: recycle.RecoverFromRecycleBinHandler(serverCtx),
 			},
 		},
 	)
 
-	// 用户相关接口
 	server.AddRoutes(
 		[]rest.Route{
 			{
@@ -81,8 +72,13 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			},
 			{
 				Method:  http.MethodPost,
-				Path:    "/api/v1/users/logout",
-				Handler: user.UserLogoutHandler(serverCtx),
+				Path:    "/api/v1/users/login",
+				Handler: user.UserLoginHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/api/v1/users/register",
+				Handler: user.UserRegisterHandler(serverCtx),
 			},
 			{
 				Method:  http.MethodPut,

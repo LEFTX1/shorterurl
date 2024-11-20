@@ -2,11 +2,10 @@ package testutil
 
 import (
 	"fmt"
-	"gorm.io/sharding"
-
 	"go-zero-shorterurl/pkg/snowflake"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/sharding"
 	"log"
 	"sync"
 )
@@ -16,6 +15,15 @@ var (
 	idGen   func() int64
 	initErr error
 )
+
+// TestDBConfig 测试数据库配置
+type TestDBConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	Database string
+}
 
 // GetIDGenerator 获取ID生成器
 func GetIDGenerator() (func() int64, error) {
@@ -43,6 +51,17 @@ func GetIDGenerator() (func() int64, error) {
 	return idGen, nil
 }
 
+// GetDefaultTestConfig 获取默认测试配置
+func GetDefaultTestConfig() TestDBConfig {
+	return TestDBConfig{
+		Host:     "localhost",
+		Port:     3306,
+		User:     "root",
+		Password: "123456",
+		Database: "link_go",
+	}
+}
+
 // GetTestDB 获取测试用的DB实例
 func GetTestDB() (*gorm.DB, error) {
 	// 获取ID生成器
@@ -51,10 +70,19 @@ func GetTestDB() (*gorm.DB, error) {
 		return nil, fmt.Errorf("get id generator failed: %v", err)
 	}
 
-	conf := GetTestDBConfig()
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		conf.User, conf.Password, conf.Host, conf.Port, conf.Database)
+	// 使用默认配置
+	config := GetDefaultTestConfig()
 
+	// 构建DSN
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		config.User,
+		config.Password,
+		config.Host,
+		config.Port,
+		config.Database,
+	)
+
+	// 连接数据库
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("open database failed: %v", err)
@@ -79,16 +107,4 @@ func GetTestDB() (*gorm.DB, error) {
 	}
 
 	return db, nil
-}
-
-// CleanTestData 清理测试数据
-func CleanTestData(db *gorm.DB) error {
-	for i := 0; i < 16; i++ {
-		// 使用 %d 而不是 %02d，这样会生成 t_user_0, t_user_1 等格式
-		tableName := fmt.Sprintf("t_user_%d", i)
-		if err := db.Exec(fmt.Sprintf("DELETE FROM %s WHERE username LIKE 'test_%%'", tableName)).Error; err != nil {
-			log.Printf("Warning: Failed to clean table %s: %v", tableName, err)
-		}
-	}
-	return nil
 }

@@ -1,151 +1,165 @@
 syntax = "v1"
 
-// 短链接后台管理系统API文档
 info (
-    title:   "短链接后台管理系统接口文档"
-    desc:    "提供短链接系统的后台管理功能，包括用户管理、分组管理和回收站功能"
-    author:  "your-name"
-    email:   "your-email@example.com"
-    version: "v1"
+	title:   "短链接后台管理系统接口文档"
+	desc:    "提供短链接系统的后台管理功能，包括用户管理、分组管理和回收站功能"
+	author:  "your-name"
+	email:   "your-email@example.com"
+	version: "v1"
 )
 
 // =================用户相关类型定义=================
 type (
-    // 用户注册请求参数
-    UserRegisterReq {
-        // 用户名，必填，4-32个字符
-        Username string `json:"username" validate:"required,min=4,max=32"`
-        // 密码，必填，6-32个字符
-        Password string `json:"password" validate:"required,min=6,max=32"`
-    }
-    UserLoginReq {
-        Username string `json:"username" validate:"required"`
-        Password string `json:"password" validate:"required"`
-    }
-    UserLoginResp {
-        // JWT token，用于后续请求认证
-        Token string `json:"token"`
-    }
-    UserUpdateReq {
-        Username string `json:"username" validate:"required"`
-        Password string `json:"password,optional" validate:"omitempty,min=6,max=32"`
-        RealName string `json:"realName,optional"`
-        Phone    string `json:"phone,optional" validate:"omitempty,phone"`
-        Mail     string `json:"mail,optional" validate:"omitempty,email"`
-    }
-    UserResp {
-        Username   string `json:"username"`
-        RealName   string `json:"realName"`
-        Phone      string `json:"phone"`
-        Mail       string `json:"mail"`
-        CreateTime string `json:"createTime"`
-        UpdateTime string `json:"updateTime"`
-    }
+	// 用户注册请求
+	UserRegisterReq {
+		Username string `json:"username" validate:"required,min=4,max=32"` // 用户名
+		Password string `json:"password" validate:"required,min=6,max=32"` // 密码
+		RealName string `json:"realName" validate:"required"` // 真实姓名
+		Phone    string `json:"phone" validate:"required,phone"` // 手机号
+		Mail     string `json:"mail" validate:"required,email"` // 邮箱
+	}
+	// 用户登录请求
+	UserLoginReq {
+		Username string `json:"username" validate:"required"` // 用户名
+		Password string `json:"password" validate:"required"` // 密码
+	}
+	// 用户更新请求
+	UserUpdateReq {
+		Username string `json:"username" validate:"required"` // 用户名
+		Password string `json:"password,optional"` // 密码
+		RealName string `json:"realName,optional"` // 真实姓名
+		Phone    string `json:"phone,optional" validate:"omitempty,phone"` // 手机号
+		Mail     string `json:"mail,optional" validate:"omitempty,email"` // 邮箱
+	}
+	// 通用响应
+	UserLoginResp {
+		Token string `json:"token"` // JWT Token
+	}
+	UserResp {
+		Username   string `json:"username"` // 用户名
+		RealName   string `json:"realName"` // 真实姓名
+		Phone      string `json:"phone"` // 手机号
+		Mail       string `json:"mail"` // 邮箱
+		CreateTime string `json:"createTime"` // 创建时间
+		UpdateTime string `json:"updateTime"` // 更新时间
+	}
+	// 用户注册响应
+	UserRegisterResp {
+		Username   string `json:"username"` // 用户名
+		CreateTime string `json:"createTime"` // 创建时间
+		Message    string `json:"message"` // 响应消息
+	}
 )
 
 // =================分组相关类型定义=================
 type (
-    GroupCreateReq {
-        // 分组名称，必填，最大32个字符
-        Name string `json:"name" validate:"required,max=32"`
-    }
-    GroupUpdateReq {
-        Gid  string `json:"gid" validate:"required"` // 分组唯一标识
-        Name string `json:"name" validate:"required,max=32"` // 新的分组名称
-    }
-    GroupSortReq {
-        Sorts []GroupSort `json:"sorts" validate:"required,dive"`
-    }
-    GroupSort {
-        Gid       string `json:"gid" validate:"required"`
-        SortOrder int    `json:"sortOrder" validate:"gte=0"`
-    }
-    GroupResp {
-        Gid            string `json:"gid"` // 分组唯一标识
-        Name           string `json:"name"` // 分组名称
-        Username       string `json:"username"` // 创建者用户名
-        SortOrder      int    `json:"sortOrder"` // 排序序号
-        ShortLinkCount int64  `json:"shortLinkCount"` // 分组中的短链接数量
-        CreateTime     string `json:"createTime"` // 创建时间
-        UpdateTime     string `json:"updateTime"` // 更新时间
-    }
+	// 创建分组请求
+	ShortLinkGroupSaveReq {
+		Name string `json:"name" validate:"required,max=32"` // 分组名称
+	}
+	// 更新分组请求
+	ShortLinkGroupUpdateReq {
+		Gid  string `json:"gid" validate:"required"` // 分组标识
+		Name string `json:"name" validate:"required,max=32"` // 分组名称
+	}
+	// 分组排序请求
+	ShortLinkGroupSortReq {
+		Gid       string `json:"gid" validate:"required"` // 分组标识
+		SortOrder int    `json:"sortOrder"` // 排序序号
+	}
+	GroupResp {
+		Gid            string `json:"gid"` // 分组标识
+		Name           string `json:"name"` // 分组名称
+		SortOrder      int    `json:"sortOrder"` // 排序序号
+		ShortLinkCount int64  `json:"shortLinkCount"` // 短链接数量
+		CreateTime     string `json:"createTime"` // 创建时间
+		UpdateTime     string `json:"updateTime"` // 更新时间
+	}
 )
 
 // =================回收站相关类型定义=================
 type (
-    RecycleBinPageReq {
-        Current int64 `form:"current,default=1" validate:"required,min=1"` // 当前页码
-        Size    int64 `form:"size,default=10" validate:"required,min=1,max=100"` // 每页条数
-    }
-    ShortLinkPageResp {
-        List  []ShortLinkItem `json:"list"` // 短链接列表
-        Total int64           `json:"total"` // 总记录数
-    }
-    ShortLinkItem {
-        Gid         string `json:"gid"` // 所属分组ID
-        OriginUrl   string `json:"originUrl"` // 原始链接
-        ShortUrl    string `json:"shortUrl"` // 短链接
-        Title       string `json:"title"` // 链接标题
-        Description string `json:"description"` // 链接描述
-        CreateTime  string `json:"createTime"` // 创建时间
-        UpdateTime  string `json:"updateTime"` // 更新时间
-    }
+	// 回收站保存请求
+	RecycleBinSaveReq {
+		Gid          string `json:"gid" validate:"required"` // 分组标识
+		FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
+	}
+	// 回收站移除请求
+	RecycleBinRemoveReq {
+		Gid          string `json:"gid" validate:"required"` // 分组标识
+		FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
+	}
+	// 回收站恢复请求
+	RecycleBinRecoverReq {
+		Gid          string `json:"gid" validate:"required"` // 分组标识
+		FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
+	}
+	RecycleBinPageReq {
+		Current int64 `form:"current,default=1" validate:"required,min=1"` // 当前页码
+		Size    int64 `form:"size,default=10" validate:"required,min=1,max=100"` // 每页大小
+	}
+	RecycleBinResp {
+		List  []RecycleBinItem `json:"list"` // 列表数据
+		Total int64            `json:"total"` // 总数
+	}
+	RecycleBinItem {
+		Gid          string `json:"gid"` // 分组标识
+		FullShortUrl string `json:"fullShortUrl"` // 完整短链接
+		CreateTime   string `json:"createTime"` // 创建时间
+	}
 )
 
-// 公开接口组 (无需认证)
+// 用户接口组
 @server (
-    group: user
+	group: user
 )
 service admin-api {
-    @handler UserRegister
-    post /api/v1/users/register (UserRegisterReq)
+	@handler UserRegister
+	post /api/v1/users/register (UserRegisterReq) returns (UserRegisterResp)
 
-    @handler UserLogin
-    post /api/v1/users/login (UserLoginReq) returns (UserLoginResp)
+	@handler UserLogin
+	post /api/v1/users/login (UserLoginReq) returns (UserLoginResp)
+
+	@handler UserInfo
+	get /api/v1/users/info returns (UserResp)
+
+	@handler UserUpdate
+	put /api/v1/users/update (UserUpdateReq)
 }
 
-// 用户服务接口组
+// 分组接口组
 @server (
-    group: user
+	group: group
 )
 service admin-api {
-    @handler UserInfo
-    get /api/v1/users/info returns (UserResp)
+	@handler SaveGroup
+	post /api/v1/groups (ShortLinkGroupSaveReq)
 
-    @handler UserUpdate
-    put /api/v1/users/update (UserUpdateReq)
+	@handler UpdateGroup
+	put /api/v1/groups (ShortLinkGroupUpdateReq)
 
-    @handler UserLogout
-    post /api/v1/users/logout
+	@handler SortGroup
+	patch /api/v1/groups/sort (ShortLinkGroupSortReq)
+
+	@handler ListGroups
+	get /api/v1/groups returns ([]GroupResp)
 }
 
-// 分组服务接口组
+// 回收站接口组
 @server (
-    group: group
+	group: recycle
 )
 service admin-api {
-    @handler CreateGroup
-    post /api/v1/groups (GroupCreateReq)
+	@handler SaveRecycleBin
+	post /api/v1/recycle-bin (RecycleBinSaveReq)
 
-    @handler UpdateGroup
-    put /api/v1/groups (GroupUpdateReq)
+	@handler RemoveFromRecycleBin
+	delete /api/v1/recycle-bin (RecycleBinRemoveReq)
 
-    @handler DeleteGroup
-    delete /api/v1/groups/:gid
+	@handler RecoverFromRecycleBin
+	put /api/v1/recycle-bin/recover (RecycleBinRecoverReq)
 
-    @handler ListGroups
-    get /api/v1/groups returns ([]GroupResp)
-
-    @handler SortGroups
-    put /api/v1/groups/sort (GroupSortReq)
-}
-
-// 回收站服务接口组
-@server (
-    group: recycle
-)
-service admin-api {
-    @handler ListRecycleBin
-    get /api/v1/recycle-bin/list (RecycleBinPageReq) returns (ShortLinkPageResp)
+	@handler ListRecycleBin
+	get /api/v1/recycle-bin (RecycleBinPageReq) returns (RecycleBinResp)
 }
 

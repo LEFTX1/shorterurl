@@ -1,22 +1,29 @@
 // internal/utils/testutil/config.go
 package testutil
 
-// TestDBConfig 测试数据库配置
-type TestDBConfig struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	Database string
-}
+import (
+	"fmt"
+	"github.com/zeromicro/go-zero/core/conf"
+	"go-zero-shorterurl/admin/internal/config"
+	"go-zero-shorterurl/admin/internal/svc"
+	"path/filepath"
+	"runtime"
+)
 
-// GetTestDBConfig 获取测试配置
-func GetTestDBConfig() TestDBConfig {
-	return TestDBConfig{
-		Host:     "127.0.0.1",
-		Port:     3306,
-		User:     "root",
-		Password: "123456",
-		Database: "link_go", // 修改为 link 数据库
+// GetTestConfig 获取测试配置和服务上下文
+func GetTestConfig() (*svc.ServiceContext, error) {
+	// 1. 获取测试配置文件路径
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return nil, fmt.Errorf("get caller info failed")
 	}
+
+	configFile := filepath.Join(filepath.Dir(filename), "../../../etc/test.yaml")
+
+	// 2. 加载配置
+	var c config.Config
+	conf.MustLoad(configFile, &c)
+
+	// 3. 创建服务上下文
+	return svc.NewServiceContext(c)
 }

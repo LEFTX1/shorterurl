@@ -1,4 +1,4 @@
-package user
+package group
 
 import (
 	"context"
@@ -9,21 +9,21 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type UserRegisterLogic struct {
+type SortGroupLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewUserRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserRegisterLogic {
-	return &UserRegisterLogic{
+func NewSortGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SortGroupLogic {
+	return &SortGroupLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *UserRegisterLogic) UserRegister(req *types.UserRegisterReq) error {
+func (l *SortGroupLogic) SortGroup(req *types.ShortLinkGroupSortReq) error {
 	// todo: add your logic here and delete this line
 
 	return nil

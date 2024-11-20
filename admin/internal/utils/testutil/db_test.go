@@ -1,16 +1,15 @@
-package svc
+package testutil
 
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"go-zero-shorterurl/admin/internal/dal/model"
-	"go-zero-shorterurl/admin/internal/utils/testutil"
 	"testing"
 	"time"
 )
 
 func TestUserSharding(t *testing.T) {
-	testDB, err := testutil.GetTestDB()
+	testDB, err := GetTestDB()
 	assert.Nil(t, err, "获取测试DB失败")
 
 	// 1. 清理所有测试数据

@@ -9,22 +9,22 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type ListRecycleBinLogic struct {
+type RemoveFromRecycleBinLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewListRecycleBinLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListRecycleBinLogic {
-	return &ListRecycleBinLogic{
+func NewRemoveFromRecycleBinLogic(ctx context.Context, svcCtx *svc.ServiceContext) *RemoveFromRecycleBinLogic {
+	return &RemoveFromRecycleBinLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *ListRecycleBinLogic) ListRecycleBin(req *types.RecycleBinPageReq) (resp *types.ShortLinkPageResp, err error) {
+func (l *RemoveFromRecycleBinLogic) RemoveFromRecycleBin(req *types.RecycleBinRemoveReq) error {
 	// todo: add your logic here and delete this line
 
-	return
+	return nil
 }

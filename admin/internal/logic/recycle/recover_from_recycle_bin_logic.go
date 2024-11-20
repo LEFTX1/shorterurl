@@ -1,4 +1,4 @@
-package group
+package recycle
 
 import (
 	"context"
@@ -9,21 +9,21 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type UpdateGroupLogic struct {
+type RecoverFromRecycleBinLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewUpdateGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UpdateGroupLogic {
-	return &UpdateGroupLogic{
+func NewRecoverFromRecycleBinLogic(ctx context.Context, svcCtx *svc.ServiceContext) *RecoverFromRecycleBinLogic {
+	return &RecoverFromRecycleBinLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *UpdateGroupLogic) UpdateGroup(req *types.GroupUpdateReq) error {
+func (l *RecoverFromRecycleBinLogic) RecoverFromRecycleBin(req *types.RecycleBinRecoverReq) error {
 	// todo: add your logic here and delete this line
 
 	return nil
