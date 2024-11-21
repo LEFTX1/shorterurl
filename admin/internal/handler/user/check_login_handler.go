@@ -9,16 +9,16 @@ import (
 	"go-zero-shorterurl/admin/internal/types"
 )
 
-func UserRegisterHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func CheckLoginHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req types.UserRegisterReq
+		var req types.UserCheckLoginReq
 		if err := httpx.Parse(r, &req); err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 			return
 		}
 
-		l := user.NewUserRegisterLogic(r.Context(), svcCtx)
-		resp, err := l.UserRegister(&req)
+		l := user.NewCheckLoginLogic(r.Context(), svcCtx)
+		resp, err := l.CheckLogin(&req)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {

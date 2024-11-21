@@ -1,6 +1,8 @@
 // internal/errorx/base_error.go
 package errorx
 
+import "errors"
+
 // IError 错误接口，定义了错误对象需要实现的方法
 type IError interface {
 	Error() string // 返回错误信息
@@ -91,4 +93,24 @@ func NewRemoteError(code string) error {
 			Message: msg,
 		},
 	}
+}
+
+// IsUserError 判断是否是用户错误
+func IsUserError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var userError *UserError
+	ok := errors.As(err, &userError)
+	return ok
+}
+
+// IsSystemError 判断是否是系统错误
+func IsSystemError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var systemError *SystemError
+	ok := errors.As(err, &systemError)
+	return ok
 }

@@ -18,7 +18,7 @@ func GetTestConfig() (*svc.ServiceContext, error) {
 		return nil, fmt.Errorf("get caller info failed")
 	}
 
-	configFile := filepath.Join(filepath.Dir(filename), "../../../etc/test.yaml")
+	configFile := filepath.Join(filepath.Dir(filename), "../../../etc/admin-api.admin-api.test.yaml")
 
 	// 2. 加载配置
 	var c config.Config

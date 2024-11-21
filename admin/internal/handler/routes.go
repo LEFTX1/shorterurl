@@ -67,24 +67,50 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		[]rest.Route{
 			{
 				Method:  http.MethodGet,
-				Path:    "/api/v1/users/info",
+				Path:    "/basic-info/:username",
+				Handler: user.GetUserBasicInfoHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/check-login",
+				Handler: user.CheckLoginHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/check-username",
+				Handler: user.CheckUsernameHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/info",
 				Handler: user.UserInfoHandler(serverCtx),
 			},
 			{
 				Method:  http.MethodPost,
-				Path:    "/api/v1/users/login",
+				Path:    "/login",
 				Handler: user.UserLoginHandler(serverCtx),
 			},
 			{
 				Method:  http.MethodPost,
-				Path:    "/api/v1/users/register",
+				Path:    "/logout",
+				Handler: user.LogoutHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPut,
+				Path:    "/password",
+				Handler: user.UpdatePasswordHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/register",
 				Handler: user.UserRegisterHandler(serverCtx),
 			},
 			{
 				Method:  http.MethodPut,
-				Path:    "/api/v1/users/update",
+				Path:    "/update",
 				Handler: user.UserUpdateHandler(serverCtx),
 			},
 		},
+		rest.WithPrefix("/api/v1/users"),
 	)
 }

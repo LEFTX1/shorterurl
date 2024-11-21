@@ -26,16 +26,13 @@ type (
 	// 用户更新请求
 	UserUpdateReq {
 		Username string `json:"username" validate:"required"` // 用户名
-		Password string `json:"password,optional"` // 密码
-		RealName string `json:"realName,optional"` // 真实姓名
-		Phone    string `json:"phone,optional" validate:"omitempty,phone"` // 手机号
-		Mail     string `json:"mail,optional" validate:"omitempty,email"` // 邮箱
+		Password string `json:"password,optional"` // 密码（可选）
+		RealName string `json:"realName,optional"` // 真实姓名（可选）
+		Phone    string `json:"phone,optional" validate:"omitempty,phone"` // 手机号（可选）
+		Mail     string `json:"mail,optional" validate:"omitempty,email"` // 邮箱（可选）
 	}
-	// 通用响应
-	UserLoginResp {
-		Token string `json:"token"` // JWT Token
-	}
-	UserResp {
+	// 用户详情响应
+	UserInfoResp {
 		Username   string `json:"username"` // 用户名
 		RealName   string `json:"realName"` // 真实姓名
 		Phone      string `json:"phone"` // 手机号
@@ -43,11 +40,33 @@ type (
 		CreateTime string `json:"createTime"` // 创建时间
 		UpdateTime string `json:"updateTime"` // 更新时间
 	}
+	// 用户登录响应
+	UserLoginResp {
+		Token      string `json:"token"` // JWT Token
+		Username   string `json:"username"` // 用户名
+		RealName   string `json:"realName"` // 真实姓名
+		CreateTime string `json:"createTime"` // 创建时间
+	}
 	// 用户注册响应
 	UserRegisterResp {
 		Username   string `json:"username"` // 用户名
 		CreateTime string `json:"createTime"` // 创建时间
 		Message    string `json:"message"` // 响应消息
+	}
+	// 修改密码请求
+	UserUpdatePasswordReq {
+		Username    string `json:"username" validate:"required"` // 用户名
+		OldPassword string `json:"oldPassword" validate:"required"` // 旧密码
+		NewPassword string `json:"newPassword" validate:"required,min=6,max=32"` // 新密码
+	}
+	// 检查登录请求
+	UserCheckLoginReq {
+		Username string `json:"username" validate:"required"` // 用户名
+		Token    string `json:"token" validate:"required"` // Token
+	}
+	// 用户名请求
+	UserUsernameReq {
+		Username string `path:"username"` // 用户名
 	}
 )
 
@@ -109,22 +128,46 @@ type (
 	}
 )
 
-// 用户接口组
 @server (
-	group: user
+	group:  user
+	prefix: /api/v1/users
 )
 service admin-api {
+	// 用户注册
 	@handler UserRegister
-	post /api/v1/users/register (UserRegisterReq) returns (UserRegisterResp)
+	post /register (UserRegisterReq) returns (UserRegisterResp)
 
+	// 用户登录
 	@handler UserLogin
-	post /api/v1/users/login (UserLoginReq) returns (UserLoginResp)
+	post /login (UserLoginReq) returns (UserLoginResp)
 
+	// 获取用户信息
 	@handler UserInfo
-	get /api/v1/users/info returns (UserResp)
+	get /info returns (UserInfoResp)
 
+	// 更新用户信息
 	@handler UserUpdate
-	put /api/v1/users/update (UserUpdateReq)
+	put /update (UserUpdateReq)
+
+	// 修改密码
+	@handler UpdatePassword
+	put /password (UserUpdatePasswordReq)
+
+	// 检查用户名是否存在
+	@handler CheckUsername
+	get /check-username returns (bool)
+
+	// 检查用户是否登录
+	@handler CheckLogin
+	post /check-login (UserCheckLoginReq) returns (bool)
+
+	// 用户退出登录
+	@handler Logout
+	post /logout (UserCheckLoginReq)
+
+	// 获取用户基本信息（用于其他服务）
+	@handler GetUserBasicInfo
+	get /basic-info/:username (UserUsernameReq) returns (UserInfoResp)
 }
 
 // 分组接口组

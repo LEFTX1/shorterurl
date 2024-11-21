@@ -9,22 +9,22 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type UserInfoLogic struct {
+type UpdatePasswordLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserInfoLogic {
-	return &UserInfoLogic{
+func NewUpdatePasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UpdatePasswordLogic {
+	return &UpdatePasswordLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *UserInfoLogic) UserInfo() (resp *types.UserInfoResp, err error) {
+func (l *UpdatePasswordLogic) UpdatePassword(req *types.UserUpdatePasswordReq) error {
 	// todo: add your logic here and delete this line
 
-	return
+	return nil
 }

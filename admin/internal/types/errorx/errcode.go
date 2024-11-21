@@ -30,9 +30,11 @@ const (
 	UserNameExistError            = "A000111" // 用户名已存在
 	UserNameSensitiveError        = "A000112" // 用户名包含敏感词
 	UserNameSpecialCharacterError = "A000113" // 用户名包含特殊字符
+	UserNotExistError             = "A000114" // 用户不存在
 	PasswordVerifyError           = "A000120" // 密码校验失败
 	PasswordShortError            = "A000121" // 密码长度不够
 	PhoneVerifyError              = "A000151" // 手机格式校验失败
+
 )
 
 // 幂等性相关错误码

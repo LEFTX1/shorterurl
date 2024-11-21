@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/rest"
 )
 
@@ -19,19 +20,17 @@ type Config struct {
 		}
 	}
 	Redis struct {
-		Host        string
-		Password    string
-		DB          int
+		RedisConf   redis.RedisConf
 		BloomFilter struct {
 			User struct {
-				Name            string  `json:",default=user:register:filter"`
-				ErrorRate       float64 `json:",default=0.01"`
-				InitialCapacity int64   `json:",default=1000000"`
+				Name            string `json:",default=bloom:users"`
+				Bits            uint   `json:",default=20000000"`
+				InitialCapacity int64  `json:",default=1000000"`
 			}
 			Group struct {
-				Name            string  `json:",default=group:register:filter"`
-				ErrorRate       float64 `json:",default=0.01"`
-				InitialCapacity int64   `json:",default=2000000"`
+				Name            string `json:",default=bloom:groups"`
+				Bits            uint   `json:",default=20000000"`
+				InitialCapacity int64  `json:",default=1000000"`
 			}
 		}
 	}

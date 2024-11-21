@@ -55,13 +55,30 @@ type ShortLinkGroupUpdateReq struct {
 	Name string `json:"name" validate:"required,max=32"` // 分组名称
 }
 
+type UserCheckLoginReq struct {
+	Username string `json:"username" validate:"required"` // 用户名
+	Token    string `json:"token" validate:"required"`    // Token
+}
+
+type UserInfoResp struct {
+	Username   string `json:"username"`   // 用户名
+	RealName   string `json:"realName"`   // 真实姓名
+	Phone      string `json:"phone"`      // 手机号
+	Mail       string `json:"mail"`       // 邮箱
+	CreateTime string `json:"createTime"` // 创建时间
+	UpdateTime string `json:"updateTime"` // 更新时间
+}
+
 type UserLoginReq struct {
 	Username string `json:"username" validate:"required"` // 用户名
 	Password string `json:"password" validate:"required"` // 密码
 }
 
 type UserLoginResp struct {
-	Token string `json:"token"` // JWT Token
+	Token      string `json:"token"`      // JWT Token
+	Username   string `json:"username"`   // 用户名
+	RealName   string `json:"realName"`   // 真实姓名
+	CreateTime string `json:"createTime"` // 创建时间
 }
 
 type UserRegisterReq struct {
@@ -78,19 +95,20 @@ type UserRegisterResp struct {
 	Message    string `json:"message"`    // 响应消息
 }
 
-type UserResp struct {
-	Username   string `json:"username"`   // 用户名
-	RealName   string `json:"realName"`   // 真实姓名
-	Phone      string `json:"phone"`      // 手机号
-	Mail       string `json:"mail"`       // 邮箱
-	CreateTime string `json:"createTime"` // 创建时间
-	UpdateTime string `json:"updateTime"` // 更新时间
+type UserUpdatePasswordReq struct {
+	Username    string `json:"username" validate:"required"`                 // 用户名
+	OldPassword string `json:"oldPassword" validate:"required"`              // 旧密码
+	NewPassword string `json:"newPassword" validate:"required,min=6,max=32"` // 新密码
 }
 
 type UserUpdateReq struct {
 	Username string `json:"username" validate:"required"`              // 用户名
-	Password string `json:"password,optional"`                         // 密码
-	RealName string `json:"realName,optional"`                         // 真实姓名
-	Phone    string `json:"phone,optional" validate:"omitempty,phone"` // 手机号
-	Mail     string `json:"mail,optional" validate:"omitempty,email"`  // 邮箱
+	Password string `json:"password,optional"`                         // 密码（可选）
+	RealName string `json:"realName,optional"`                         // 真实姓名（可选）
+	Phone    string `json:"phone,optional" validate:"omitempty,phone"` // 手机号（可选）
+	Mail     string `json:"mail,optional" validate:"omitempty,email"`  // 邮箱（可选）
+}
+
+type UserUsernameReq struct {
+	Username string `path:"username"` // 用户名
 }

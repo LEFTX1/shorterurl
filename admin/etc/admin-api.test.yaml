@@ -17,7 +17,7 @@ Redis:
   RedisConf:
     Host: 127.0.0.1:6379
     Type: node
-    Pass: ""
+    Pass: "123456"
     DB: 0
   BloomFilter:
     User:

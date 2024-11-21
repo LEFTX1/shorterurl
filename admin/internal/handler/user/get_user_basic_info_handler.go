@@ -9,16 +9,16 @@ import (
 	"go-zero-shorterurl/admin/internal/types"
 )
 
-func UserRegisterHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func GetUserBasicInfoHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req types.UserRegisterReq
+		var req types.UserUsernameReq
 		if err := httpx.Parse(r, &req); err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 			return
 		}
 
-		l := user.NewUserRegisterLogic(r.Context(), svcCtx)
-		resp, err := l.UserRegister(&req)
+		l := user.NewGetUserBasicInfoLogic(r.Context(), svcCtx)
+		resp, err := l.GetUserBasicInfo(&req)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {

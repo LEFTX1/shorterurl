@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
 	"go-zero-shorterurl/admin/internal/types/errorx"
 	"net/http"
@@ -33,12 +32,7 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("create service context failed: %v", err))
 	}
-	// 添加 defer 关闭资源
-	defer func() {
-		if err := ctx.Close(); err != nil {
-			logx.Errorf("close service context failed: %v", err)
-		}
-	}()
+
 	handler.RegisterHandlers(server, ctx)
 	// 自定义错误
 	httpx.SetErrorHandler(func(err error) (int, interface{}) {
