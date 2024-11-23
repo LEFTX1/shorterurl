@@ -8,9 +8,9 @@ DB:
   Port: 3306
   User: root
   Password: "123456"
-  Database: link_go
+  Database: link
   Sharding:
-    ShardingKey: username
+    ShardingKey: Username
     NumberOfShards: 16
 
 Redis:

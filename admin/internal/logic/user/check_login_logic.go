@@ -3,10 +3,8 @@ package user
 import (
 	"context"
 
-	"go-zero-shorterurl/admin/internal/svc"
-	"go-zero-shorterurl/admin/internal/types"
-
 	"github.com/zeromicro/go-zero/core/logx"
+	"go-zero-shorterurl/admin/internal/svc"
 )
 
 type CheckLoginLogic struct {
@@ -23,7 +21,7 @@ func NewCheckLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *CheckL
 	}
 }
 
-func (l *CheckLoginLogic) CheckLogin(req *types.UserCheckLoginReq) (resp bool, err error) {
+func (l *CheckLoginLogic) CheckLogin() (resp bool, err error) {
 	// todo: add your logic here and delete this line
 
 	return

@@ -3,10 +3,8 @@ package user
 import (
 	"context"
 
-	"go-zero-shorterurl/admin/internal/svc"
-	"go-zero-shorterurl/admin/internal/types"
-
 	"github.com/zeromicro/go-zero/core/logx"
+	"go-zero-shorterurl/admin/internal/svc"
 )
 
 type LogoutLogic struct {
@@ -23,8 +21,8 @@ func NewLogoutLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LogoutLogi
 	}
 }
 
-func (l *LogoutLogic) Logout(req *types.UserCheckLoginReq) error {
+func (l *LogoutLogic) Logout() (resp bool, err error) {
 	// todo: add your logic here and delete this line
 
-	return nil
+	return
 }

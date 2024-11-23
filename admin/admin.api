@@ -128,46 +128,47 @@ type (
 	}
 )
 
+// =================接口定义=================
+// 用户接口组
 @server (
-	group:  user
-	prefix: /api/v1/users
+	group: user
 )
 service admin-api {
 	// 用户注册
 	@handler UserRegister
-	post /register (UserRegisterReq) returns (UserRegisterResp)
+	post /api/short-link/admin/v1/user (UserRegisterReq) returns (UserRegisterResp)
 
 	// 用户登录
 	@handler UserLogin
-	post /login (UserLoginReq) returns (UserLoginResp)
+	post /api/short-link/admin/v1/user/login (UserLoginReq) returns (UserLoginResp)
 
 	// 获取用户信息
 	@handler UserInfo
-	get /info returns (UserInfoResp)
+	get /api/short-link/admin/v1/user/:username (UserUsernameReq) returns (UserInfoResp)
 
-	// 更新用户信息
-	@handler UserUpdate
-	put /update (UserUpdateReq)
-
-	// 修改密码
-	@handler UpdatePassword
-	put /password (UserUpdatePasswordReq)
+	// 获取无脱敏用户信息
+	@handler ActualUserInfo
+	get /api/short-link/admin/v1/actual/user/:username (UserUsernameReq) returns (UserInfoResp)
 
 	// 检查用户名是否存在
 	@handler CheckUsername
-	get /check-username returns (bool)
+	get /api/short-link/admin/v1/user/has-username returns (bool)
+
+	// 更新用户信息
+	@handler UserUpdate
+	put /api/short-link/admin/v1/user (UserUpdateReq)
+
+	// 修改密码
+	@handler UpdatePassword
+	put /api/short-link/admin/v1/user/password (UserUpdatePasswordReq)
 
 	// 检查用户是否登录
 	@handler CheckLogin
-	post /check-login (UserCheckLoginReq) returns (bool)
+	get /api/short-link/admin/v1/user/check-login returns (bool)
 
 	// 用户退出登录
 	@handler Logout
-	post /logout (UserCheckLoginReq)
-
-	// 获取用户基本信息（用于其他服务）
-	@handler GetUserBasicInfo
-	get /basic-info/:username (UserUsernameReq) returns (UserInfoResp)
+	delete /api/short-link/admin/v1/user/logout returns (bool)
 }
 
 // 分组接口组

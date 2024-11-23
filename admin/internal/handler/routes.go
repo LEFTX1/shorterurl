@@ -67,50 +67,49 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		[]rest.Route{
 			{
 				Method:  http.MethodGet,
-				Path:    "/basic-info/:username",
-				Handler: user.GetUserBasicInfoHandler(serverCtx),
+				Path:    "/api/short-link/admin/v1/actual/user/:username",
+				Handler: user.ActualUserInfoHandler(serverCtx),
 			},
 			{
 				Method:  http.MethodPost,
-				Path:    "/check-login",
-				Handler: user.CheckLoginHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodGet,
-				Path:    "/check-username",
-				Handler: user.CheckUsernameHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodGet,
-				Path:    "/info",
-				Handler: user.UserInfoHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/login",
-				Handler: user.UserLoginHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/logout",
-				Handler: user.LogoutHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPut,
-				Path:    "/password",
-				Handler: user.UpdatePasswordHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/register",
+				Path:    "/api/short-link/admin/v1/user",
 				Handler: user.UserRegisterHandler(serverCtx),
 			},
 			{
 				Method:  http.MethodPut,
-				Path:    "/update",
+				Path:    "/api/short-link/admin/v1/user",
 				Handler: user.UserUpdateHandler(serverCtx),
 			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/api/short-link/admin/v1/user/:username",
+				Handler: user.UserInfoHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/api/short-link/admin/v1/user/check-login",
+				Handler: user.CheckLoginHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/api/short-link/admin/v1/user/has-username",
+				Handler: user.CheckUsernameHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/api/short-link/admin/v1/user/login",
+				Handler: user.UserLoginHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodDelete,
+				Path:    "/api/short-link/admin/v1/user/logout",
+				Handler: user.LogoutHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPut,
+				Path:    "/api/short-link/admin/v1/user/password",
+				Handler: user.UpdatePasswordHandler(serverCtx),
+			},
 		},
-		rest.WithPrefix("/api/v1/users"),
 	)
 }
