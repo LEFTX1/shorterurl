@@ -89,11 +89,18 @@ func TestUserInfoLogic(t *testing.T) {
 		// 验证返回的用户信息
 		assert.Equal(t, testUsername, resp.Username)
 		assert.Equal(t, registerReq.RealName, resp.RealName)
-		assert.Equal(t, registerReq.Phone, resp.Phone)
-		assert.Equal(t, registerReq.Mail, resp.Mail)
+
+		// **验证脱敏后的手机号和邮箱**
+		expectedMaskedPhone := "138****8000" // 手机号脱敏后的格式
+		assert.Equal(t, expectedMaskedPhone, resp.Phone, "手机号应该是脱敏后的数据")
+
+		expectedMaskedEmail := "t****@example.com" // 邮箱脱敏后的格式
+		assert.Equal(t, expectedMaskedEmail, resp.Mail, "邮箱应该是脱敏后的数据")
+
 		assert.NotEmpty(t, resp.CreateTime)
 		assert.NotEmpty(t, resp.UpdateTime)
 	})
+
 }
 
 func captureOutput(f func()) string {

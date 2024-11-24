@@ -3,6 +3,7 @@ package svc
 import (
 	"fmt"
 	"github.com/zeromicro/go-zero/core/stores/redis"
+	"go-zero-shorterurl/admin/internal/common"
 	"go-zero-shorterurl/admin/internal/config"
 	"go-zero-shorterurl/admin/internal/dal/query"
 	"go-zero-shorterurl/pkg/snowflake"
@@ -25,6 +26,11 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 	// 1. 初始化雪花算法
 	if err := snowflake.InitSnowflake(); err != nil {
 		return nil, fmt.Errorf("init snowflake failed: %v", err)
+	}
+
+	// 初始化加密工具
+	if err := common.InitAES(c); err != nil {
+		return nil, fmt.Errorf("init crypto failed: %v", err)
 	}
 
 	// 2. 获取ID生成器

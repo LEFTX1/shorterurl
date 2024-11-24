@@ -34,4 +34,7 @@ type Config struct {
 			}
 		}
 	}
+	Crypto struct {
+		AESKey string `json:"aesKey"` // base64 编码的 AES 密钥
+	}
 }

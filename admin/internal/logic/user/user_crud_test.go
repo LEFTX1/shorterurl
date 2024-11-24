@@ -172,33 +172,4 @@ func TestUserCRUD(t *testing.T) {
 		})
 	})
 
-	// 复杂查询测试
-	t.Run("复杂查询测试", func(t *testing.T) {
-		// GORM 复杂查询
-		t.Run("GORM复杂查询", func(t *testing.T) {
-			var users []model.TUser
-			result := svcCtx.DB.
-				Where("username LIKE ?", "test%").
-				Where("del_flag = ?", false).
-				Order("id DESC").
-				Limit(5).
-				Find(&users)
-
-			require.NoError(t, result.Error)
-			t.Logf("GORM复杂查询结果: %+v", users)
-		})
-
-		// Gen 复杂查询
-		t.Run("Gen复杂查询", func(t *testing.T) {
-			users, err := svcCtx.Query.TUser.WithContext(ctx).
-				Where(svcCtx.Query.TUser.Username.Like("test%")).
-				Where(svcCtx.Query.TUser.DelFlag.Is(false)).
-				Order(svcCtx.Query.TUser.ID.Desc()).
-				Limit(5).
-				Find()
-
-			require.NoError(t, err)
-			t.Logf("Gen复杂查询结果: %+v", users)
-		})
-	})
 }

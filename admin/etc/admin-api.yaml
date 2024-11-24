@@ -28,3 +28,6 @@ Redis:
       Name: "test:bloom:groups"
       Bits: 20000000
       InitialCapacity: 1000000
+
+Crypto:
+  AESKey: "TPQjiPR1mkW5T4Yx9S4y1uAzyat6k28sKsvm6WcQ/7Y="

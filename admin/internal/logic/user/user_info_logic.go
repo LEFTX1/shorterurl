@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"go-zero-shorterurl/admin/internal/common"
 	"go-zero-shorterurl/admin/internal/dal/model"
 	"go-zero-shorterurl/admin/internal/svc"
 	"go-zero-shorterurl/admin/internal/types"
@@ -26,20 +27,19 @@ func NewUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserInfo
 	}
 }
 
-// user_info_logic.go
-// user_info_logic.go
+// UserInfo user_info_logic.go
 func (l *UserInfoLogic) UserInfo(req *types.UserUsernameReq) (resp *types.UserInfoResp, err error) {
 	username := req.Username
 	if username == "" {
 		return nil, errorx.NewUserError("USERNAME_EMPTY")
 	}
 
-	// 使用 GORM 原生查询，避免使用 Gen 的查询表达式
-	var user model.TUser
-	err = l.svcCtx.DB.WithContext(l.ctx).
-		Select("*").
-		Where("username = ? AND del_flag = ?", username, false).
-		First(&user).Error
+	// 使用gen
+	var user *model.TUser
+	user, err = l.svcCtx.Query.TUser.WithContext(l.ctx).
+		Where(l.svcCtx.Query.TUser.Username.Eq(username)).
+		Where(l.svcCtx.Query.TUser.DelFlag.Is(false)).
+		First()
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -52,8 +52,8 @@ func (l *UserInfoLogic) UserInfo(req *types.UserUsernameReq) (resp *types.UserIn
 	resp = &types.UserInfoResp{
 		Username:   user.Username,
 		RealName:   user.RealName,
-		Phone:      user.Phone,
-		Mail:       user.Mail,
+		Phone:      common.MaskPhone(user.Phone),
+		Mail:       common.MaskEmail(user.Mail),
 		CreateTime: user.CreateTime.Format("2006-01-02 15:04:05"),
 		UpdateTime: user.UpdateTime.Format("2006-01-02 15:04:05"),
 	}
