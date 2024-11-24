@@ -6,6 +6,7 @@ import (
 	"github.com/zeromicro/go-zero/core/bloom"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"go-zero-shorterurl/admin/internal/config"
+	"go-zero-shorterurl/admin/internal/types/errorx"
 )
 
 type BloomFilterManager struct {
@@ -22,10 +23,16 @@ func NewBloomFilterManager(redisClient *redis.Redis, c config.Config) *BloomFilt
 
 // 用户相关方法
 func (m *BloomFilterManager) AddUser(ctx context.Context, username string) error {
+	if username == "" {
+		return errorx.NewUserError(errorx.UserNotExistError)
+	}
 	return m.userFilter.AddCtx(ctx, []byte(username))
 }
 
 func (m *BloomFilterManager) UserExists(ctx context.Context, username string) (bool, error) {
+	if username == "" {
+		return false, errorx.NewUserError(errorx.UserNotExistError)
+	}
 	return m.userFilter.ExistsCtx(ctx, []byte(username))
 }
 

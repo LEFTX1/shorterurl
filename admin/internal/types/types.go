@@ -60,6 +60,14 @@ type UserCheckLoginReq struct {
 	Token    string `json:"token" validate:"required"`    // Token
 }
 
+type UserCheckUsernameReq struct {
+	Username string `form:"username" validate:"required"` // 用户名
+}
+
+type UserCheckUsernameResp struct {
+	Exist bool `json:"exist"` // 是否存在
+}
+
 type UserInfoResp struct {
 	Username   string `json:"username"`   // 用户名
 	RealName   string `json:"realName"`   // 真实姓名
@@ -75,7 +83,7 @@ type UserLoginReq struct {
 }
 
 type UserLoginResp struct {
-	Token      string `json:"token"`      // JWT Token
+	Token      string `json:"token"`      //  Token
 	Username   string `json:"username"`   // 用户名
 	RealName   string `json:"realName"`   // 真实姓名
 	CreateTime string `json:"createTime"` // 创建时间
@@ -107,6 +115,10 @@ type UserUpdateReq struct {
 	RealName string `json:"realName,optional"`                         // 真实姓名（可选）
 	Phone    string `json:"phone,optional" validate:"omitempty,phone"` // 手机号（可选）
 	Mail     string `json:"mail,optional" validate:"omitempty,email"`  // 邮箱（可选）
+}
+
+type UserUpdateResp struct {
+	Code string `json:"code"` // 响应码
 }
 
 type UserUsernameReq struct {

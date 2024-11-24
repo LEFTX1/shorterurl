@@ -42,7 +42,7 @@ type (
 	}
 	// 用户登录响应
 	UserLoginResp {
-		Token      string `json:"token"` // JWT Token
+		Token      string `json:"token"` //  Token
 		Username   string `json:"username"` // 用户名
 		RealName   string `json:"realName"` // 真实姓名
 		CreateTime string `json:"createTime"` // 创建时间
@@ -67,6 +67,18 @@ type (
 	// 用户名请求
 	UserUsernameReq {
 		Username string `path:"username"` // 用户名
+	}
+	//检查用户名是否存在请求
+	UserCheckUsernameReq {
+		Username string `form:"username" validate:"required"` // 用户名
+	}
+	// 检查用户名是否存在响应
+	UserCheckUsernameResp {
+		Exist bool `json:"exist"` // 是否存在
+	}
+	// 更新用户信息响应
+	UserUpdateResp {
+		code string `json:"code"` // 响应码
 	}
 )
 
@@ -152,11 +164,11 @@ service admin-api {
 
 	// 检查用户名是否存在
 	@handler CheckUsername
-	get /api/short-link/admin/v1/user/has-username returns (bool)
+	get /api/short-link/admin/v1/user/has-username (UserCheckUsernameReq) returns (bool)
 
 	// 更新用户信息
 	@handler UserUpdate
-	put /api/short-link/admin/v1/user (UserUpdateReq)
+	put /api/short-link/admin/v1/user (UserUpdateReq) returns (UserUpdateResp)
 
 	// 修改密码
 	@handler UpdatePassword
