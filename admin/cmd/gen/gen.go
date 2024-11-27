@@ -4,7 +4,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"go-zero-shorterurl/admin/internal/config"
+	"shorterurl/admin/internal/config"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/conf"

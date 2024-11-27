@@ -1,0 +1,46 @@
+Name: gateway
+Host: 0.0.0.0
+Port: 8888
+
+Auth:
+  WhitePathList:
+    - /api/short-link/admin/v1/user/login
+    - /api/short-link/admin/v1/user/has-username
+
+Middleware:
+  TokenValidate:
+    Enable: true
+
+Routes:
+  - ID: short-link-admin
+    Path: /api/short-link/admin/**
+    ServiceName: short-link-admin
+    Middlewares:
+      - TokenValidate
+    
+  - ID: short-link-project
+    Path: /api/short-link/**
+    ServiceName: short-link-project
+    Middlewares:
+      - TokenValidate
+
+Redis:
+  RedisConf:
+    Host: 127.0.0.1:6379
+    Type: node
+    Pass: ""
+    DB: 0
+
+# User RPC 服务配置
+UserRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: user.rpc
+
+# 日志配置
+Log:
+  ServiceName: gateway
+  Mode: console
+  Level: info
+  Encoding: json

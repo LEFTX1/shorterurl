@@ -3,13 +3,14 @@ package user
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/require"
-	"go-zero-shorterurl/admin/internal/dal/model"
-	"go-zero-shorterurl/admin/internal/dal/query"
 	"io"
 	"os"
+	"shorterurl/admin/internal/dal/model"
+	"shorterurl/admin/internal/dal/query"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUserCRUD(t *testing.T) {

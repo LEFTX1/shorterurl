@@ -2,12 +2,13 @@ package testutil
 
 import (
 	"fmt"
-	"go-zero-shorterurl/pkg/snowflake"
+	"log"
+	"shorterurl/admin/pkg/snowflake"
+	"sync"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/sharding"
-	"log"
-	"sync"
 )
 
 var (

@@ -3,9 +3,10 @@ package svc
 import (
 	"context"
 	"flag"
-	"github.com/zeromicro/go-zero/core/conf"
-	"go-zero-shorterurl/admin/internal/config"
+	"shorterurl/admin/internal/config"
 	"testing"
+
+	"github.com/zeromicro/go-zero/core/conf"
 
 	"github.com/stretchr/testify/require"
 )

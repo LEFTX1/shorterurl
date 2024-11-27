@@ -5,11 +5,12 @@ import (
 	"testing"
 	"time"
 
+	"shorterurl/admin/internal/dal/model"
+	"shorterurl/admin/internal/types"
+	"shorterurl/admin/internal/types/errorx"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go-zero-shorterurl/admin/internal/dal/model"
-	"go-zero-shorterurl/admin/internal/types"
-	"go-zero-shorterurl/admin/internal/types/errorx"
 )
 
 // TestActualUserInfoLogic 测试 ActualUserInfoLogic 接口

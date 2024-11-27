@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"time"
 
+	"shorterurl/admin/internal/dal/model"
+	"shorterurl/admin/internal/svc"
+	"shorterurl/admin/internal/types"
+	"shorterurl/admin/internal/types/errorx"
+
 	"github.com/google/uuid"
-	"go-zero-shorterurl/admin/internal/dal/model"
-	"go-zero-shorterurl/admin/internal/svc"
-	"go-zero-shorterurl/admin/internal/types"
-	"go-zero-shorterurl/admin/internal/types/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

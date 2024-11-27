@@ -1,23 +1,24 @@
 package user
 
 import (
-	"context"                                        // 导入上下文包，用于控制操作的生命周期
-	"crypto/rand"                                    // 导入随机数生成包，用于生成随机用户名
-	"encoding/hex"                                   // 导入十六进制编码包，用于将随机字节编码为十六进制字符串
-	"errors"                                         // 导入错误处理包
-	"flag"                                           // 导入命令行标志解析包
-	"github.com/stretchr/testify/require"            // 导入 testify 包中的 require，用于断言
-	"go-zero-shorterurl/admin/internal/types/errorx" // 导入自定义错误类型包
-	"testing"                                        // 导入测试包
-	"time"                                           // 导入时间包
+	"context"                                // 导入上下文包，用于控制操作的生命周期
+	"crypto/rand"                            // 导入随机数生成包，用于生成随机用户名
+	"encoding/hex"                           // 导入十六进制编码包，用于将随机字节编码为十六进制字符串
+	"errors"                                 // 导入错误处理包
+	"flag"                                   // 导入命令行标志解析包
+	"shorterurl/admin/internal/types/errorx" // 导入自定义错误类型包
+	"testing"                                // 导入测试包
+	"time"                                   // 导入时间包
+
+	"github.com/stretchr/testify/require" // 导入 testify 包中的 require，用于断言
 
 	"github.com/stretchr/testify/assert"     // 导入 testify 包中的 assert，用于断言
 	"github.com/zeromicro/go-zero/core/conf" // 导入 go-zero 配置包
 	"github.com/zeromicro/go-zero/core/logx" // 导入 go-zero 日志包
 
-	"go-zero-shorterurl/admin/internal/config" // 导入项目配置包
-	"go-zero-shorterurl/admin/internal/svc"    // 导入服务上下文包
-	"go-zero-shorterurl/admin/internal/types"  // 导入项目类型包
+	"shorterurl/admin/internal/config" // 导入项目配置包
+	"shorterurl/admin/internal/svc"    // 导入服务上下文包
+	"shorterurl/admin/internal/types"  // 导入项目类型包
 )
 
 // generateTestUsername 生成一个随机的测试用户名

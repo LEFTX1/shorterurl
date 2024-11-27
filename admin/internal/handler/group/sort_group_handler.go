@@ -3,10 +3,11 @@ package group
 import (
 	"net/http"
 
+	"shorterurl/admin/internal/logic/group"
+	"shorterurl/admin/internal/svc"
+	"shorterurl/admin/internal/types"
+
 	"github.com/zeromicro/go-zero/rest/httpx"
-	"go-zero-shorterurl/admin/internal/logic/group"
-	"go-zero-shorterurl/admin/internal/svc"
-	"go-zero-shorterurl/admin/internal/types"
 )
 
 func SortGroupHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {

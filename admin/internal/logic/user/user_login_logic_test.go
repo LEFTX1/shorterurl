@@ -3,14 +3,15 @@ package user
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"go-zero-shorterurl/admin/internal/dal/model"
-	"go-zero-shorterurl/admin/internal/svc"
-	"go-zero-shorterurl/admin/internal/types"
-	"go-zero-shorterurl/admin/internal/types/errorx"
+	"shorterurl/admin/internal/dal/model"
+	"shorterurl/admin/internal/svc"
+	"shorterurl/admin/internal/types"
+	"shorterurl/admin/internal/types/errorx"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestUserLoginLogic(t *testing.T) {

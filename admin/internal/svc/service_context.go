@@ -3,12 +3,12 @@ package svc
 import (
 	"fmt"
 	"github.com/zeromicro/go-zero/core/stores/redis"
-	"go-zero-shorterurl/admin/internal/common"
-	"go-zero-shorterurl/admin/internal/config"
-	"go-zero-shorterurl/admin/internal/dal/query"
-	"go-zero-shorterurl/pkg/snowflake"
 	"gorm.io/gorm"
 	"gorm.io/sharding"
+	"shorterurl/admin/internal/common"
+	"shorterurl/admin/internal/config"
+	"shorterurl/admin/internal/dal/query"
+	"shorterurl/admin/pkg/snowflake"
 )
 
 // internal/svc/service_context.go
@@ -19,6 +19,7 @@ type ServiceContext struct {
 	Redis        *redis.Redis // 使用 go-zero 的 Redis 客户端
 	BloomFilters *BloomFilterManager
 	Sharding     *sharding.Sharding // 添加分片实例
+
 }
 
 // internal/svc/service_context.go

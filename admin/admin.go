@@ -4,13 +4,14 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/zeromicro/go-zero/rest/httpx"
-	"go-zero-shorterurl/admin/internal/types/errorx"
 	"net/http"
+	"shorterurl/admin/internal/types/errorx"
 
-	"go-zero-shorterurl/admin/internal/config"
-	"go-zero-shorterurl/admin/internal/handler"
-	"go-zero-shorterurl/admin/internal/svc"
+	"github.com/zeromicro/go-zero/rest/httpx"
+
+	"shorterurl/admin/internal/config"
+	"shorterurl/admin/internal/handler"
+	"shorterurl/admin/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"

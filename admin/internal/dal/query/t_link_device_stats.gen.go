@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"go-zero-shorterurl/admin/internal/dal/model"
+	"shorterurl/admin/internal/dal/model"
 )
 
 func newTLinkDeviceStat(db *gorm.DB, opts ...gen.DOOption) tLinkDeviceStat {

@@ -3,9 +3,10 @@ package user
 import (
 	"net/http"
 
+	"shorterurl/admin/internal/logic/user"
+	"shorterurl/admin/internal/svc"
+
 	"github.com/zeromicro/go-zero/rest/httpx"
-	"go-zero-shorterurl/admin/internal/logic/user"
-	"go-zero-shorterurl/admin/internal/svc"
 )
 
 func LogoutHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {

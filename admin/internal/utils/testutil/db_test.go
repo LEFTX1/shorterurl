@@ -2,10 +2,11 @@ package testutil
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"go-zero-shorterurl/admin/internal/dal/model"
+	"shorterurl/admin/internal/dal/model"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUserSharding(t *testing.T) {

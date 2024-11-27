@@ -2,12 +2,14 @@ package svc
 
 import (
 	"fmt"
-	"gorm.io/sharding"
 	"hash/crc32"
 	"strconv"
 	"time"
 
-	"go-zero-shorterurl/admin/internal/config"
+	"gorm.io/sharding"
+
+	"shorterurl/admin/internal/config"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

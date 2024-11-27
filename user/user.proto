@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package user;
+option go_package="./";
+
+// 用户注册请求
+message RegisterRequest {
+  string username = 1;  // 用户名
+  string password = 2;  // 密码
+  string real_name = 3; // 真实姓名
+  string phone = 4;     // 手机号
+  string mail = 5;      // 邮箱
+}
+
+// 用户注册响应
+message RegisterResponse {
+  string username = 1;    // 用户名
+  string create_time = 2; // 创建时间
+  string message = 3;     // 响应消息
+}
+
+// 用户登录请求
+message LoginRequest {
+  string username = 1; // 用户名
+  string password = 2; // 密码
+}
+
+// 用户登录响应
+message LoginResponse {
+  string token = 1;       // Token
+  string username = 2;    // 用户名
+  string real_name = 3;   // 真实姓名
+  string create_time = 4; // 创建时间
+}
+
+// 用户信息响应
+message UserInfoResponse {
+  string username = 1;    // 用户名
+  string real_name = 2;   // 真实姓名
+  string phone = 3;       // 手机号
+  string mail = 4;        // 邮箱
+  string create_time = 5; // 创建时间
+  string update_time = 6; // 更新时间
+}
+
+// 用户更新请求
+message UpdateRequest {
+  string username = 1;  // 用户名
+  string password = 2;  // 密码（可选）
+  string real_name = 3; // 真实姓名（可选）
+  string phone = 4;     // 手机号（可选）
+  string mail = 5;      // 邮箱（可选）
+}
+
+// 更新密码请求
+message UpdatePasswordRequest {
+  string username = 1;     // 用户名
+  string old_password = 2; // 旧密码
+  string new_password = 3; // 新密码
+}
+
+// 检查用户名请求
+message CheckUsernameRequest {
+  string username = 1; // 用户名
+}
+
+// 检查用户名响应
+message CheckUsernameResponse {
+  bool exist = 1; // 是否存在
+}
+
+// 通用响应
+message CommonResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// 用户服务
+service User {
+  // 用户注册
+  rpc RpcRegister(RegisterRequest) returns (RegisterResponse);
+  
+  // 用户登录
+  rpc RpcLogin(LoginRequest) returns (LoginResponse);
+  
+  // 获取用户信息
+  rpc RpcGetUserInfo(CheckUsernameRequest) returns (UserInfoResponse);
+  
+  // 获取无脱敏用户信息
+  rpc RpcGetActualUserInfo(CheckUsernameRequest) returns (UserInfoResponse);
+  
+  // 检查用户名是否存在
+  rpc RpcCheckUsername(CheckUsernameRequest) returns (CheckUsernameResponse);
+  
+  // 更新用户信息
+  rpc RpcUpdateUser(UpdateRequest) returns (CommonResponse);
+  
+  // 修改密码
+  rpc RpcUpdatePassword(UpdatePasswordRequest) returns (CommonResponse);
+  
+  // 检查用户是否登录
+  rpc RpcCheckLogin(CheckUsernameRequest) returns (CommonResponse);
+  
+  // 用户退出登录
+  rpc RpcLogout(CheckUsernameRequest) returns (CommonResponse);
+}

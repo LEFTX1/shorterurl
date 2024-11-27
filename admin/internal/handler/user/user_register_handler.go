@@ -3,10 +3,11 @@ package user
 import (
 	"net/http"
 
+	"shorterurl/admin/internal/logic/user"
+	"shorterurl/admin/internal/svc"
+	"shorterurl/admin/internal/types"
+
 	"github.com/zeromicro/go-zero/rest/httpx"
-	"go-zero-shorterurl/admin/internal/logic/user"
-	"go-zero-shorterurl/admin/internal/svc"
-	"go-zero-shorterurl/admin/internal/types"
 )
 
 func UserRegisterHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {

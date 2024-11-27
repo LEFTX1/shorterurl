@@ -1,8 +1,8 @@
 package user
 
 import (
-	"go-zero-shorterurl/admin/internal/types"
-	"go-zero-shorterurl/admin/internal/types/errorx"
+	"shorterurl/admin/internal/types"
+	"shorterurl/admin/internal/types/errorx"
 	"testing"
 )
 

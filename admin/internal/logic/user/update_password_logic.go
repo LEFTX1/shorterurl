@@ -3,8 +3,8 @@ package user
 import (
 	"context"
 
-	"go-zero-shorterurl/admin/internal/svc"
-	"go-zero-shorterurl/admin/internal/types"
+	"shorterurl/admin/internal/svc"
+	"shorterurl/admin/internal/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

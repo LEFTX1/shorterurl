@@ -6,8 +6,8 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
-	"go-zero-shorterurl/admin/internal/config"
 	"io"
+	"shorterurl/admin/internal/config"
 	"sync"
 )
 

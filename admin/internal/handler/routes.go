@@ -4,10 +4,10 @@ package handler
 import (
 	"net/http"
 
-	group "go-zero-shorterurl/admin/internal/handler/group"
-	recycle "go-zero-shorterurl/admin/internal/handler/recycle"
-	user "go-zero-shorterurl/admin/internal/handler/user"
-	"go-zero-shorterurl/admin/internal/svc"
+	group "shorterurl/admin/internal/handler/group"
+	recycle "shorterurl/admin/internal/handler/recycle"
+	user "shorterurl/admin/internal/handler/user"
+	"shorterurl/admin/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
 )

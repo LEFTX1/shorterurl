@@ -3,10 +3,11 @@ package recycle
 import (
 	"net/http"
 
+	"shorterurl/admin/internal/logic/recycle"
+	"shorterurl/admin/internal/svc"
+	"shorterurl/admin/internal/types"
+
 	"github.com/zeromicro/go-zero/rest/httpx"
-	"go-zero-shorterurl/admin/internal/logic/recycle"
-	"go-zero-shorterurl/admin/internal/svc"
-	"go-zero-shorterurl/admin/internal/types"
 )
 
 func SaveRecycleBinHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {

@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"go-zero-shorterurl/admin/internal/dal/model"
+	"shorterurl/admin/internal/dal/model"
 )
 
 func newTLinkOsStat(db *gorm.DB, opts ...gen.DOOption) tLinkOsStat {

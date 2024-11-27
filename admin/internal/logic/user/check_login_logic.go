@@ -3,8 +3,9 @@ package user
 import (
 	"context"
 
+	"shorterurl/admin/internal/svc"
+
 	"github.com/zeromicro/go-zero/core/logx"
-	"go-zero-shorterurl/admin/internal/svc"
 )
 
 type CheckLoginLogic struct {

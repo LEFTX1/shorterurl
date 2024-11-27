@@ -3,11 +3,12 @@ package user
 import (
 	"context"
 	"errors"
-	"go-zero-shorterurl/admin/internal/common"
-	"go-zero-shorterurl/admin/internal/dal/model"
-	"go-zero-shorterurl/admin/internal/svc"
-	"go-zero-shorterurl/admin/internal/types"
-	"go-zero-shorterurl/admin/internal/types/errorx"
+	"shorterurl/admin/internal/common"
+	"shorterurl/admin/internal/dal/model"
+	"shorterurl/admin/internal/svc"
+	"shorterurl/admin/internal/types"
+	"shorterurl/admin/internal/types/errorx"
+
 	"gorm.io/gorm"
 
 	"github.com/zeromicro/go-zero/core/logx"

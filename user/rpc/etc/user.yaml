@@ -1,0 +1,41 @@
+Name: user.rpc                  # 服务名称
+ListenOn: 0.0.0.0:8080         # RPC 服务监听地址
+
+
+# 服务发现配置
+Etcd:
+  Hosts:
+    - 127.0.0.1:2379
+  Key: user.rpc
+
+# 数据库配置
+DB:
+  Host: localhost
+  Port: 3306
+  User: root
+  Password: "123456"
+  Database: link
+  Sharding:
+    ShardingKey: username
+    NumberOfShards: 16
+
+# Redis缓存配置
+BizRedis:
+  Host: 127.0.0.1:6379
+  Pass:
+  Type: node
+
+# 布隆过滤器配置
+BloomFilter:
+  User:
+    Name: "test:bloom:users"
+    Bits: 20000000
+    InitialCapacity: 1000000
+  Group:
+    Name: "test:bloom:groups"
+    Bits: 20000000
+    InitialCapacity: 1000000
+
+# 加密配置
+Crypto:
+  AESKey: "TPQjiPR1mkW5T4Yx9S4y1uAzyat6k28sKsvm6WcQ/7Y=" # AES 密钥（Base64 编码）

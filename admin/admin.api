@@ -82,64 +82,6 @@ type (
 	}
 )
 
-// =================分组相关类型定义=================
-type (
-	// 创建分组请求
-	ShortLinkGroupSaveReq {
-		Name string `json:"name" validate:"required,max=32"` // 分组名称
-	}
-	// 更新分组请求
-	ShortLinkGroupUpdateReq {
-		Gid  string `json:"gid" validate:"required"` // 分组标识
-		Name string `json:"name" validate:"required,max=32"` // 分组名称
-	}
-	// 分组排序请求
-	ShortLinkGroupSortReq {
-		Gid       string `json:"gid" validate:"required"` // 分组标识
-		SortOrder int    `json:"sortOrder"` // 排序序号
-	}
-	GroupResp {
-		Gid            string `json:"gid"` // 分组标识
-		Name           string `json:"name"` // 分组名称
-		SortOrder      int    `json:"sortOrder"` // 排序序号
-		ShortLinkCount int64  `json:"shortLinkCount"` // 短链接数量
-		CreateTime     string `json:"createTime"` // 创建时间
-		UpdateTime     string `json:"updateTime"` // 更新时间
-	}
-)
-
-// =================回收站相关类型定义=================
-type (
-	// 回收站保存请求
-	RecycleBinSaveReq {
-		Gid          string `json:"gid" validate:"required"` // 分组标识
-		FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
-	}
-	// 回收站移除请求
-	RecycleBinRemoveReq {
-		Gid          string `json:"gid" validate:"required"` // 分组标识
-		FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
-	}
-	// 回收站恢复请求
-	RecycleBinRecoverReq {
-		Gid          string `json:"gid" validate:"required"` // 分组标识
-		FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
-	}
-	RecycleBinPageReq {
-		Current int64 `form:"current,default=1" validate:"required,min=1"` // 当前页码
-		Size    int64 `form:"size,default=10" validate:"required,min=1,max=100"` // 每页大小
-	}
-	RecycleBinResp {
-		List  []RecycleBinItem `json:"list"` // 列表数据
-		Total int64            `json:"total"` // 总数
-	}
-	RecycleBinItem {
-		Gid          string `json:"gid"` // 分组标识
-		FullShortUrl string `json:"fullShortUrl"` // 完整短链接
-		CreateTime   string `json:"createTime"` // 创建时间
-	}
-)
-
 // =================接口定义=================
 // 用户接口组
 @server (
@@ -182,40 +124,3 @@ service admin-api {
 	@handler Logout
 	delete /api/short-link/admin/v1/user/logout returns (bool)
 }
-
-// 分组接口组
-@server (
-	group: group
-)
-service admin-api {
-	@handler SaveGroup
-	post /api/v1/groups (ShortLinkGroupSaveReq)
-
-	@handler UpdateGroup
-	put /api/v1/groups (ShortLinkGroupUpdateReq)
-
-	@handler SortGroup
-	patch /api/v1/groups/sort (ShortLinkGroupSortReq)
-
-	@handler ListGroups
-	get /api/v1/groups returns ([]GroupResp)
-}
-
-// 回收站接口组
-@server (
-	group: recycle
-)
-service admin-api {
-	@handler SaveRecycleBin
-	post /api/v1/recycle-bin (RecycleBinSaveReq)
-
-	@handler RemoveFromRecycleBin
-	delete /api/v1/recycle-bin (RecycleBinRemoveReq)
-
-	@handler RecoverFromRecycleBin
-	put /api/v1/recycle-bin/recover (RecycleBinRecoverReq)
-
-	@handler ListRecycleBin
-	get /api/v1/recycle-bin (RecycleBinPageReq) returns (RecycleBinResp)
-}
-

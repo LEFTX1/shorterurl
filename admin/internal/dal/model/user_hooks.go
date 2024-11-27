@@ -2,7 +2,8 @@ package model
 
 import (
 	"fmt"
-	"go-zero-shorterurl/admin/internal/common"
+	"shorterurl/admin/internal/common"
+
 	"gorm.io/gorm"
 )
 
