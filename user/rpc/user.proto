@@ -1,0 +1,209 @@
+syntax = "proto3";
+
+package user;
+option go_package="./";
+//goctl rpc protoc user/rpc/user.proto --go_out=./user/rpc/pb --go-grpc_out=./user/rpc/pb --zrpc_out=./user/rpc --style=goZero
+
+// 用户注册请求
+message RegisterRequest {
+  string username = 1;   // 用户名
+  string password = 2;   // 密码
+  string real_name = 3;  // 真实姓名
+  string phone = 4;      // 手机号
+  string mail = 5;       // 邮箱
+}
+
+// 用户注册响应
+message RegisterResponse {
+  string username = 1;    // 用户名
+  string create_time = 2; // 创建时间
+  string message = 3;     // 响应消息
+}
+
+// 用户登录请求
+message LoginRequest {
+  string username = 1; // 用户名
+  string password = 2; // 密码
+}
+
+// 用户登录响应
+message LoginResponse {
+  string token = 1;        // Token
+  string username = 2;     // 用户名
+  string real_name = 3;    // 真实姓名
+  string create_time = 4;  // 创建时间
+}
+
+// 用户信息响应
+message UserInfoResponse {
+  string username = 1;     // 用户名
+  string real_name = 2;    // 真实姓名
+  string phone = 3;        // 手机号
+  string mail = 4;         // 邮箱
+  string create_time = 5;  // 创建时间
+  string update_time = 6;  // 更新时间
+}
+
+// 用户更新请求
+message UpdateRequest {
+  string username = 1;   // 用户名
+  string password = 2;   // 密码（可选）
+  string real_name = 3;  // 真实姓名（可选）
+  string phone = 4;      // 手机号（可选）
+  string mail = 5;       // 邮箱（可选）
+}
+
+// 检查用户名请求
+message CheckUsernameRequest {
+  string username = 1; // 用户名
+}
+
+// 检查用户名响应
+message CheckUsernameResponse {
+  bool exist = 1; // 是否存在
+}
+
+// 通用响应
+message CommonResponse {
+  bool success = 1;       // 是否成功
+  string message = 2;     // 错误信息(如果有)
+}
+
+// 用户退出登录请求
+message LogoutRequest {
+  string username = 1; // 用户名
+  string token = 2;    // Token
+}
+
+// =================分组相关消息定义=================
+
+// 创建分组请求
+message GroupSaveRequest {
+  string username = 1;  // 发起创建的用户名
+  string groupName = 2; // 分组名称
+}
+
+// 更新分组请求
+message GroupUpdateRequest {
+  string gid = 1;  // 分组标识
+  string name = 2; // 分组名称
+  string username = 3; // 添加用户名字段，用于权限验证
+}
+
+// 分组排序请求
+message GroupSortRequest {
+  string gid = 1;        // 分组标识
+  int32 sort_order = 2;  // 排序序号
+}
+
+// 分组信息响应
+message GroupResponse {
+  string gid = 1;              // 分组标识
+  string name = 2;             // 分组名称
+  int32 sort_order = 3;        // 排序序号
+  int32 short_link_count = 4;  // 短链接数量
+}
+
+// 删除分组请求
+message GroupDeleteRequest {
+  string gid = 1; // 分组标识
+}
+
+// =================回收站相关消息定义=================
+
+// 回收站分页查询请求
+message RecycleBinPageRequest {
+  repeated string gid_list = 1; // 分组标识列表
+  int32 page_num = 2;           // 当前页码
+  int32 page_size = 3;          // 每页大小
+}
+
+// 短链接信息
+message ShortLinkInfo {
+  string gid = 1;             // 分组标识
+  string origin_url = 2;      // 原始链接
+  string domain = 3;          // 域名
+  string short_uri = 4;       // 短链接
+  string full_short_url = 5;  // 完整短链接
+  string create_time = 6;     // 创建时间
+  string valid_date = 7;      // 有效期
+  string describe = 8;        // 描述
+}
+
+// 回收站分页响应
+message RecycleBinPageResponse {
+  repeated ShortLinkInfo list = 1; // 短链接列表
+  int64 total = 2;                  // 总数
+  int32 page_num = 3;               // 当前页
+  int32 page_size = 4;              // 每页大小
+  bool has_next = 5;                // 是否有下一页
+}
+
+// 回收站操作请求
+message RecycleBinOperateRequest {
+  string gid = 1;             // 分组标识
+  string full_short_url = 2;  // 完整短链接
+}
+
+// 通用请求（空参数）
+message CommonRequest {}
+
+// =================用户服务定义=================
+service UserService {
+  // =================用户相关RPC=================
+
+  // 用户注册
+  rpc UserRegister(RegisterRequest) returns (RegisterResponse);
+
+  // 用户登录
+  rpc UserLogin(LoginRequest) returns (LoginResponse);
+
+  // 获取用户信息
+  rpc UserGetInfo(CheckUsernameRequest) returns (UserInfoResponse);
+
+  // 获取无脱敏用户信息
+  rpc UserGetActualInfo(CheckUsernameRequest) returns (UserInfoResponse);
+
+  // 检查用户名是否存在
+  rpc UserCheckUsername(CheckUsernameRequest) returns (CheckUsernameResponse);
+
+  // 更新用户信息
+  rpc UserUpdate(UpdateRequest) returns (CommonResponse);
+
+  // 检查用户是否登录
+  rpc UserCheckLogin(LogoutRequest) returns (CommonResponse);
+
+  // 用户退出登录
+  rpc UserLogout(LogoutRequest) returns (CommonResponse);
+
+  // =================分组相关RPC=================
+
+  // 创建分组
+  rpc GroupCreate(GroupSaveRequest) returns (CommonResponse);
+
+  // 获取分组列表
+  rpc GroupList(CommonRequest) returns (stream GroupResponse);
+
+  // 更新分组
+  rpc GroupUpdate(GroupUpdateRequest) returns (CommonResponse);
+
+  // 删除分组
+  rpc GroupDelete(GroupDeleteRequest) returns (CommonResponse);
+
+  // 分组排序
+  rpc GroupSort(stream GroupSortRequest) returns (CommonResponse);
+
+  // =================回收站相关RPC=================
+
+  // 保存到回收站
+  rpc RecycleBinSave(RecycleBinOperateRequest) returns (CommonResponse);
+
+  // 分页查询回收站
+  rpc RecycleBinGetPage(RecycleBinPageRequest) returns (RecycleBinPageResponse);
+
+  // 恢复短链接
+  rpc RecycleBinRecover(RecycleBinOperateRequest) returns (CommonResponse);
+
+  // 彻底删除短链接
+  rpc RecycleBinRemove(RecycleBinOperateRequest) returns (CommonResponse);
+}

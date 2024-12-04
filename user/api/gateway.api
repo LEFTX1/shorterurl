@@ -1,0 +1,246 @@
+syntax = "v1"
+
+info (
+	title:   "短链接api gateway"
+	author:  "Xleft"
+	version: "v1"
+)
+
+// =================用户相关类型定义=================
+type (
+	// 用户注册请求
+	UserRegisterReq {
+		Username string `json:"username" validate:"required,min=4,max=32"` // 用户名
+		Password string `json:"password" validate:"required,min=6,max=32"` // 密码
+		RealName string `json:"realname" validate:"required"` // 真实姓名
+		Phone    string `json:"phone" validate:"required,phone"` // 手机号
+		Mail     string `json:"mail" validate:"required,email"` // 邮箱
+	}
+	// 用户登录请求
+	UserLoginReq {
+		Username string `json:"username" validate:"required"` // 用户名
+		Password string `json:"password" validate:"required"` // 密码
+	}
+	// 用户更新请求
+	UserUpdateReq {
+		Username string `json:"username" validate:"required"` // 用户名
+		Password string `json:"password,optional"` // 密码（可选）
+		RealName string `json:"realName,optional"` // 真实姓名（可选）
+		Phone    string `json:"phone,optional" validate:"omitempty,phone"` // 手机号（可选）
+		Mail     string `json:"mail,optional" validate:"omitempty,email"` // 邮箱（可选）
+	}
+	// 用户详情响应
+	UserInfoResp {
+		Username   string `json:"username"` // 用户名
+		RealName   string `json:"realname"` // 真实姓名
+		Phone      string `json:"phone"` // 手机号
+		Mail       string `json:"mail"` // 邮箱
+		CreateTime string `json:"createTime"` // 创建时间
+		UpdateTime string `json:"updateTime"` // 更新时间
+	}
+	// 用户登录响应
+	UserLoginResp {
+		Token      string `json:"token"` //  Token
+		Username   string `json:"username"` // 用户名
+		RealName   string `json:"realname"` // 真实姓名
+		CreateTime string `json:"createTime"` // 创建时间
+	}
+	// 用户注册响应
+	UserRegisterResp {
+		Username   string `json:"username"` // 用户名
+		CreateTime string `json:"createTime"` // 创建时间
+		Message    string `json:"message"` // 响应消息
+	}
+	// 检查登录请求
+	UserCheckLoginReq {
+		Username string `form:"username" validate:"required"` // 用户名
+		Token    string `form:"token" validate:"required"` // Token
+	}
+	// 用户名请求
+	UserUsernameReq {
+		Username string `path:"username"` // 用户名
+	}
+	//检查用户名是否存在请求
+	UserCheckUsernameReq {
+		Username string `form:"username" validate:"required"` // 用户名
+	}
+	UserCheckUsernameResp {
+		Data    bool   `json:"data"` // 是否存在
+		Success bool   `json:"success"` // 是否成功
+		Code    string `json:"code"` // 响应码
+	}
+	// 更新用户信息响应
+	UserUpdateResp {
+		Code string `json:"code"` // 响应码
+	}
+	// 成功响应
+	SuccessResp {
+		Code    string `json:"code"` // 响应码
+		Success bool   `json:"success"` // 是否成功
+	}
+	// 用户退出登录请求
+	UserLogOutReq {
+		Username string `form:"username" validate:"required"` // 用户名
+		Token    string `form:"token" validate:"required"` // Token
+	}
+)
+
+// =================短链接分组相关类型定义=================
+type (
+	// 创建分组请求
+	ShortLinkGroupSaveReq {
+		Name string `json:"name" validate:"required"` // 分组名称
+	}
+	// 更新分组请求
+	ShortLinkGroupUpdateReq {
+		Gid  string `json:"gid" validate:"required"` // 分组标识
+		Name string `json:"name" validate:"required"` // 分组名称
+	}
+	// 分组排序请求
+	ShortLinkGroupSortReq {
+		Gid       string `json:"gid" validate:"required"` // 分组标识
+		SortOrder int    `json:"sortOrder"` // 排序序号
+	}
+	// 分组响应
+	ShortLinkGroupResp {
+		Gid            string `json:"gid"` // 分组标识
+		Name           string `json:"name"` // 分组名称
+		SortOrder      int    `json:"sortOrder"` // 排序序号
+		ShortLinkCount int    `json:"shortLinkCount"` // 短链接数量
+	}
+	// 删除分组请求
+	ShortLinkGroupDeleteReq {
+		Gid string `form:"gid" validate:"required"` // 分组标识
+	}
+)
+
+// =================回收站相关类型定义=================
+type (
+	// 回收站分页查询请求
+	RecycleBinPageReq {
+		GidList []string `json:"gidList,optional"` // 分组标识列表
+		Current int      `form:"current,default=1"` // 当前页码
+		Size    int      `form:"size,default=10"` // 每页大小
+	}
+	// 回收站分页响应
+	RecycleBinPageResp {
+		List    []ShortLinkInfo `json:"list"` // 短链接列表
+		Total   int64           `json:"total"` // 总数
+		Current int             `json:"current"` // 当前页
+		Size    int             `json:"size"` // 每页大小
+		HasNext bool            `json:"hasNext"` // 是否有下一页
+	}
+	// 短链接信息
+	ShortLinkInfo {
+		Gid          string `json:"gid"` // 分组标识
+		OriginUrl    string `json:"originUrl"` // 原始链接
+		Domain       string `json:"domain"` // 域名
+		ShortUri     string `json:"shortUri"` // 短链接
+		FullShortUrl string `json:"fullShortUrl"` // 完整短链接
+		CreateTime   string `json:"createTime"` // 创建时间
+		ValidDate    string `json:"validDate,optional"` // 有效期
+		Describe     string `json:"describe,optional"` // 描述
+	}
+	// 回收站保存请求
+	RecycleBinSaveReq {
+		Gid          string `json:"gid" validate:"required"` // 分组标识
+		FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
+	}
+	// 回收站恢复请求
+	RecycleBinRecoverReq {
+		Gid          string `json:"gid" validate:"required"` // 分组标识
+		FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
+	}
+	// 回收站删除请求
+	RecycleBinRemoveReq {
+		Gid          string `json:"gid" validate:"required"` // 分组标识
+		FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
+	}
+)
+
+// =================用户接口定义=================
+@server (
+	group: user
+)
+service gateway {
+	// 用户注册
+	@handler ApiUserRegister
+	post /api/short-link/admin/v1/user (UserRegisterReq) returns (UserRegisterResp)
+
+	// 用户登录
+	@handler ApiUserLogin
+	post /api/short-link/admin/v1/user/login (UserLoginReq) returns (UserLoginResp)
+
+	// 获取用户信息
+	@handler ApiUserInfo
+	get /api/short-link/admin/v1/user/:username (UserUsernameReq) returns (UserInfoResp)
+
+	// 获取无脱敏用户信息
+	@handler ApiActualUserInfo
+	get /api/short-link/admin/v1/actual/user/:username (UserUsernameReq) returns (UserInfoResp)
+
+	// 检查用户名是否存在
+	@handler ApiCheckUsername
+	get /api/short-link/admin/v1/user/has-username (UserCheckUsernameReq) returns (UserCheckUsernameResp)
+
+	// 更新用户信息
+	@handler ApiUserUpdate
+	put /api/short-link/admin/v1/user (UserUpdateReq) returns (UserUpdateResp)
+
+	// 检查用户是否登录
+	@handler ApiCheckLogin
+	get /api/short-link/admin/v1/user/check-login (UserCheckLoginReq) returns (SuccessResp)
+
+	// 用户退出登录
+	@handler ApiLogout
+	delete /api/short-link/admin/v1/user/logout (UserLogOutReq) returns (SuccessResp)
+}
+
+// =================分组接口定义=================
+@server (
+	group: group
+)
+service gateway {
+	// 创建分组
+	@handler CreateGroup
+	post /api/short-link/admin/v1/group (ShortLinkGroupSaveReq) returns (SuccessResp)
+
+	// 获取分组列表
+	@handler ListGroups
+	get /api/short-link/admin/v1/group returns ([]ShortLinkGroupResp)
+
+	// 更新分组
+	@handler UpdateGroup
+	put /api/short-link/admin/v1/group (ShortLinkGroupUpdateReq) returns (SuccessResp)
+
+	// 删除分组
+	@handler DeleteGroup
+	delete /api/short-link/admin/v1/group (ShortLinkGroupDeleteReq) returns (SuccessResp)
+
+	// 分组排序
+	@handler SortGroups
+	post /api/short-link/admin/v1/group/sort ([]ShortLinkGroupSortReq) returns (SuccessResp)
+}
+
+// =================回收站接口定义=================
+@server (
+	group: recycle
+)
+service gateway {
+	// 保存到回收站
+	@handler SaveToRecycleBin
+	post /api/short-link/admin/v1/recycle-bin/save (RecycleBinSaveReq) returns (SuccessResp)
+
+	// 分页查询回收站
+	@handler RecycleBinPage
+	get /api/short-link/admin/v1/recycle-bin/page (RecycleBinPageReq) returns (RecycleBinPageResp)
+
+	// 恢复短链接
+	@handler RecoverShortLink
+	post /api/short-link/admin/v1/recycle-bin/recover (RecycleBinRecoverReq) returns (SuccessResp)
+
+	// 彻底删除短链接
+	@handler RemoveShortLink
+	post /api/short-link/admin/v1/recycle-bin/remove (RecycleBinRemoveReq) returns (SuccessResp)
+}
+

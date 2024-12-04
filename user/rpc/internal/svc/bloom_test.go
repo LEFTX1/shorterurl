@@ -34,20 +34,20 @@ func TestBloomFilterManager_UserExists(t *testing.T) {
 			{
 				name:     "Empty Username",
 				username: "",
-				want:     false,                                         // 期望返回值为 false
-				wantErr:  errorx.NewUserError(errorx.UserNotExistError), // 期望返回 UserNotExistError 错误
+				want:     false,
+				wantErr:  errorx.New(errorx.ClientError, errorx.ErrUserNotFound, errorx.Message(errorx.ErrUserNotFound)),
 			},
 			{
 				name:     "Nonexistent Username",
 				username: "nonexistent_user",
-				want:     false, // 用户不存在，应该返回 false
-				wantErr:  nil,   // 不应该返回错误
+				want:     false,
+				wantErr:  nil,
 			},
 			{
 				name:     "Existing Username",
 				username: "existing_user",
-				want:     true, // 已存在的用户，应该返回 true
-				wantErr:  nil,  // 不应该返回错误
+				want:     true,
+				wantErr:  nil,
 			},
 		}
 
@@ -69,8 +69,17 @@ func TestBloomFilterManager_UserExists(t *testing.T) {
 				if err != nil {
 					if tt.wantErr == nil {
 						t.Errorf("UserExists() error = %v, wantErr %v", err, tt.wantErr)
-					} else if err.Error() != tt.wantErr.Error() {
-						t.Errorf("UserExists() error = %v, wantErr %v", err, tt.wantErr)
+					} else {
+						// 检查错误类型和错误码
+						appErr, ok := err.(*errorx.AppError)
+						if !ok {
+							t.Errorf("Expected AppError, got %T", err)
+							return
+						}
+						wantAppErr := tt.wantErr.(*errorx.AppError)
+						if appErr.Type != wantAppErr.Type || appErr.Code != wantAppErr.Code {
+							t.Errorf("UserExists() error = %v, wantErr %v", err, tt.wantErr)
+						}
 					}
 				} else if tt.wantErr != nil {
 					t.Errorf("UserExists() expected error = %v, but got none", tt.wantErr)
@@ -93,7 +102,12 @@ func TestBloomFilterManager_UserExists(t *testing.T) {
 			{
 				name:     "Empty Username",
 				username: "",
-				wantErr:  errorx.NewUserError(errorx.UserNotExistError), // 期望返回 UserNotExistError 错误
+				wantErr:  errorx.New(errorx.ClientError, errorx.ErrUserNotFound, errorx.Message(errorx.ErrUserNotFound)),
+			},
+			{
+				name:     "Valid Username",
+				username: "test_user",
+				wantErr:  nil,
 			},
 		}
 
@@ -107,8 +121,17 @@ func TestBloomFilterManager_UserExists(t *testing.T) {
 				if err != nil {
 					if tt.wantErr == nil {
 						t.Errorf("AddUser() error = %v, wantErr %v", err, tt.wantErr)
-					} else if err.Error() != tt.wantErr.Error() {
-						t.Errorf("AddUser() error = %v, wantErr %v", err, tt.wantErr)
+					} else {
+						// 检查错误类型和错误码
+						appErr, ok := err.(*errorx.AppError)
+						if !ok {
+							t.Errorf("Expected AppError, got %T", err)
+							return
+						}
+						wantAppErr := tt.wantErr.(*errorx.AppError)
+						if appErr.Type != wantAppErr.Type || appErr.Code != wantAppErr.Code {
+							t.Errorf("AddUser() error = %v, wantErr %v", err, tt.wantErr)
+						}
 					}
 				} else if tt.wantErr != nil {
 					t.Errorf("AddUser() expected error = %v, but got none", tt.wantErr)

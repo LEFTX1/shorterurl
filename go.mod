@@ -8,12 +8,13 @@ require (
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/google/uuid v1.6.0
-	github.com/longbridgeapp/sqlparser v0.3.2
 	github.com/stretchr/testify v1.10.0
 	github.com/zeromicro/go-zero v1.5.6
+	golang.org/x/crypto v0.21.0
 	google.golang.org/grpc v1.64.0
 	google.golang.org/protobuf v1.33.0
 	gorm.io/driver/mysql v1.5.7
+	gorm.io/driver/sqlite v1.5.0
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.12
 	gorm.io/plugin/dbresolver v1.5.3
@@ -48,9 +49,11 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/longbridgeapp/sqlparser v0.3.2 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
@@ -109,3 +112,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace gorm.io/sharding => github.com/LEFTX1/sharding v0.0.0-20241126060802-a179b0e61bad
