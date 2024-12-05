@@ -4,104 +4,9 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d44aa061-7e9c-46d6-89b8-b67339200692" name="更改" comment="完善项目结构和文件 开始编写group rpc logic">
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/94feac0f-f092-4b0e-b42c-b76a00a4ad94.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/94feac0f-f092-4b0e-b42c-b76a00a4ad94/storage_v2/_src_/schema/shorterurl.psaqXQ.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/group/create_group_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/group/delete_group_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/group/list_groups_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/group/update_group_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/recycle/recover_short_link_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/recycle/remove_short_link_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/recycle/save_to_recycle_bin_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/routes.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/user/api_actual_user_info_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/user/api_check_login_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/user/api_check_username_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/user/api_logout_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/user/api_user_info_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/user/api_user_login_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/user/api_user_register_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/handler/user/api_user_update_handler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/logic/group/create_group_logic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/logic/group/delete_group_logic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/logic/group/list_groups_logic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/logic/group/sort_groups_logic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/logic/group/update_group_logic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/logic/recycle/recover_short_link_logic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/logic/recycle/remove_short_link_logic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/logic/recycle/save_to_recycle_bin_logic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/logic/user/api_check_username_logic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/api/internal/logic/user/api_logout_logic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_group.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_group_unique.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_link.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_link_access_logs.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_link_access_stats.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_link_browser_stats.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_link_device_stats.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_link_goto.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_link_locale_stats.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_link_network_stats.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_link_os_stats.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_link_stats_today.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/model/t_user.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_group.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_group.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_group_unique.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_group_unique.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_access_logs.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_access_logs.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_access_stats.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_access_stats.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_browser_stats.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_browser_stats.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_device_stats.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_device_stats.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_goto.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_goto.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_locale_stats.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_locale_stats.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_network_stats.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_network_stats.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_os_stats.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_os_stats.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_stats_today.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_link_stats_today.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_user.gen.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/dal/query/t_user.gen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/groupCreateLogic_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/groupUpdateLogic_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userCheckLoginLogic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userCheckLoginLogic_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userCheckUsernameLogic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userCheckUsernameLogic_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userGetActualInfoLogic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userGetActualInfoLogic_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userGetInfoLogic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userGetInfoLogic_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userLoginLogic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userLoginLogic_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userLogoutLogic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userLogoutLogic_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userRegisterLogic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userRegisterLogic_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userUpdateLogic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/logic/userUpdateLogic_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user/rpc/internal/svc/serviceContext.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/api/gateway.api" beforeDir="false" afterPath="$PROJECT_DIR$/user/api/gateway.api" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/api/internal/types/types.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/api/internal/types/types.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/api/internal/user_client/user.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/rpc/internal/constant/rediskey.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/rpc/user.proto" beforeDir="false" afterPath="$PROJECT_DIR$/user/rpc/user.proto" afterDir="false" />
+    <list default="true" id="d44aa061-7e9c-46d6-89b8-b67339200692" name="更改" comment="基本完成user服务 下一步编写link服务">
+      <change beforePath="$PROJECT_DIR$/user/api/internal/logic/recycle/remove_short_link_logic.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/api/internal/logic/recycle/remove_short_link_logic.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user/api/internal/logic/recycle/save_to_recycle_bin_logic.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/api/internal/logic/recycle/save_to_recycle_bin_logic.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -310,7 +215,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="重构文件目录,user服务注册,下一步把admin业务逐步迁移到rpc user目录。" />
     <MESSAGE value="完善项目结构和文件 开始编写group rpc logic" />
-    <option name="LAST_COMMIT_MESSAGE" value="完善项目结构和文件 开始编写group rpc logic" />
+    <MESSAGE value="基本完成user服务 下一步编写link服务" />
+    <option name="LAST_COMMIT_MESSAGE" value="基本完成user服务 下一步编写link服务" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
