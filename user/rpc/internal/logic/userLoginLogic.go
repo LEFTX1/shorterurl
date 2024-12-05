@@ -38,7 +38,7 @@ func (l *UserLoginLogic) UserLogin(in *__.LoginRequest) (*__.LoginResponse, erro
 	}
 
 	// 2. 检查用户是否已经登录
-	loginKey := constant.USER_LOGIN_KEY + in.Username
+	loginKey := constant.UserLoginKey + in.Username
 	existingToken, err := l.svcCtx.Redis.HgetallCtx(l.ctx, loginKey)
 	if err == nil && len(existingToken) > 0 {
 		// 如果已经登录，更新过期时间并返回已有token

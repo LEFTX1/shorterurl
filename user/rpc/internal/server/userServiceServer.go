@@ -59,7 +59,7 @@ func (s *UserServiceServer) UserUpdate(ctx context.Context, in *__.UpdateRequest
 }
 
 // 检查用户是否登录
-func (s *UserServiceServer) UserCheckLogin(ctx context.Context, in *__.LogoutRequest) (*__.CommonResponse, error) {
+func (s *UserServiceServer) UserCheckLogin(ctx context.Context, in *__.CheckLoginRequest) (*__.CommonResponse, error) {
 	l := logic.NewUserCheckLoginLogic(ctx, s.svcCtx)
 	return l.UserCheckLogin(in)
 }

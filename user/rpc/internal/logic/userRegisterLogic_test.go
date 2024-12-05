@@ -102,7 +102,8 @@ func TestUserRegister(t *testing.T) {
 		assert.Nil(t, resp2, "重复注册响应应该为空")
 
 		// 检查错误类型
-		appErr, ok := err.(*errorx.AppError)
+		var appErr *errorx.AppError
+		ok := errors.As(err, &appErr)
 		assert.True(t, ok, "应该返回 AppError")
 		assert.Equal(t, errorx.ClientError, appErr.Type, "应该是客户端错误")
 		assert.Equal(t, errorx.ErrUserNameExists, appErr.Code, "应该是用户名已存在错误")
@@ -192,7 +193,8 @@ func TestUserRegister(t *testing.T) {
 		assert.Nil(t, resp, "响应应该为空")
 
 		// 检查错误类型
-		appErr, ok := err.(*errorx.AppError)
+		var appErr *errorx.AppError
+		ok := errors.As(err, &appErr)
 		assert.True(t, ok, "应该返回 AppError")
 		assert.Equal(t, errorx.ClientError, appErr.Type, "应该是客户端错误")
 		assert.Equal(t, errorx.ErrUserNameExists, appErr.Code, "应该是用户名已存在错误")

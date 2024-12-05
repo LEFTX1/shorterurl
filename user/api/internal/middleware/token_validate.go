@@ -12,6 +12,7 @@ import (
 
 	"shorterurl/user/api/internal/config"
 	"shorterurl/user/api/internal/types"
+	"shorterurl/user/api/internal/types/errorx"
 )
 
 // TokenValidateMiddleware 是一个中间件结构体，用于验证请求中的 token
@@ -49,10 +50,11 @@ func (m *TokenValidateMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc
 		if username == "" || token == "" {
 			// 记录凭证缺失错误
 			logx.WithContext(r.Context()).Errorf("用户名或令牌为空 - 路径: %s, 用户名: %s", r.URL.Path, username)
-			// 返回未授权错误响应
-			httpx.WriteJson(w, http.StatusUnauthorized, &types.GatewayErrorResult{
+			// 返回未授权错���响应
+			err := errorx.New(errorx.ClientError, "UNAUTHORIZED", "用户名或令牌不能为空")
+			httpx.WriteJson(w, http.StatusUnauthorized, GatewayErrorResult{
 				Status:  http.StatusUnauthorized,
-				Message: "用户名或令牌不能为空",
+				Message: err.Message,
 			})
 			return
 		}
@@ -63,9 +65,10 @@ func (m *TokenValidateMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc
 			// 记录 token 无效错误
 			logx.WithContext(r.Context()).Errorf("令牌在 Redis 中未找到 - 路径: %s, 用户名: %s", r.URL.Path, username)
 			// 返回未授权错误响应
-			httpx.WriteJson(w, http.StatusUnauthorized, &types.GatewayErrorResult{
+			err := errorx.New(errorx.ClientError, "INVALID_TOKEN", "无效的令牌")
+			httpx.WriteJson(w, http.StatusUnauthorized, GatewayErrorResult{
 				Status:  http.StatusUnauthorized,
-				Message: "无效的令牌",
+				Message: err.Message,
 			})
 			return
 		}
@@ -76,9 +79,10 @@ func (m *TokenValidateMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc
 			// 记录用户信息解析错误
 			logx.WithContext(r.Context()).Errorf("解析用户信息失败 - 路径: %s, 用户名: %s", r.URL.Path, username)
 			// 返回未授权错误响应
-			httpx.WriteJson(w, http.StatusUnauthorized, &types.GatewayErrorResult{
+			err := errorx.New(errorx.SystemError, "PARSE_ERROR", "解析用户信息失败")
+			httpx.WriteJson(w, http.StatusUnauthorized, GatewayErrorResult{
 				Status:  http.StatusUnauthorized,
-				Message: "解析用户信息失败",
+				Message: err.Message,
 			})
 			return
 		}
@@ -116,4 +120,9 @@ func (m *TokenValidateMiddleware) isPathInWhiteList(path, method string) bool {
 	}
 
 	return false
+}
+
+type GatewayErrorResult struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
 }

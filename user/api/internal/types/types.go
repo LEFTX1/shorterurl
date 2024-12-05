@@ -39,7 +39,7 @@ type ShortLinkGroupUpdateReq struct {
 }
 
 type ShortLinkPageRecordDTO struct {
-	Id            int64  `json:"id"`            // 短链��ID
+	Id            int64  `json:"id"`            // 短链ID
 	Domain        string `json:"domain"`        // 域名
 	ShortUri      string `json:"shortUri"`      // 短链接URI
 	FullShortUrl  string `json:"fullShortUrl"`  // 完整短链接

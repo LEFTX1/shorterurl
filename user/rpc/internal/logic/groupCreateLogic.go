@@ -45,7 +45,7 @@ func generateRandomString(length int) string {
 // GroupCreate 创建分组
 func (l *GroupCreateLogic) GroupCreate(in *__.GroupSaveRequest) (*__.CommonResponse, error) {
 	// 1. 创建分布式锁，防止并发创建相同分组
-	lockKey := constant.LOCK_GROUP_CREATE_KEY + in.Username
+	lockKey := constant.LockGroupCreateKey + in.Username
 	lock := redis.NewRedisLock(l.svcCtx.Redis, lockKey)
 	lock.SetExpire(30) // 设置锁的过期时间为30秒
 

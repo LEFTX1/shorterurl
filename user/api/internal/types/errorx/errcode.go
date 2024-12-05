@@ -1,6 +1,7 @@
 package errorx
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -51,6 +52,7 @@ func NewWithContext(errType ErrorType, code, message string, context map[string]
 
 // Is 判断是否是指定类型的 AppError
 func Is(err error, errType ErrorType) bool {
-	appErr, ok := err.(*AppError)
+	var appErr *AppError
+	ok := errors.As(err, &appErr)
 	return ok && appErr.Type == errType
 }

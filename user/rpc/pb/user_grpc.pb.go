@@ -54,7 +54,7 @@ type UserServiceClient interface {
 	// 更新用户信息
 	UserUpdate(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*CommonResponse, error)
 	// 检查用户是否登录
-	UserCheckLogin(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*CommonResponse, error)
+	UserCheckLogin(ctx context.Context, in *CheckLoginRequest, opts ...grpc.CallOption) (*CommonResponse, error)
 	// 用户退出登录
 	UserLogout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*CommonResponse, error)
 	// 创建分组
@@ -139,7 +139,7 @@ func (c *userServiceClient) UserUpdate(ctx context.Context, in *UpdateRequest, o
 	return out, nil
 }
 
-func (c *userServiceClient) UserCheckLogin(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
+func (c *userServiceClient) UserCheckLogin(ctx context.Context, in *CheckLoginRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CommonResponse)
 	err := c.cc.Invoke(ctx, UserService_UserCheckLogin_FullMethodName, in, out, cOpts...)
@@ -250,7 +250,7 @@ type UserServiceServer interface {
 	// 更新用户信息
 	UserUpdate(context.Context, *UpdateRequest) (*CommonResponse, error)
 	// 检查用户是否登录
-	UserCheckLogin(context.Context, *LogoutRequest) (*CommonResponse, error)
+	UserCheckLogin(context.Context, *CheckLoginRequest) (*CommonResponse, error)
 	// 用户退出登录
 	UserLogout(context.Context, *LogoutRequest) (*CommonResponse, error)
 	// 创建分组
@@ -293,7 +293,7 @@ func (UnimplementedUserServiceServer) UserCheckUsername(context.Context, *CheckU
 func (UnimplementedUserServiceServer) UserUpdate(context.Context, *UpdateRequest) (*CommonResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UserUpdate not implemented")
 }
-func (UnimplementedUserServiceServer) UserCheckLogin(context.Context, *LogoutRequest) (*CommonResponse, error) {
+func (UnimplementedUserServiceServer) UserCheckLogin(context.Context, *CheckLoginRequest) (*CommonResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UserCheckLogin not implemented")
 }
 func (UnimplementedUserServiceServer) UserLogout(context.Context, *LogoutRequest) (*CommonResponse, error) {
@@ -447,7 +447,7 @@ func _UserService_UserUpdate_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _UserService_UserCheckLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LogoutRequest)
+	in := new(CheckLoginRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -459,7 +459,7 @@ func _UserService_UserCheckLogin_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: UserService_UserCheckLogin_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).UserCheckLogin(ctx, req.(*LogoutRequest))
+		return srv.(UserServiceServer).UserCheckLogin(ctx, req.(*CheckLoginRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

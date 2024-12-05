@@ -13,6 +13,7 @@ import (
 )
 
 type (
+	CheckLoginRequest      = __.CheckLoginRequest
 	CheckUsernameRequest   = __.CheckUsernameRequest
 	CheckUsernameResponse  = __.CheckUsernameResponse
 	CommonRequest          = __.CommonRequest
@@ -47,7 +48,7 @@ type (
 		// 更新用户信息
 		UserUpdate(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*CommonResponse, error)
 		// 检查用户是否登录
-		UserCheckLogin(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*CommonResponse, error)
+		UserCheckLogin(ctx context.Context, in *CheckLoginRequest, opts ...grpc.CallOption) (*CommonResponse, error)
 		// 用户退出登录
 		UserLogout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*CommonResponse, error)
 		// 创建分组
@@ -112,7 +113,7 @@ func (m *defaultUserService) UserUpdate(ctx context.Context, in *UpdateRequest, 
 }
 
 // 检查用户是否登录
-func (m *defaultUserService) UserCheckLogin(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
+func (m *defaultUserService) UserCheckLogin(ctx context.Context, in *CheckLoginRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
 	client := __.NewUserServiceClient(m.cli.Conn())
 	return client.UserCheckLogin(ctx, in, opts...)
 }

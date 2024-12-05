@@ -25,9 +25,9 @@ func NewUserCheckLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Us
 }
 
 // 检查用户登录状态
-func (l *UserCheckLoginLogic) UserCheckLogin(in *__.CheckUsernameRequest) (*__.CommonResponse, error) {
+func (l *UserCheckLoginLogic) UserCheckLogin(in *__.CheckLoginRequest) (*__.CommonResponse, error) {
 	// 1. 检查用户是否已登录
-	loginKey := constant.USER_LOGIN_KEY + in.Username
+	loginKey := constant.UserLoginKey + in.Username
 	exists, err := l.svcCtx.Redis.ExistsCtx(l.ctx, loginKey)
 	if err != nil {
 		return nil, errorx.New(errorx.SystemError, errorx.ErrInternalServer, "检查登录状态失败")
@@ -40,7 +40,7 @@ func (l *UserCheckLoginLogic) UserCheckLogin(in *__.CheckUsernameRequest) (*__.C
 	}
 
 	// 2. 更新token过期时间
-	err = l.svcCtx.Redis.ExpireCtx(l.ctx, loginKey, int(30*60)) // 30分钟
+	err = l.svcCtx.Redis.ExpireCtx(l.ctx, loginKey, 30*60) // 30分钟
 	if err != nil {
 		logx.Errorf("更新token过期时间失败: %v", err)
 	}

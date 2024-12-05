@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"errors"
 	"shorterurl/user/rpc/internal/types/errorx"
 	__ "shorterurl/user/rpc/pb"
 	"testing"
@@ -60,7 +61,8 @@ func TestUserCheckUsername(t *testing.T) {
 		assert.Nil(t, resp, "响应应该为空")
 
 		// 验证错误类型
-		appErr, ok := err.(*errorx.AppError)
+		var appErr *errorx.AppError
+		ok := errors.As(err, &appErr)
 		assert.True(t, ok, "应该返回 AppError")
 		assert.Equal(t, errorx.ClientError, appErr.Type)
 		assert.Equal(t, errorx.ErrUserNotFound, appErr.Code)

@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"errors"
 	"shorterurl/user/rpc/internal/constant"
 	"shorterurl/user/rpc/internal/dal/query"
 	"shorterurl/user/rpc/internal/types/errorx"
@@ -54,7 +55,7 @@ func TestGroupUpdate(t *testing.T) {
 	defer func() {
 		q := query.Use(svcCtx.DB)
 		_, _ = q.TGroup.WithContext(ctx).Where(q.TGroup.Username.Eq(username)).Delete()
-		_, _ = svcCtx.Redis.DelCtx(ctx, constant.LOCK_GROUP_UPDATE_KEY+group.Gid)
+		_, _ = svcCtx.Redis.DelCtx(ctx, constant.LockGroupUpdateKey+group.Gid)
 	}()
 
 	t.Run("成功更新分组", func(t *testing.T) {
@@ -90,7 +91,8 @@ func TestGroupUpdate(t *testing.T) {
 		assert.Nil(t, resp, "响应应该为空")
 
 		// 验证错误类型
-		appErr, ok := err.(*errorx.AppError)
+		var appErr *errorx.AppError
+		ok := errors.As(err, &appErr)
 		assert.True(t, ok, "应该返回 AppError")
 		assert.Equal(t, errorx.ClientError, appErr.Type)
 		assert.Equal(t, errorx.ErrGroupNotFound, appErr.Code)
@@ -98,11 +100,11 @@ func TestGroupUpdate(t *testing.T) {
 
 	t.Run("并发更新", func(t *testing.T) {
 		// 清理之前的测试数据
-		_, _ = svcCtx.Redis.DelCtx(ctx, constant.LOCK_GROUP_UPDATE_KEY+group.Gid)
+		_, _ = svcCtx.Redis.DelCtx(ctx, constant.LockGroupUpdateKey+group.Gid)
 		time.Sleep(time.Second)
 
 		// 创建一个新的分布式锁
-		lockKey := constant.LOCK_GROUP_UPDATE_KEY + group.Gid
+		lockKey := constant.LockGroupUpdateKey + group.Gid
 		lock := redis.NewRedisLock(svcCtx.Redis, lockKey)
 		lock.SetExpire(30)
 		acquired, err := lock.AcquireCtx(ctx)
@@ -119,7 +121,8 @@ func TestGroupUpdate(t *testing.T) {
 		assert.Nil(t, resp, "响应应该为空")
 
 		// 验证错误类型
-		appErr, ok := err.(*errorx.AppError)
+		var appErr *errorx.AppError
+		ok := errors.As(err, &appErr)
 		assert.True(t, ok, "应该返回 AppError")
 		assert.Equal(t, errorx.ClientError, appErr.Type)
 		assert.Equal(t, errorx.ErrTooManyRequests, appErr.Code)

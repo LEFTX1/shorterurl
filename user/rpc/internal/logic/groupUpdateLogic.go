@@ -50,7 +50,7 @@ func (l *GroupUpdateLogic) GroupUpdate(in *__.GroupUpdateRequest) (*__.CommonRes
 	}
 
 	// 2. 创建分布式锁，防止并发更新相同分组
-	lockKey := constant.LOCK_GROUP_UPDATE_KEY + in.Gid
+	lockKey := constant.LockGroupUpdateKey + in.Gid
 	lock := redis.NewRedisLock(l.svcCtx.Redis, lockKey)
 	lock.SetExpire(30) // 设置锁的过期时间为30秒
 

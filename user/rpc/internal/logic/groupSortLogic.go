@@ -44,7 +44,7 @@ func (l *GroupSortLogic) GroupSort(stream __.UserService_GroupSortServer) error 
 	username := usernames[0]
 
 	// 创建分布式锁，防止并发排序
-	lockKey := constant.LOCK_GROUP_SORT_KEY + username
+	lockKey := constant.LockGroupSortKey + username
 	lock := redis.NewRedisLock(l.svcCtx.Redis, lockKey)
 	lock.SetExpire(30) // 设置锁的过期时间为30秒
 

@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"errors"
 	"shorterurl/user/rpc/internal/constant"
 	"shorterurl/user/rpc/internal/dal/query"
 	"shorterurl/user/rpc/internal/types/errorx"
@@ -30,7 +31,7 @@ func TestUserLogin(t *testing.T) {
 	defer func() {
 		q := query.Use(svcCtx.DB)
 		_, _ = q.TUser.WithContext(ctx).Where(q.TUser.Username.Eq(username)).Delete()
-		_, _ = svcCtx.Redis.DelCtx(ctx, constant.USER_LOGIN_KEY+username)
+		_, _ = svcCtx.Redis.DelCtx(ctx, constant.UserLoginKey+username)
 	}()
 
 	t.Run("用户不存在", func(t *testing.T) {
@@ -44,7 +45,8 @@ func TestUserLogin(t *testing.T) {
 		assert.Nil(t, resp, "响应应该为空")
 
 		// 验证错误类型
-		appErr, ok := err.(*errorx.AppError)
+		var appErr *errorx.AppError
+		ok := errors.As(err, &appErr)
 		assert.True(t, ok, "应该返回 AppError")
 		assert.Equal(t, errorx.ClientError, appErr.Type)
 		assert.Equal(t, errorx.ErrUserNotFound, appErr.Code)
@@ -71,7 +73,7 @@ func TestUserLogin(t *testing.T) {
 		assert.NotEmpty(t, resp1.CreateTime)
 
 		// 验证Redis中的数据
-		val, err := svcCtx.Redis.HgetallCtx(ctx, constant.USER_LOGIN_KEY+username)
+		val, err := svcCtx.Redis.HgetallCtx(ctx, constant.UserLoginKey+username)
 		require.NoError(t, err, "获取Redis数据失败")
 		assert.NotEmpty(t, val, "Redis中应该有数据")
 		assert.Equal(t, 1, len(val), "应该只有一个token")
@@ -95,7 +97,8 @@ func TestUserLogin(t *testing.T) {
 		assert.Nil(t, resp, "响应应该为空")
 
 		// 验证错误类型
-		appErr, ok := err.(*errorx.AppError)
+		var appErr *errorx.AppError
+		ok := errors.As(err, &appErr)
 		assert.True(t, ok, "应该返回 AppError")
 		assert.Equal(t, errorx.ClientError, appErr.Type)
 		assert.Equal(t, errorx.ErrUserNotFound, appErr.Code)

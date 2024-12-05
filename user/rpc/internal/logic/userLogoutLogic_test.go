@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"errors"
 	"shorterurl/user/rpc/internal/constant"
 	"shorterurl/user/rpc/internal/types/errorx"
 	__ "shorterurl/user/rpc/pb"
@@ -48,7 +49,7 @@ func TestUserLogout(t *testing.T) {
 		require.NotNil(t, resp, "响应不应为空")
 
 		// 验证Redis中的数据已被删除
-		exists, err := svcCtx.Redis.ExistsCtx(ctx, constant.USER_LOGIN_KEY+username)
+		exists, err := svcCtx.Redis.ExistsCtx(ctx, constant.UserLoginKey+username)
 		require.NoError(t, err, "检查Redis数据失败")
 		assert.False(t, exists, "Redis中的登录信息应该已被删除")
 	})
@@ -64,7 +65,8 @@ func TestUserLogout(t *testing.T) {
 		assert.Nil(t, resp, "响应应该为空")
 
 		// 验证错误类型
-		appErr, ok := err.(*errorx.AppError)
+		var appErr *errorx.AppError
+		ok := errors.As(err, &appErr)
 		assert.True(t, ok, "应该返回 AppError")
 		assert.Equal(t, errorx.ClientError, appErr.Type)
 		assert.Equal(t, errorx.ErrUserNotFound, appErr.Code)
@@ -89,7 +91,8 @@ func TestUserLogout(t *testing.T) {
 		assert.Nil(t, resp, "响应应该为空")
 
 		// 验证错误类型
-		appErr, ok := err.(*errorx.AppError)
+		var appErr *errorx.AppError
+		ok := errors.As(err, &appErr)
 		assert.True(t, ok, "应该返回 AppError")
 		assert.Equal(t, errorx.ClientError, appErr.Type)
 		assert.Equal(t, errorx.ErrUserNotFound, appErr.Code)

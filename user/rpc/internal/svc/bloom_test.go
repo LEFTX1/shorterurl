@@ -2,6 +2,7 @@ package svc
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"shorterurl/user/rpc/internal/config"
 	"shorterurl/user/rpc/internal/types/errorx"
@@ -71,12 +72,14 @@ func TestBloomFilterManager_UserExists(t *testing.T) {
 						t.Errorf("UserExists() error = %v, wantErr %v", err, tt.wantErr)
 					} else {
 						// 检查错误类型和错误码
-						appErr, ok := err.(*errorx.AppError)
+						var appErr *errorx.AppError
+						ok := errors.As(err, &appErr)
 						if !ok {
 							t.Errorf("Expected AppError, got %T", err)
 							return
 						}
-						wantAppErr := tt.wantErr.(*errorx.AppError)
+						var wantAppErr *errorx.AppError
+						errors.As(tt.wantErr, &wantAppErr)
 						if appErr.Type != wantAppErr.Type || appErr.Code != wantAppErr.Code {
 							t.Errorf("UserExists() error = %v, wantErr %v", err, tt.wantErr)
 						}
@@ -123,12 +126,14 @@ func TestBloomFilterManager_UserExists(t *testing.T) {
 						t.Errorf("AddUser() error = %v, wantErr %v", err, tt.wantErr)
 					} else {
 						// 检查错误类型和错误码
-						appErr, ok := err.(*errorx.AppError)
+						var appErr *errorx.AppError
+						ok := errors.As(err, &appErr)
 						if !ok {
 							t.Errorf("Expected AppError, got %T", err)
 							return
 						}
-						wantAppErr := tt.wantErr.(*errorx.AppError)
+						var wantAppErr *errorx.AppError
+						errors.As(tt.wantErr, &wantAppErr)
 						if appErr.Type != wantAppErr.Type || appErr.Code != wantAppErr.Code {
 							t.Errorf("AddUser() error = %v, wantErr %v", err, tt.wantErr)
 						}

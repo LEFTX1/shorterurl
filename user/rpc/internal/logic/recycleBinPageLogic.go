@@ -52,8 +52,8 @@ func (l *RecycleBinPageLogic) RecycleBinPage(in *__.RecycleBinPageRequest) (*__.
 			return &__.RecycleBinPageResponse{
 				Records: []*__.ShortLinkPageRecord{},
 				Total:   0,
-				Size:    int32(in.PageSize),
-				Current: int32(in.PageNum),
+				Size:    in.PageSize,
+				Current: in.PageNum,
 			}, nil
 		}
 		for _, group := range groups {
@@ -73,8 +73,8 @@ func (l *RecycleBinPageLogic) RecycleBinPage(in *__.RecycleBinPageRequest) (*__.
 			return &__.RecycleBinPageResponse{
 				Records: []*__.ShortLinkPageRecord{},
 				Total:   0,
-				Size:    int32(in.PageSize),
-				Current: int32(in.PageNum),
+				Size:    in.PageSize,
+				Current: in.PageNum,
 			}, nil
 		}
 		for _, group := range groups {
@@ -88,7 +88,7 @@ func (l *RecycleBinPageLogic) RecycleBinPage(in *__.RecycleBinPageRequest) (*__.
 	return &__.RecycleBinPageResponse{
 		Records: []*__.ShortLinkPageRecord{},
 		Total:   0,
-		Size:    int32(in.PageSize),
-		Current: int32(in.PageNum),
+		Size:    in.PageSize,
+		Current: in.PageNum,
 	}, nil
 }

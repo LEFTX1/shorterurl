@@ -45,7 +45,7 @@ func (l *UserRegisterLogic) UserRegister(in *__.RegisterRequest) (*__.RegisterRe
 		return nil, errorx.New(errorx.ClientError, errorx.ErrUserNameExists, errorx.Message(errorx.ErrUserNameExists))
 	}
 	// 2. 创建分布式锁，防止并发注册相同用户名
-	lockKey := constant.Lock_User_Register + in.Username
+	lockKey := constant.LockUserRegister + in.Username
 	lock := redis.NewRedisLock(l.svcCtx.Redis, lockKey)
 	lock.SetExpire(30) // 设置锁的过期时间为30秒
 

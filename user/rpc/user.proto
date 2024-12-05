@@ -58,6 +58,12 @@ message CheckUsernameRequest {
   string username = 1; // 用户名
 }
 
+// 检查用户是否登录请求
+message CheckLoginRequest {
+  string username = 1;
+  string token = 2;
+}
+
 // 检查用户名响应
 message CheckUsernameResponse {
   bool exist = 1; // 是否存在
@@ -174,7 +180,7 @@ service UserService {
   rpc UserUpdate(UpdateRequest) returns (CommonResponse);
 
   // 检查用户是否登录
-  rpc UserCheckLogin(LogoutRequest) returns (CommonResponse);
+  rpc UserCheckLogin(CheckLoginRequest) returns (CommonResponse);
 
   // 用户退出登录
   rpc UserLogout(LogoutRequest) returns (CommonResponse);
@@ -201,3 +207,4 @@ service UserService {
   // 分页查询回收站短链接
   rpc RecycleBinPage(RecycleBinPageRequest) returns (RecycleBinPageResponse);
 }
+

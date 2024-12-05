@@ -27,7 +27,7 @@ func NewUserLogoutLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserLo
 // 用户退出登录
 func (l *UserLogoutLogic) UserLogout(in *__.LogoutRequest) (*__.CommonResponse, error) {
 	// 1. 检查用户是否已登录
-	loginKey := constant.USER_LOGIN_KEY + in.Username
+	loginKey := constant.UserLoginKey + in.Username
 	exists, err := l.svcCtx.Redis.ExistsCtx(l.ctx, loginKey)
 	if err != nil {
 		return nil, errorx.New(errorx.SystemError, errorx.ErrInternalServer, "检查登录状态失败")
