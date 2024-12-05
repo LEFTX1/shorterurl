@@ -113,36 +113,39 @@ message GroupDeleteRequest {
 
 // 回收站分页查询请求
 message RecycleBinPageRequest {
-  repeated string gid_list = 1; // 分组标识列表
-  int32 page_num = 2;           // 当前页码
-  int32 page_size = 3;          // 每页大小
+  repeated string gid_list = 1;  // 分组标识列表，可选
+  int32 page_num = 2;           // 当前页码，从1开始
+  int32 page_size = 3;          // 每页记录数
 }
 
-// 短链接信息
-message ShortLinkInfo {
-  string gid = 1;             // 分组标识
-  string origin_url = 2;      // 原始链接
-  string domain = 3;          // 域名
-  string short_uri = 4;       // 短链接
-  string full_short_url = 5;  // 完整短链接
-  string create_time = 6;     // 创建时间
-  string valid_date = 7;      // 有效期
-  string describe = 8;        // 描述
-}
-
-// 回收站分页响应
+// 回收站分页查询响应
 message RecycleBinPageResponse {
-  repeated ShortLinkInfo list = 1; // 短链接列表
-  int64 total = 2;                  // 总数
-  int32 page_num = 3;               // 当前页
-  int32 page_size = 4;              // 每页大小
-  bool has_next = 5;                // 是否有下一页
+  repeated ShortLinkPageRecord records = 1;  // 短链接记录列表
+  int64 total = 2;                          // 总记录数
+  int32 size = 3;                          // 每页大小
+  int32 current = 4;                       // 当前页码
 }
 
-// 回收站操作请求
-message RecycleBinOperateRequest {
-  string gid = 1;             // 分组标识
-  string full_short_url = 2;  // 完整短链接
+// 短链接分页记录
+message ShortLinkPageRecord {
+  int64 id = 1;                // 短链接ID
+  string domain = 2;           // 域名
+  string short_uri = 3;        // 短链接URI
+  string full_short_url = 4;   // 完整短链接
+  string origin_url = 5;       // 原始链接
+  string gid = 6;              // 分组标识
+  int32 valid_date_type = 7;   // 有效期类型：0永久有效，1自定义
+  string valid_date = 8;       // 有效期
+  string create_time = 9;      // 创建时间
+  string describe = 10;        // 描述
+  string favicon = 11;         // 网站图标
+  int32 enable_status = 12;    // 启用状态：0启用，1未启用
+  int64 total_pv = 13;         // 总访问量
+  int64 today_pv = 14;         // 今日访问量
+  int64 total_uv = 15;         // 总独立访客数
+  int64 today_uv = 16;         // 今日独立访客数
+  int64 total_uip = 17;        // 总IP数
+  int64 today_uip = 18;        // 今日IP数
 }
 
 // 通用请求（空参数）
@@ -195,15 +198,6 @@ service UserService {
 
   // =================回收站相关RPC=================
 
-  // 保存到回收站
-  rpc RecycleBinSave(RecycleBinOperateRequest) returns (CommonResponse);
-
-  // 分页查询回收站
-  rpc RecycleBinGetPage(RecycleBinPageRequest) returns (RecycleBinPageResponse);
-
-  // 恢复短链接
-  rpc RecycleBinRecover(RecycleBinOperateRequest) returns (CommonResponse);
-
-  // 彻底删除短链接
-  rpc RecycleBinRemove(RecycleBinOperateRequest) returns (CommonResponse);
+  // 分页查询回收站短链接
+  rpc RecycleBinPage(RecycleBinPageRequest) returns (RecycleBinPageResponse);
 }

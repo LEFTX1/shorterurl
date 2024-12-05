@@ -2,32 +2,16 @@
 package types
 
 type RecycleBinPageReq struct {
-	GidList []string `json:"gidList,optional"`  // 分组标识列表
-	Current int      `form:"current,default=1"` // 当前页码
-	Size    int      `form:"size,default=10"`   // 每页大小
+	GidList []string `json:"gidList,optional"`  // 分组标识列表，可选
+	Current int      `form:"current,default=1"` // 当前页码，从1开始
+	Size    int      `form:"size,default=10"`   // 每页记录数
 }
 
 type RecycleBinPageResp struct {
-	List    []ShortLinkInfo `json:"list"`    // 短链接列表
-	Total   int64           `json:"total"`   // 总数
-	Current int             `json:"current"` // 当前页
-	Size    int             `json:"size"`    // 每页大小
-	HasNext bool            `json:"hasNext"` // 是否有下一页
-}
-
-type RecycleBinRecoverReq struct {
-	Gid          string `json:"gid" validate:"required"`          // 分组标识
-	FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
-}
-
-type RecycleBinRemoveReq struct {
-	Gid          string `json:"gid" validate:"required"`          // 分组标识
-	FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
-}
-
-type RecycleBinSaveReq struct {
-	Gid          string `json:"gid" validate:"required"`          // 分组标识
-	FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
+	Records []ShortLinkPageRecordDTO `json:"records"` // 短链接记录列表
+	Total   int64                    `json:"total"`   // 总记录数
+	Size    int                      `json:"size"`    // 每页大小
+	Current int                      `json:"current"` // 当前页码
 }
 
 type ShortLinkGroupDeleteReq struct {
@@ -46,8 +30,7 @@ type ShortLinkGroupSaveReq struct {
 }
 
 type ShortLinkGroupSortReq struct {
-	Gid       string `json:"gid" validate:"required"` // 分组标识
-	SortOrder int    `json:"sortOrder"`               // 排序序号
+	Groups []SortGroup `json:"groups" validate:"required,dive,required"`
 }
 
 type ShortLinkGroupUpdateReq struct {
@@ -55,15 +38,30 @@ type ShortLinkGroupUpdateReq struct {
 	Name string `json:"name" validate:"required"` // 分组名称
 }
 
-type ShortLinkInfo struct {
-	Gid          string `json:"gid"`                // 分组标识
-	OriginUrl    string `json:"originUrl"`          // 原始链接
-	Domain       string `json:"domain"`             // 域名
-	ShortUri     string `json:"shortUri"`           // 短链接
-	FullShortUrl string `json:"fullShortUrl"`       // 完整短链接
-	CreateTime   string `json:"createTime"`         // 创建时间
-	ValidDate    string `json:"validDate,optional"` // 有效期
-	Describe     string `json:"describe,optional"`  // 描述
+type ShortLinkPageRecordDTO struct {
+	Id            int64  `json:"id"`            // 短链��ID
+	Domain        string `json:"domain"`        // 域名
+	ShortUri      string `json:"shortUri"`      // 短链接URI
+	FullShortUrl  string `json:"fullShortUrl"`  // 完整短链接
+	OriginUrl     string `json:"originUrl"`     // 原始链接
+	Gid           string `json:"gid"`           // 分组标识
+	ValidDateType int    `json:"validDateType"` // 有效期类型：0永久有效，1自定义
+	ValidDate     string `json:"validDate"`     // 有效期
+	CreateTime    string `json:"createTime"`    // 创建时间
+	Describe      string `json:"describe"`      // 描述
+	Favicon       string `json:"favicon"`       // 网站图标
+	EnableStatus  int    `json:"enableStatus"`  // 启用状态：0启用，1未启用
+	TotalPv       int64  `json:"totalPv"`       // 总访问量
+	TodayPv       int64  `json:"todayPv"`       // 今日访问量
+	TotalUv       int64  `json:"totalUv"`       // 总独立访客数
+	TodayUv       int64  `json:"todayUv"`       // 今日独立访客数
+	TotalUip      int64  `json:"totalUip"`      // 总IP数
+	TodayUip      int64  `json:"todayUip"`      // 今日IP数
+}
+
+type SortGroup struct {
+	Gid       string `json:"gid" validate:"required"`       // 分组标识
+	SortOrder int    `json:"sortOrder" validate:"required"` // 排序序号
 }
 
 type SuccessResp struct {
