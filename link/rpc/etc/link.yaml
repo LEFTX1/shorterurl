@@ -1,0 +1,33 @@
+Name: link.rpc
+ListenOn: 0.0.0.0:8081
+
+Etcd:
+  Hosts:
+    - 127.0.0.1:2379
+  Key: link.rpc
+
+Log:
+  ServiceName: link.rpc
+  Level: info
+
+DB:
+  Host: localhost
+  Port: 3306
+  User: root
+  Password: "123456"
+  Database: shorterurl
+  Sharding:
+    ShardingKey: gid
+    NumberOfShards: 16
+
+BizRedis:
+  Host: 127.0.0.1:6379
+  Pass:
+  Type: node
+
+BloomFilter:
+  Name: "test:bloom:shortlinks"
+  Size: 20000000
+  RedisKeyName: "bloom:shortlinks"
+
+Domain: "s.xleft.cn"

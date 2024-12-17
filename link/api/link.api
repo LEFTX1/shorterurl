@@ -1,1 +1,113 @@
- 
+syntax = "v1"
+
+info (
+	title:   "短链接服务API"
+	desc:    "提供短链接创建、查询、统计等功能"
+	author:  "xleft"
+	version: "v1"
+)
+
+type (
+	// 创建短链接请求
+	CreateShortLinkReq {
+		OriginUrl     string `json:"originUrl" validate:"required"` // 原始URL
+		Gid           string `json:"gid" validate:"required"` // 分组标识
+		CreatedType   int    `json:"createdType,default=0"` // 创建类型 0:接口创建 1:控制台创建
+		ValidDateType int    `json:"validDateType"` // 有效期类型 0:永久有效 1:自定义
+		ValidDate     string `json:"validDate,optional"` // 有效日期
+		Describe      string `json:"describe,optional"` // 描述
+	}
+	// 创建短链接响应
+	CreateShortLinkResp {
+		FullShortUrl string `json:"fullShortUrl"` // 完整短链接
+		OriginUrl    string `json:"originUrl"` // 原始URL
+		Gid          string `json:"gid"` // 分组标识
+	}
+	// 批量创建短链接请求
+	BatchCreateShortLinkReq {
+		OriginUrls    []string `json:"originUrls" validate:"required,min=1"` // 原始URL列表
+		Describes     []string `json:"describes" validate:"required,min=1"` // 描述列表
+		Gid           string   `json:"gid" validate:"required"` // 分组标识
+		CreatedType   int      `json:"createdType,default=0"` // 创建类型
+		ValidDateType int      `json:"validDateType"` // 有效期类型
+		ValidDate     string   `json:"validDate,optional"` // 有效日期
+	}
+	// 短链接基本信息
+	ShortLinkBaseInfo {
+		FullShortUrl string `json:"fullShortUrl"` // 完整短链接
+		OriginUrl    string `json:"originUrl"` // 原始URL
+		Describe     string `json:"describe"` // 描述
+	}
+	// 批量创建短链接响应
+	BatchCreateShortLinkResp {
+		Total         int                 `json:"total"` // 总数
+		BaseLinkInfos []ShortLinkBaseInfo `json:"baseLinkInfos"` // 基本链接信息列表
+	}
+	// 更新短链接请求
+	UpdateShortLinkReq {
+		FullShortUrl  string `json:"fullShortUrl" validate:"required"` // 完整短链接
+		OriginGid     string `json:"originGid" validate:"required"` // 原始分组标识
+		Gid           string `json:"gid" validate:"required"` // 新分组标识
+		OriginUrl     string `json:"originUrl" validate:"required"` // 原始URL
+		Describe      string `json:"describe,optional"` // 描述
+		ValidDateType int    `json:"validDateType"` // 有效期类型
+		ValidDate     string `json:"validDate,optional"` // 有效日期
+	}
+	// 分页查询请求
+	PageShortLinkReq {
+		PageNo   int    `form:"pageNo,default=1"` // 页码
+		PageSize int    `form:"pageSize,default=10"` // 每页大小
+		Gid      string `form:"gid"` // 分组标识
+	}
+	// 分页查询响应
+	PageShortLinkResp {
+		Records []ShortLinkStats `json:"records"` // 记录列表
+		Total   int64            `json:"total"` // 总记录数
+		Size    int              `json:"size"` // 每页大小
+		Current int              `json:"current"` // 当前页
+	}
+	// 短链接统计信息
+	ShortLinkStats {
+		Pv    int64  `json:"pv"` // 访问量
+		Uv    int64  `json:"uv"` // 独立访客数
+		Uip   int64  `json:"uip"` // 独立IP数
+		Gid   string `json:"gid"` // 分组标识
+		Title string `json:"title"` // 标题
+	}
+	// 分组短链接计数请求
+	GroupShortLinkCountReq {
+		Gids []string `form:"gids"` // 分组标识列表
+	}
+	// 分组短链接计数响应
+	GroupShortLinkCountResp {
+		Gid            string `json:"gid"` // 分组标识
+		ShortLinkCount int    `json:"shortLinkCount"` // 短链接数量
+	}
+	// 通用响应
+	CommonResp {
+		Success bool   `json:"success"` // 是否成功
+		Message string `json:"message"` // 错误信息
+	}
+)
+
+@server (
+	group:  link
+	prefix: /api/short-link/v1
+)
+service link-api {
+	@handler CreateShortLink
+	post /links (CreateShortLinkReq) returns (CreateShortLinkResp)
+
+	@handler BatchCreateShortLink
+	post /links/batch (BatchCreateShortLinkReq) returns (BatchCreateShortLinkResp)
+
+	@handler UpdateShortLink
+	put /links (UpdateShortLinkReq) returns (CommonResp)
+
+	@handler PageShortLink
+	get /links/page (PageShortLinkReq) returns (PageShortLinkResp)
+
+	@handler ListGroupShortLinkCount
+	get /links/group/count (GroupShortLinkCountReq) returns ([]GroupShortLinkCountResp)
+}
+

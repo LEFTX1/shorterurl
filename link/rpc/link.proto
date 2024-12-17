@@ -1,1 +1,319 @@
- 
+syntax = "proto3";
+
+package shortlink;
+
+option go_package = "./pb";
+
+// --------------------- 短链接管理接口 ---------------------
+
+// 创建短链接请求
+message CreateShortLinkRequest {
+    string domain = 1;            // 域名
+    string origin_url = 2;        // 原始链接
+    string gid = 3;               // 分组标识
+    int32 valid_date_type = 4;    // 有效期类型
+    string valid_date = 5;        // 有效期（ISO-8601格式）
+    string describe = 6;          // 描述
+    int32 created_type = 7;       // 创建类型
+}
+
+// 创建短链接响应
+message CreateShortLinkResponse {
+    string full_short_url = 1;    // 完整短链接
+    string origin_url = 2;        // 原始链接
+    string gid = 3;               // 分组标识
+}
+
+// 批量创建短链接请求
+message BatchCreateShortLinkRequest {
+    repeated string origin_urls = 1; // 原始链接列表
+    string domain = 2;               // 域名
+    string gid = 3;                  // 分组标识
+    int32 valid_date_type = 4;       // 有效期类型
+    string valid_date = 5;           // 有效期（ISO-8601格式）
+    string describe = 6;             // 描述
+}
+
+// 单个创建结果
+message BatchCreateResult {
+    string full_short_url = 1;    // 完整短链接
+    string origin_url = 2;        // 原始链接
+    string gid = 3;               // 分组标识
+}
+
+// 批量创建短链接响应
+message BatchCreateShortLinkResponse {
+    repeated BatchCreateResult results = 1; // 创建结果列表
+}
+
+// 修改短链接请求
+message UpdateShortLinkRequest {
+    string full_short_url = 1;    // 完整短链接
+    string origin_url = 2;        // 原始链接
+    string gid = 3;               // 分组标识
+    int32 valid_date_type = 4;    // 有效期类型
+    string valid_date = 5;        // 有效期（ISO-8601格式）
+    string describe = 6;          // 描述
+}
+
+// 修改短链接响应（空结构体）
+message UpdateShortLinkResponse {}
+
+// 分页查询短链接请求
+message PageShortLinkRequest {
+    string gid = 1;           // 分组标识
+    int32 current = 2;        // 当前页
+    int32 size = 3;           // 每页大小
+}
+
+// 短链接记录
+message ShortLinkRecord {
+    string full_short_url = 1;    // 完整短链接
+    string origin_url = 2;        // 原始链接
+    string domain = 3;            // 域名
+    string gid = 4;               // 分组标识
+    string create_time = 5;       // 创建时间（ISO-8601格式）
+    string valid_date = 6;        // 有效期（ISO-8601格式）
+    string describe = 7;          // 描述
+    int32 total_pv = 8;           // 总访问量
+    int32 total_uv = 9;           // 总独立访问量
+    int32 total_uip = 10;         // 总IP数
+}
+
+// 分页响应
+message PageShortLinkResponse {
+    repeated ShortLinkRecord records = 1; // 短链接记录列表
+    int32 total = 2;                       // 总记录数
+    int32 size = 3;                        // 每页大小
+    int32 current = 4;                     // 当前页
+}
+
+// --------------------- 回收站管理接口 ---------------------
+
+// 保存到回收站请求
+message SaveToRecycleBinRequest {
+    string gid = 1;               // 分组标识
+    string full_short_url = 2;    // 完整短链接
+}
+
+// 保存到回收站响应
+message SaveToRecycleBinResponse {
+    bool success = 1;             // 是否成功
+}
+
+// 从回收站恢复请求
+message RecoverFromRecycleBinRequest {
+    string gid = 1;               // 分组标识
+    string full_short_url = 2;    // 完整短链接
+}
+
+// 从回收站恢复响应
+message RecoverFromRecycleBinResponse {
+    bool success = 1;             // 是否成功
+}
+
+// 从回收站删除请求
+message RemoveFromRecycleBinRequest {
+    string gid = 1;               // 分组标识
+    string full_short_url = 2;    // 完整短链接
+}
+
+// 从回收站删除响应
+message RemoveFromRecycleBinResponse {
+    bool success = 1;             // 是否成功
+}
+
+// 分页查询回收站短链接请求
+message PageRecycleBinShortLinkRequest {
+    string gid = 1;           // 分组标识
+    int32 current = 2;        // 当前页
+    int32 size = 3;           // 每页大小
+}
+
+// 分页查询回收站短链接响应
+message PageRecycleBinShortLinkResponse {
+    repeated ShortLinkRecord records = 1; // 回收站短链接记录列表
+    int32 total = 2;                       // 总记录数
+    int32 size = 3;                        // 每页大小
+    int32 current = 4;                     // 当前页
+}
+
+// --------------------- 短链接统计接口 ---------------------
+
+// 获取单个短链接统计数据请求
+message GetSingleStatsRequest {
+    string full_short_url = 1;    // 完整短链接
+    string gid = 2;               // 分组标识
+    string start_date = 3;        // 开始日期（ISO-8601格式）
+    string end_date = 4;          // 结束日期（ISO-8601格式）
+    int32 enable_status = 5;      // 启用状态 0：启用 1：未启用
+}
+
+// 每日统计
+message DailyStat {
+    string date = 1;       // 日期
+    int32 pv = 2;          // 访问量
+    int32 uv = 3;          // 独立访问量
+    int32 uip = 4;         // IP数
+}
+
+// 地域统计
+message LocaleCnStat {
+    string locale = 1;     // 地区
+    int32 cnt = 2;         // 数量
+}
+
+// 浏览器统计
+message BrowserStat {
+    string browser = 1;    // 浏览器
+    int32 cnt = 2;         // 数量
+}
+
+// 操作系统统计
+message OSStat {
+    string os = 1;         // 操作系统
+    int32 cnt = 2;         // 数量
+}
+
+// 设备统计
+message DeviceStat {
+    string device = 1;     // 设备
+    int32 cnt = 2;         // 数量
+}
+
+// 网络统计
+message NetworkStat {
+    string network = 1;    // 网络类型
+    int32 cnt = 2;         // 数量
+}
+
+// 获取单个短链接统计数据响应
+message GetSingleStatsResponse {
+    int32 pv = 1;                      // 访问量
+    int32 uv = 2;                      // 独立访问量
+    int32 uip = 3;                     // IP数
+    repeated DailyStat daily = 4;      // 每日统计
+    repeated LocaleCnStat locale_cn_stats = 5; // 地域统计
+    repeated BrowserStat browser_stats = 6;     // 浏览器统计
+    repeated OSStat os_stats = 7;               // 操作系统统计
+    repeated DeviceStat device_stats = 8;       // 设备统计
+    repeated NetworkStat network_stats = 9;     // 网络统计
+}
+
+// 获取分组短链接统计数据请求
+message GetGroupStatsRequest {
+    string gid = 1;               // 分组标识
+    string start_date = 2;        // 开始日期（ISO-8601格式）
+    string end_date = 3;          // 结束日期（ISO-8601格式）
+}
+
+// 获取分组短链接统计数据响应
+message GetGroupStatsResponse {
+    int32 pv = 1;                      // 访问量
+    int32 uv = 2;                      // 独立访问量
+    int32 uip = 3;                     // IP数
+    repeated DailyStat daily = 4;      // 每日统计
+    repeated LocaleCnStat locale_cn_stats = 5; // 地域统计
+    repeated BrowserStat browser_stats = 6;     // 浏览器统计
+    repeated OSStat os_stats = 7;               // 操作系统统计
+    repeated DeviceStat device_stats = 8;       // 设备统计
+    repeated NetworkStat network_stats = 9;     // 网络统计
+}
+
+// 短链接分组内数量查询请求
+message GetShortLinkCountRequest {
+    repeated string request_param = 1; // 分组标识列表
+}
+
+// 单个分组数量结果
+message GroupCount {
+    string gid = 1;               // 分组标识
+    int32 short_link_count = 2;   // 短链接数量
+}
+
+// 查询短链接分组内数量响应
+message GetShortLinkCountResponse {
+    repeated GroupCount group_counts = 1; // 分组数量列表
+}
+
+// 访问记录
+message AccessRecord {
+    string ip = 1;            // 访问IP
+    string browser = 2;       // 浏览器
+    string os = 3;            // 操作系统
+    string network = 4;       // 网络环境
+    string device = 5;        // 访问设备
+    string locale = 6;        // 地区
+    string user = 7;          // 用户标识
+    string create_time = 8;   // 访问时间（ISO-8601格式）
+}
+
+// 访问记录查询请求
+message AccessRecordQueryRequest {
+    string full_short_url = 1;    // 完整短链接
+    string gid = 2;               // 分组标识
+    string start_date = 3;        // 开始日期（ISO-8601格式）
+    string end_date = 4;          // 结束日期（ISO-8601格式）
+    int32 current = 5;            // 当前页
+    int32 size = 6;               // 每页大小
+}
+
+// 访问记录查询响应
+message AccessRecordQueryResponse {
+    repeated AccessRecord records = 1; // 访问记录列表
+    int32 total = 2;                    // 总记录数
+    int32 size = 3;                     // 每页大小
+    int32 current = 4;                  // 当前页
+}
+
+// 分组访问记录查询请求
+message GroupAccessRecordQueryRequest {
+    string gid = 1;               // 分组标识
+    string start_date = 2;        // 开始日期（ISO-8601格式）
+    string end_date = 3;          // 结束日期（ISO-8601格式）
+    int32 current = 4;            // 当前页
+    int32 size = 5;               // 每页大小
+}
+
+// 分组访问记录查询响应
+message GroupAccessRecordQueryResponse {
+    repeated AccessRecord records = 1; // 访问记录列表
+    int32 total = 2;                    // 总记录数
+    int32 size = 3;                     // 每页大小
+    int32 current = 4;                  // 当前页
+}
+
+// 获取URL标题请求
+message GetUrlTitleRequest {
+    string url = 1; // 目标URL
+}
+
+// 获取URL标题响应
+message GetUrlTitleResponse {
+    string title = 1; // URL标题
+}
+
+// --------------------- 服务定义 ---------------------
+service ShortLinkService {
+    // --------------------- 短链接管理接口 ---------------------
+    rpc ShortLinkCreate(CreateShortLinkRequest) returns (CreateShortLinkResponse);
+    rpc ShortLinkBatchCreate(BatchCreateShortLinkRequest) returns (BatchCreateShortLinkResponse);
+    rpc ShortLinkUpdate(UpdateShortLinkRequest) returns (UpdateShortLinkResponse);
+    rpc ShortLinkPage(PageShortLinkRequest) returns (PageShortLinkResponse);
+
+    // --------------------- 回收站管理接口 ---------------------
+    rpc RecycleBinSave(SaveToRecycleBinRequest) returns (SaveToRecycleBinResponse);
+    rpc RecycleBinRecover(RecoverFromRecycleBinRequest) returns (RecoverFromRecycleBinResponse);
+    rpc RecycleBinRemove(RemoveFromRecycleBinRequest) returns (RemoveFromRecycleBinResponse);
+    rpc RecycleBinPage(PageRecycleBinShortLinkRequest) returns (PageRecycleBinShortLinkResponse);
+
+    // --------------------- 短链接统计接口 ---------------------
+    rpc StatsGetSingle(GetSingleStatsRequest) returns (GetSingleStatsResponse);
+    rpc StatsGetGroup(GetGroupStatsRequest) returns (GetGroupStatsResponse);
+    rpc StatsGetShortLinkCount(GetShortLinkCountRequest) returns (GetShortLinkCountResponse);
+    rpc StatsAccessRecordQuery(AccessRecordQueryRequest) returns (AccessRecordQueryResponse);
+    rpc StatsGroupAccessRecordQuery(GroupAccessRecordQueryRequest) returns (GroupAccessRecordQueryResponse);
+
+    // --------------------- URL标题功能接口 ---------------------
+    rpc UrlTitleGet(GetUrlTitleRequest) returns (GetUrlTitleResponse);
+}
