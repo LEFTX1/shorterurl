@@ -23,6 +23,9 @@ const (
 	ShortLinkService_ShortLinkBatchCreate_FullMethodName        = "/shortlink.ShortLinkService/ShortLinkBatchCreate"
 	ShortLinkService_ShortLinkUpdate_FullMethodName             = "/shortlink.ShortLinkService/ShortLinkUpdate"
 	ShortLinkService_ShortLinkPage_FullMethodName               = "/shortlink.ShortLinkService/ShortLinkPage"
+	ShortLinkService_ShortLinkListGroupCount_FullMethodName     = "/shortlink.ShortLinkService/ShortLinkListGroupCount"
+	ShortLinkService_RestoreUrl_FullMethodName                  = "/shortlink.ShortLinkService/RestoreUrl"
+	ShortLinkService_ShortLinkStats_FullMethodName              = "/shortlink.ShortLinkService/ShortLinkStats"
 	ShortLinkService_RecycleBinSave_FullMethodName              = "/shortlink.ShortLinkService/RecycleBinSave"
 	ShortLinkService_RecycleBinRecover_FullMethodName           = "/shortlink.ShortLinkService/RecycleBinRecover"
 	ShortLinkService_RecycleBinRemove_FullMethodName            = "/shortlink.ShortLinkService/RecycleBinRemove"
@@ -46,6 +49,12 @@ type ShortLinkServiceClient interface {
 	ShortLinkBatchCreate(ctx context.Context, in *BatchCreateShortLinkRequest, opts ...grpc.CallOption) (*BatchCreateShortLinkResponse, error)
 	ShortLinkUpdate(ctx context.Context, in *UpdateShortLinkRequest, opts ...grpc.CallOption) (*UpdateShortLinkResponse, error)
 	ShortLinkPage(ctx context.Context, in *PageShortLinkRequest, opts ...grpc.CallOption) (*PageShortLinkResponse, error)
+	// 查询短链接分组内数量
+	ShortLinkListGroupCount(ctx context.Context, in *GroupShortLinkCountRequest, opts ...grpc.CallOption) (*GroupShortLinkCountResponse, error)
+	// 短链接跳转
+	RestoreUrl(ctx context.Context, in *RestoreUrlRequest, opts ...grpc.CallOption) (*RestoreUrlResponse, error)
+	// 短链接统计
+	ShortLinkStats(ctx context.Context, in *ShortLinkStatsRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	// --------------------- 回收站管理接口 ---------------------
 	RecycleBinSave(ctx context.Context, in *SaveToRecycleBinRequest, opts ...grpc.CallOption) (*SaveToRecycleBinResponse, error)
 	RecycleBinRecover(ctx context.Context, in *RecoverFromRecycleBinRequest, opts ...grpc.CallOption) (*RecoverFromRecycleBinResponse, error)
@@ -103,6 +112,36 @@ func (c *shortLinkServiceClient) ShortLinkPage(ctx context.Context, in *PageShor
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PageShortLinkResponse)
 	err := c.cc.Invoke(ctx, ShortLinkService_ShortLinkPage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *shortLinkServiceClient) ShortLinkListGroupCount(ctx context.Context, in *GroupShortLinkCountRequest, opts ...grpc.CallOption) (*GroupShortLinkCountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GroupShortLinkCountResponse)
+	err := c.cc.Invoke(ctx, ShortLinkService_ShortLinkListGroupCount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *shortLinkServiceClient) RestoreUrl(ctx context.Context, in *RestoreUrlRequest, opts ...grpc.CallOption) (*RestoreUrlResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RestoreUrlResponse)
+	err := c.cc.Invoke(ctx, ShortLinkService_RestoreUrl_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *shortLinkServiceClient) ShortLinkStats(ctx context.Context, in *ShortLinkStatsRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, ShortLinkService_ShortLinkStats_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -220,6 +259,12 @@ type ShortLinkServiceServer interface {
 	ShortLinkBatchCreate(context.Context, *BatchCreateShortLinkRequest) (*BatchCreateShortLinkResponse, error)
 	ShortLinkUpdate(context.Context, *UpdateShortLinkRequest) (*UpdateShortLinkResponse, error)
 	ShortLinkPage(context.Context, *PageShortLinkRequest) (*PageShortLinkResponse, error)
+	// 查询短链接分组内数量
+	ShortLinkListGroupCount(context.Context, *GroupShortLinkCountRequest) (*GroupShortLinkCountResponse, error)
+	// 短链接跳转
+	RestoreUrl(context.Context, *RestoreUrlRequest) (*RestoreUrlResponse, error)
+	// 短链接统计
+	ShortLinkStats(context.Context, *ShortLinkStatsRequest) (*EmptyResponse, error)
 	// --------------------- 回收站管理接口 ---------------------
 	RecycleBinSave(context.Context, *SaveToRecycleBinRequest) (*SaveToRecycleBinResponse, error)
 	RecycleBinRecover(context.Context, *RecoverFromRecycleBinRequest) (*RecoverFromRecycleBinResponse, error)
@@ -254,6 +299,15 @@ func (UnimplementedShortLinkServiceServer) ShortLinkUpdate(context.Context, *Upd
 }
 func (UnimplementedShortLinkServiceServer) ShortLinkPage(context.Context, *PageShortLinkRequest) (*PageShortLinkResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ShortLinkPage not implemented")
+}
+func (UnimplementedShortLinkServiceServer) ShortLinkListGroupCount(context.Context, *GroupShortLinkCountRequest) (*GroupShortLinkCountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ShortLinkListGroupCount not implemented")
+}
+func (UnimplementedShortLinkServiceServer) RestoreUrl(context.Context, *RestoreUrlRequest) (*RestoreUrlResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestoreUrl not implemented")
+}
+func (UnimplementedShortLinkServiceServer) ShortLinkStats(context.Context, *ShortLinkStatsRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ShortLinkStats not implemented")
 }
 func (UnimplementedShortLinkServiceServer) RecycleBinSave(context.Context, *SaveToRecycleBinRequest) (*SaveToRecycleBinResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecycleBinSave not implemented")
@@ -374,6 +428,60 @@ func _ShortLinkService_ShortLinkPage_Handler(srv interface{}, ctx context.Contex
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ShortLinkServiceServer).ShortLinkPage(ctx, req.(*PageShortLinkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ShortLinkService_ShortLinkListGroupCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GroupShortLinkCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShortLinkServiceServer).ShortLinkListGroupCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ShortLinkService_ShortLinkListGroupCount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShortLinkServiceServer).ShortLinkListGroupCount(ctx, req.(*GroupShortLinkCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ShortLinkService_RestoreUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RestoreUrlRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShortLinkServiceServer).RestoreUrl(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ShortLinkService_RestoreUrl_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShortLinkServiceServer).RestoreUrl(ctx, req.(*RestoreUrlRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ShortLinkService_ShortLinkStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ShortLinkStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShortLinkServiceServer).ShortLinkStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ShortLinkService_ShortLinkStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShortLinkServiceServer).ShortLinkStats(ctx, req.(*ShortLinkStatsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -580,6 +688,18 @@ var ShortLinkService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ShortLinkPage",
 			Handler:    _ShortLinkService_ShortLinkPage_Handler,
+		},
+		{
+			MethodName: "ShortLinkListGroupCount",
+			Handler:    _ShortLinkService_ShortLinkListGroupCount_Handler,
+		},
+		{
+			MethodName: "RestoreUrl",
+			Handler:    _ShortLinkService_RestoreUrl_Handler,
+		},
+		{
+			MethodName: "ShortLinkStats",
+			Handler:    _ShortLinkService_ShortLinkStats_Handler,
 		},
 		{
 			MethodName: "RecycleBinSave",

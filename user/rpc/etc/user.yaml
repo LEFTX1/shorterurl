@@ -14,7 +14,7 @@ DB:
   Port: 3306
   User: root
   Password: "123456"
-  Database: link
+  Database: shorterurl
   Sharding:
     ShardingKey: username
     NumberOfShards: 16

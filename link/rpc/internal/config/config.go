@@ -28,5 +28,23 @@ type Config struct {
 		RedisKeyName string `json:",default=bloom:shortlinks"`
 	}
 
-	Domain string `json:",default=s.xleft.cn"`
+	MySQL struct {
+		DataSource       string
+		LinkDBSource     string
+		GotoLinkDBSource string
+		GroupDBSource    string
+		UserDBSource     string
+	}
+
+	BloomFilterRedisKeyPrefix string
+
+	// 默认短链接域名
+	DefaultDomain string `json:",default=s.xleft.cn"`
+
+	// 白名单配置
+	GotoDomainWhiteList struct {
+		Enable  bool     `json:",default=false"`
+		Details []string `json:",optional"`
+		Names   string   `json:",optional"`
+	}
 }

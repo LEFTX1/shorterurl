@@ -3,21 +3,18 @@ package svc
 import (
 	"fmt"
 	"shorterurl/link/rpc/internal/config"
-	"shorterurl/link/rpc/internal/dal/query"
+	"shorterurl/link/rpc/internal/repo"
 	"shorterurl/link/rpc/pkg/snowflake"
 
 	"github.com/zeromicro/go-zero/core/stores/redis"
-	"gorm.io/gorm"
-	"gorm.io/sharding"
 )
 
 type ServiceContext struct {
 	Config         config.Config
-	DB             *gorm.DB
-	Query          *query.Query
+	DBs            *DBs
 	BizRedis       *redis.Redis
 	BloomFilterMgr *BloomFilterManager
-	Sharding       *sharding.Sharding
+	RepoManager    *repo.RepoManager
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -33,7 +30,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	}
 
 	// 初始化数据库连接
-	db, shardingInstance, err := InitDB(c, idGen)
+	dbs, err := InitDBs(c, idGen)
 	if err != nil {
 		panic(fmt.Errorf("init database failed: %v", err))
 	}
@@ -47,12 +44,20 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		panic(fmt.Errorf("init bloom filter failed: %v", err))
 	}
 
+	// 初始化仓库管理器
+	repoManager := repo.NewRepoManager(
+		dbs.Common,
+		dbs.LinkDB,
+		dbs.GotoLinkDB,
+		dbs.GroupDB,
+		dbs.UserDB,
+	)
+
 	return &ServiceContext{
 		Config:         c,
-		DB:             db,
-		Query:          query.Use(db),
+		DBs:            dbs,
 		BizRedis:       bizRedis,
 		BloomFilterMgr: bloomFilterMgr,
-		Sharding:       shardingInstance,
+		RepoManager:    repoManager,
 	}
 }

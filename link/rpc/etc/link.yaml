@@ -30,4 +30,23 @@ BloomFilter:
   Size: 20000000
   RedisKeyName: "bloom:shortlinks"
 
-Domain: "s.xleft.cn"
+MySQL:
+  DataSource: "root:123456@tcp(localhost:3306)/shorterurl?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai"
+  LinkDBSource: "root:123456@tcp(localhost:3306)/shorterurl?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai"
+  GotoLinkDBSource: "root:123456@tcp(localhost:3306)/shorterurl?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai"
+  GroupDBSource: "root:123456@tcp(localhost:3306)/shorterurl?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai"
+  UserDBSource: "root:123456@tcp(localhost:3306)/shorterurl?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai"
+
+BloomFilterRedisKeyPrefix: "bloom:shortlink:"
+
+# 默认短链接域名
+DefaultDomain: "s.xleft.cn"
+
+GotoDomainWhiteList:
+  Enable: true
+  Details:
+    - "github.com"
+    - "gitee.com"
+    - "google.com"
+    - "baidu.com"
+  Names: "github, gitee, google, baidu"

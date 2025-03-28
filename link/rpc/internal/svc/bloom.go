@@ -64,6 +64,31 @@ func (m *BloomFilterManager) Exists(ctx context.Context, shortLink string) (bool
 	return exists, nil
 }
 
+// Reset 重置布隆过滤器
+func (m *BloomFilterManager) Reset() error {
+	// 由于bloom.Filter没有直接提供Reset方法
+	// 我们通过删除原有的key并重新创建过滤器来实现
+	key := m.config.BloomFilter.RedisKeyName
+
+	// 删除Redis中的布隆过滤器键
+	_, err := m.redis.Del(key)
+	if err != nil {
+		return errorx.NewCodeError(errorx.ErrBloomFilterReset, errorx.ErrBloomFilterReset,
+			"%s: %v", errorx.MsgBloomFilterReset, err)
+	}
+
+	// 重新创建布隆过滤器
+	newFilter := bloom.New(m.redis, key, m.config.BloomFilter.Size)
+	if newFilter == nil {
+		return errorx.NewCodeError(errorx.ErrBloomFilterInit, errorx.ErrBloomFilterReset, errorx.MsgBloomFilterInit)
+	}
+
+	// 更新过滤器
+	m.filter = newFilter
+
+	return nil
+}
+
 // BatchAdd 批量添加短链接到布隆过滤器
 func (m *BloomFilterManager) BatchAdd(ctx context.Context, shortLinks []string) error {
 	if len(shortLinks) == 0 {

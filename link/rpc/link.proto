@@ -125,9 +125,9 @@ message RemoveFromRecycleBinResponse {
 
 // 分页查询回收站短链接请求
 message PageRecycleBinShortLinkRequest {
-    string gid = 1;           // 分组标识
-    int32 current = 2;        // 当前页
-    int32 size = 3;           // 每页大小
+    repeated string gids = 1;     // 分组标识列表
+    int32 current = 2;            // 当前页
+    int32 size = 3;               // 每页大小
 }
 
 // 分页查询回收站短链接响应
@@ -293,6 +293,49 @@ message GetUrlTitleResponse {
     string title = 1; // URL标题
 }
 
+// 短链接分组内数量查询请求
+message GroupShortLinkCountRequest {
+    repeated string gids = 1; // 分组标识列表
+}
+
+// 短链接分组计数项
+message ShortLinkGroupCountItem {
+    string gid = 1;            // 分组ID
+    int64 short_link_count = 2; // 短链接数量
+}
+
+// 查询短链接分组内数量响应
+message GroupShortLinkCountResponse {
+    repeated ShortLinkGroupCountItem group_counts = 1; // 分组计数列表
+}
+
+// 短链接跳转请求
+message RestoreUrlRequest {
+    string short_uri = 1; // 短链接后缀
+}
+
+// 短链接跳转响应
+message RestoreUrlResponse {
+    string origin_url = 1; // 原始链接URL
+}
+
+// 短链接统计请求
+message ShortLinkStatsRequest {
+    string full_short_url = 1;  // 完整短链接
+    string gid = 2;             // 分组标识
+    string user = 3;            // 用户标识
+    string ip = 4;              // 访问IP
+    string browser = 5;         // 浏览器
+    string os = 6;              // 操作系统
+    string device = 7;          // 访问设备
+    string network = 8;         // 访问网络
+    string locale = 9;          // 地区
+    string uv_type = 10;        // 访客类型
+}
+
+// 空响应
+message EmptyResponse {}
+
 // --------------------- 服务定义 ---------------------
 service ShortLinkService {
     // --------------------- 短链接管理接口 ---------------------
@@ -300,6 +343,12 @@ service ShortLinkService {
     rpc ShortLinkBatchCreate(BatchCreateShortLinkRequest) returns (BatchCreateShortLinkResponse);
     rpc ShortLinkUpdate(UpdateShortLinkRequest) returns (UpdateShortLinkResponse);
     rpc ShortLinkPage(PageShortLinkRequest) returns (PageShortLinkResponse);
+    // 查询短链接分组内数量
+    rpc ShortLinkListGroupCount(GroupShortLinkCountRequest) returns (GroupShortLinkCountResponse);
+    // 短链接跳转
+    rpc RestoreUrl(RestoreUrlRequest) returns (RestoreUrlResponse);
+    // 短链接统计
+    rpc ShortLinkStats(ShortLinkStatsRequest) returns (EmptyResponse);
 
     // --------------------- 回收站管理接口 ---------------------
     rpc RecycleBinSave(SaveToRecycleBinRequest) returns (SaveToRecycleBinResponse);
@@ -313,6 +362,8 @@ service ShortLinkService {
     rpc StatsGetShortLinkCount(GetShortLinkCountRequest) returns (GetShortLinkCountResponse);
     rpc StatsAccessRecordQuery(AccessRecordQueryRequest) returns (AccessRecordQueryResponse);
     rpc StatsGroupAccessRecordQuery(GroupAccessRecordQueryRequest) returns (GroupAccessRecordQueryResponse);
+
+
 
     // --------------------- URL标题功能接口 ---------------------
     rpc UrlTitleGet(GetUrlTitleRequest) returns (GetUrlTitleResponse);
