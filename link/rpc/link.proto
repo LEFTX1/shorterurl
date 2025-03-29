@@ -161,43 +161,66 @@ message DailyStat {
 message LocaleCnStat {
     string locale = 1;     // 地区
     int32 cnt = 2;         // 数量
+    double ratio = 3;      // 比例
 }
 
 // 浏览器统计
 message BrowserStat {
     string browser = 1;    // 浏览器
     int32 cnt = 2;         // 数量
+    double ratio = 3;      // 比例
 }
 
 // 操作系统统计
 message OSStat {
     string os = 1;         // 操作系统
     int32 cnt = 2;         // 数量
+    double ratio = 3;      // 比例
 }
 
 // 设备统计
 message DeviceStat {
     string device = 1;     // 设备
     int32 cnt = 2;         // 数量
+    double ratio = 3;      // 比例
 }
 
 // 网络统计
 message NetworkStat {
     string network = 1;    // 网络类型
     int32 cnt = 2;         // 数量
+    double ratio = 3;      // 比例
+}
+
+// 高频访问IP统计
+message TopIpStat {
+    string ip = 1;         // IP地址
+    int32 cnt = 2;         // 访问次数
+    double ratio = 3;      // 比例
+}
+
+// 访客类型统计
+message UvTypeStat {
+    string uv_type = 1;    // 访客类型
+    int32 cnt = 2;         // 数量
+    double ratio = 3;      // 比例
 }
 
 // 获取单个短链接统计数据响应
 message GetSingleStatsResponse {
-    int32 pv = 1;                      // 访问量
-    int32 uv = 2;                      // 独立访问量
-    int32 uip = 3;                     // IP数
-    repeated DailyStat daily = 4;      // 每日统计
+    int32 pv = 1;                          // 访问量
+    int32 uv = 2;                          // 独立访问量
+    int32 uip = 3;                         // IP数
+    repeated DailyStat daily = 4;          // 每日统计
     repeated LocaleCnStat locale_cn_stats = 5; // 地域统计
-    repeated BrowserStat browser_stats = 6;     // 浏览器统计
-    repeated OSStat os_stats = 7;               // 操作系统统计
-    repeated DeviceStat device_stats = 8;       // 设备统计
-    repeated NetworkStat network_stats = 9;     // 网络统计
+    repeated int32 hour_stats = 6;         // 小时访问详情（24小时）
+    repeated TopIpStat top_ip_stats = 7;   // 高频访问IP详情
+    repeated int32 weekday_stats = 8;      // 一周访问详情（7天）
+    repeated BrowserStat browser_stats = 9; // 浏览器统计
+    repeated OSStat os_stats = 10;         // 操作系统统计
+    repeated UvTypeStat uv_type_stats = 11; // 访客类型统计
+    repeated DeviceStat device_stats = 12; // 设备统计
+    repeated NetworkStat network_stats = 13; // 网络统计
 }
 
 // 获取分组短链接统计数据请求
@@ -209,20 +232,19 @@ message GetGroupStatsRequest {
 
 // 获取分组短链接统计数据响应
 message GetGroupStatsResponse {
-    int32 pv = 1;                      // 访问量
-    int32 uv = 2;                      // 独立访问量
-    int32 uip = 3;                     // IP数
-    repeated DailyStat daily = 4;      // 每日统计
+    int32 pv = 1;                          // 访问量
+    int32 uv = 2;                          // 独立访问量
+    int32 uip = 3;                         // IP数
+    repeated DailyStat daily = 4;          // 每日统计
     repeated LocaleCnStat locale_cn_stats = 5; // 地域统计
-    repeated BrowserStat browser_stats = 6;     // 浏览器统计
-    repeated OSStat os_stats = 7;               // 操作系统统计
-    repeated DeviceStat device_stats = 8;       // 设备统计
-    repeated NetworkStat network_stats = 9;     // 网络统计
-}
-
-// 短链接分组内数量查询请求
-message GetShortLinkCountRequest {
-    repeated string request_param = 1; // 分组标识列表
+    repeated int32 hour_stats = 6;         // 小时访问详情（24小时）
+    repeated TopIpStat top_ip_stats = 7;   // 高频访问IP详情
+    repeated int32 weekday_stats = 8;      // 一周访问详情（7天）
+    repeated BrowserStat browser_stats = 9; // 浏览器统计
+    repeated OSStat os_stats = 10;         // 操作系统统计
+    repeated UvTypeStat uv_type_stats = 11; // 访客类型统计
+    repeated DeviceStat device_stats = 12; // 设备统计
+    repeated NetworkStat network_stats = 13; // 网络统计
 }
 
 // 单个分组数量结果
@@ -231,21 +253,17 @@ message GroupCount {
     int32 short_link_count = 2;   // 短链接数量
 }
 
-// 查询短链接分组内数量响应
-message GetShortLinkCountResponse {
-    repeated GroupCount group_counts = 1; // 分组数量列表
-}
-
 // 访问记录
 message AccessRecord {
-    string ip = 1;            // 访问IP
+    string uv_type = 1;       // 访客类型
     string browser = 2;       // 浏览器
     string os = 3;            // 操作系统
-    string network = 4;       // 网络环境
-    string device = 5;        // 访问设备
-    string locale = 6;        // 地区
-    string user = 7;          // 用户标识
-    string create_time = 8;   // 访问时间（ISO-8601格式）
+    string ip = 4;            // 访问IP
+    string network = 5;       // 网络环境
+    string device = 6;        // 访问设备
+    string locale = 7;        // 地区
+    string user = 8;          // 用户标识
+    string create_time = 9;   // 访问时间（ISO-8601格式）
 }
 
 // 访问记录查询请求
@@ -254,16 +272,17 @@ message AccessRecordQueryRequest {
     string gid = 2;               // 分组标识
     string start_date = 3;        // 开始日期（ISO-8601格式）
     string end_date = 4;          // 结束日期（ISO-8601格式）
-    int32 current = 5;            // 当前页
-    int32 size = 6;               // 每页大小
+    int32 enable_status = 5;      // 启用状态 0：启用 1：未启用
+    int64 current = 6;            // 当前页
+    int64 size = 7;               // 每页大小
 }
 
 // 访问记录查询响应
 message AccessRecordQueryResponse {
     repeated AccessRecord records = 1; // 访问记录列表
-    int32 total = 2;                    // 总记录数
-    int32 size = 3;                     // 每页大小
-    int32 current = 4;                  // 当前页
+    int64 total = 2;                    // 总记录数
+    int64 size = 3;                     // 每页大小
+    int64 current = 4;                  // 当前页
 }
 
 // 分组访问记录查询请求
@@ -271,16 +290,16 @@ message GroupAccessRecordQueryRequest {
     string gid = 1;               // 分组标识
     string start_date = 2;        // 开始日期（ISO-8601格式）
     string end_date = 3;          // 结束日期（ISO-8601格式）
-    int32 current = 4;            // 当前页
-    int32 size = 5;               // 每页大小
+    int64 current = 4;            // 当前页
+    int64 size = 5;               // 每页大小
 }
 
 // 分组访问记录查询响应
 message GroupAccessRecordQueryResponse {
     repeated AccessRecord records = 1; // 访问记录列表
-    int32 total = 2;                    // 总记录数
-    int32 size = 3;                     // 每页大小
-    int32 current = 4;                  // 当前页
+    int64 total = 2;                    // 总记录数
+    int64 size = 3;                     // 每页大小
+    int64 current = 4;                  // 当前页
 }
 
 // 获取URL标题请求
@@ -359,11 +378,8 @@ service ShortLinkService {
     // --------------------- 短链接统计接口 ---------------------
     rpc StatsGetSingle(GetSingleStatsRequest) returns (GetSingleStatsResponse);
     rpc StatsGetGroup(GetGroupStatsRequest) returns (GetGroupStatsResponse);
-    rpc StatsGetShortLinkCount(GetShortLinkCountRequest) returns (GetShortLinkCountResponse);
     rpc StatsAccessRecordQuery(AccessRecordQueryRequest) returns (AccessRecordQueryResponse);
     rpc StatsGroupAccessRecordQuery(GroupAccessRecordQueryRequest) returns (GroupAccessRecordQueryResponse);
-
-
 
     // --------------------- URL标题功能接口 ---------------------
     rpc UrlTitleGet(GetUrlTitleRequest) returns (GetUrlTitleResponse);

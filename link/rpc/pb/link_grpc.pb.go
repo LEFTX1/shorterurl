@@ -32,7 +32,6 @@ const (
 	ShortLinkService_RecycleBinPage_FullMethodName              = "/shortlink.ShortLinkService/RecycleBinPage"
 	ShortLinkService_StatsGetSingle_FullMethodName              = "/shortlink.ShortLinkService/StatsGetSingle"
 	ShortLinkService_StatsGetGroup_FullMethodName               = "/shortlink.ShortLinkService/StatsGetGroup"
-	ShortLinkService_StatsGetShortLinkCount_FullMethodName      = "/shortlink.ShortLinkService/StatsGetShortLinkCount"
 	ShortLinkService_StatsAccessRecordQuery_FullMethodName      = "/shortlink.ShortLinkService/StatsAccessRecordQuery"
 	ShortLinkService_StatsGroupAccessRecordQuery_FullMethodName = "/shortlink.ShortLinkService/StatsGroupAccessRecordQuery"
 	ShortLinkService_UrlTitleGet_FullMethodName                 = "/shortlink.ShortLinkService/UrlTitleGet"
@@ -63,7 +62,6 @@ type ShortLinkServiceClient interface {
 	// --------------------- 短链接统计接口 ---------------------
 	StatsGetSingle(ctx context.Context, in *GetSingleStatsRequest, opts ...grpc.CallOption) (*GetSingleStatsResponse, error)
 	StatsGetGroup(ctx context.Context, in *GetGroupStatsRequest, opts ...grpc.CallOption) (*GetGroupStatsResponse, error)
-	StatsGetShortLinkCount(ctx context.Context, in *GetShortLinkCountRequest, opts ...grpc.CallOption) (*GetShortLinkCountResponse, error)
 	StatsAccessRecordQuery(ctx context.Context, in *AccessRecordQueryRequest, opts ...grpc.CallOption) (*AccessRecordQueryResponse, error)
 	StatsGroupAccessRecordQuery(ctx context.Context, in *GroupAccessRecordQueryRequest, opts ...grpc.CallOption) (*GroupAccessRecordQueryResponse, error)
 	// --------------------- URL标题功能接口 ---------------------
@@ -208,16 +206,6 @@ func (c *shortLinkServiceClient) StatsGetGroup(ctx context.Context, in *GetGroup
 	return out, nil
 }
 
-func (c *shortLinkServiceClient) StatsGetShortLinkCount(ctx context.Context, in *GetShortLinkCountRequest, opts ...grpc.CallOption) (*GetShortLinkCountResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetShortLinkCountResponse)
-	err := c.cc.Invoke(ctx, ShortLinkService_StatsGetShortLinkCount_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *shortLinkServiceClient) StatsAccessRecordQuery(ctx context.Context, in *AccessRecordQueryRequest, opts ...grpc.CallOption) (*AccessRecordQueryResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AccessRecordQueryResponse)
@@ -273,7 +261,6 @@ type ShortLinkServiceServer interface {
 	// --------------------- 短链接统计接口 ---------------------
 	StatsGetSingle(context.Context, *GetSingleStatsRequest) (*GetSingleStatsResponse, error)
 	StatsGetGroup(context.Context, *GetGroupStatsRequest) (*GetGroupStatsResponse, error)
-	StatsGetShortLinkCount(context.Context, *GetShortLinkCountRequest) (*GetShortLinkCountResponse, error)
 	StatsAccessRecordQuery(context.Context, *AccessRecordQueryRequest) (*AccessRecordQueryResponse, error)
 	StatsGroupAccessRecordQuery(context.Context, *GroupAccessRecordQueryRequest) (*GroupAccessRecordQueryResponse, error)
 	// --------------------- URL标题功能接口 ---------------------
@@ -326,9 +313,6 @@ func (UnimplementedShortLinkServiceServer) StatsGetSingle(context.Context, *GetS
 }
 func (UnimplementedShortLinkServiceServer) StatsGetGroup(context.Context, *GetGroupStatsRequest) (*GetGroupStatsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StatsGetGroup not implemented")
-}
-func (UnimplementedShortLinkServiceServer) StatsGetShortLinkCount(context.Context, *GetShortLinkCountRequest) (*GetShortLinkCountResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StatsGetShortLinkCount not implemented")
 }
 func (UnimplementedShortLinkServiceServer) StatsAccessRecordQuery(context.Context, *AccessRecordQueryRequest) (*AccessRecordQueryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StatsAccessRecordQuery not implemented")
@@ -594,24 +578,6 @@ func _ShortLinkService_StatsGetGroup_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ShortLinkService_StatsGetShortLinkCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetShortLinkCountRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ShortLinkServiceServer).StatsGetShortLinkCount(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ShortLinkService_StatsGetShortLinkCount_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ShortLinkServiceServer).StatsGetShortLinkCount(ctx, req.(*GetShortLinkCountRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _ShortLinkService_StatsAccessRecordQuery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AccessRecordQueryRequest)
 	if err := dec(in); err != nil {
@@ -724,10 +690,6 @@ var ShortLinkService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StatsGetGroup",
 			Handler:    _ShortLinkService_StatsGetGroup_Handler,
-		},
-		{
-			MethodName: "StatsGetShortLinkCount",
-			Handler:    _ShortLinkService_StatsGetShortLinkCount_Handler,
 		},
 		{
 			MethodName: "StatsAccessRecordQuery",

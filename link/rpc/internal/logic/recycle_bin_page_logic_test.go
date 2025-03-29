@@ -13,50 +13,29 @@ import (
 
 // 测试前清理指定分组的数据
 func cleanTestData(t *testing.T, svcCtx *svc.ServiceContext, ctx context.Context, gid string) {
-	// 基于已有的查询和删除方式清理数据
-	links, err := svcCtx.RepoManager.Link.FindByCondition(ctx, map[string]interface{}{
-		"gid": gid,
-	}, 1, 100)
-
-	if err != nil {
-		t.Logf("查询测试数据失败: %v", err)
-		return
-	}
-
-	// 实际删除所有找到的链接
-	for _, link := range links {
-		err := svcCtx.RepoManager.Link.Delete(ctx, link.ID)
-		if err != nil {
-			t.Logf("删除链接数据失败: %v", err)
-		}
-	}
-
-	// 直接通过SQL删除任何可能存在的测试数据（更彻底的方式）
+	// 直接通过SQL物理删除测试数据（更彻底的方式）
 	db := svcCtx.DBs.LinkDB
+	var deletedCount int64
+
 	// 为防止误删，仅删除特定分组的测试数据
 	if gid != "" && len(gid) > 5 && (gid[:5] == "test-" || gid == "test") {
-		// 软删除对应的测试数据（将del_flag设为1）
-		result := db.Model(&model.Link{}).
-			Where("gid = ? AND del_flag = 0", gid).
-			Updates(map[string]interface{}{
-				"del_flag": 1,
-				"del_time": time.Now().Unix(),
-			})
+		result := db.Where("gid = ?", gid).Delete(&model.Link{})
 		if result.Error != nil {
-			t.Logf("SQL软删除测试数据失败: %v", result.Error)
+			t.Logf("物理删除测试数据失败 (gid: %s): %v", gid, result.Error)
 		} else {
-			t.Logf("SQL软删除 %d 条测试数据", result.RowsAffected)
+			deletedCount = result.RowsAffected
+			t.Logf("物理删除了 %d 条测试数据 (gid: %s)", deletedCount, gid)
 		}
+	} else {
+		t.Logf("跳过清理，无效的测试 gid: %s", gid)
 	}
-
-	t.Logf("已清理 %d 条测试数据", len(links))
 }
 
 // 生成唯一的短链接标识
 func generateUniqueShortUri(prefix string, index int) string {
-	// 使用固定格式生成短链接，避免使用随机数
-	// 确保生成的URI不超过8个字符
-	return fmt.Sprintf("%s%d", prefix[:1], index%1000)
+	// 使用前缀和索引生成确定性的、长度可控的标识符
+	// 避免使用 time.Now() 来提高确定性和避免冲突
+	return fmt.Sprintf("%s%04d", prefix, index) // 例如 "pgn0001", "pgn0002"
 }
 
 // TestRecycleBinPage_Normal 测试正常分页查询回收站
@@ -94,7 +73,7 @@ func TestRecycleBinPage_Normal(t *testing.T) {
 
 		// 在测试结束后删除
 		defer func(link *model.Link) {
-			svcCtx.RepoManager.Link.Delete(ctx, link.ID)
+			svcCtx.RepoManager.Link.Delete(ctx, link.ID, link.Gid)
 		}(testLink)
 	}
 
@@ -162,7 +141,7 @@ func TestRecycleBinPage_MultiGroup(t *testing.T) {
 
 		// 在测试结束后删除
 		defer func(link *model.Link) {
-			svcCtx.RepoManager.Link.Delete(ctx, link.ID)
+			svcCtx.RepoManager.Link.Delete(ctx, link.ID, link.Gid)
 		}(testLink)
 	}
 
@@ -190,7 +169,7 @@ func TestRecycleBinPage_MultiGroup(t *testing.T) {
 
 		// 在测试结束后删除
 		defer func(link *model.Link) {
-			svcCtx.RepoManager.Link.Delete(ctx, link.ID)
+			svcCtx.RepoManager.Link.Delete(ctx, link.ID, link.Gid)
 		}(testLink)
 	}
 
@@ -315,9 +294,7 @@ func InitTestData() {
 
 	for _, gid := range testGroups {
 		// 查找该分组下的所有链接
-		links, err := svcCtx.RepoManager.Link.FindByCondition(ctx, map[string]interface{}{
-			"gid": gid,
-		}, 1, 100)
+		links, err := svcCtx.RepoManager.Link.FindByGidWithCondition(ctx, gid, map[string]interface{}{}, 1, 100)
 
 		if err != nil {
 			continue
@@ -325,7 +302,7 @@ func InitTestData() {
 
 		// 删除所有找到的链接
 		for _, link := range links {
-			svcCtx.RepoManager.Link.Delete(ctx, link.ID)
+			svcCtx.RepoManager.Link.Delete(ctx, link.ID, link.Gid)
 		}
 	}
 }

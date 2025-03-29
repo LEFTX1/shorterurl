@@ -94,11 +94,6 @@ func (s *ShortLinkServiceServer) StatsGetGroup(ctx context.Context, in *pb.GetGr
 	return l.StatsGetGroup(in)
 }
 
-func (s *ShortLinkServiceServer) StatsGetShortLinkCount(ctx context.Context, in *pb.GetShortLinkCountRequest) (*pb.GetShortLinkCountResponse, error) {
-	l := logic.NewStatsGetShortLinkCountLogic(ctx, s.svcCtx)
-	return l.StatsGetShortLinkCount(in)
-}
-
 func (s *ShortLinkServiceServer) StatsAccessRecordQuery(ctx context.Context, in *pb.AccessRecordQueryRequest) (*pb.AccessRecordQueryResponse, error) {
 	l := logic.NewStatsAccessRecordQueryLogic(ctx, s.svcCtx)
 	return l.StatsAccessRecordQuery(in)

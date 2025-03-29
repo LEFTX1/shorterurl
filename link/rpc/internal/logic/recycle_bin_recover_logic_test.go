@@ -21,16 +21,16 @@ func TestRecycleBinRecover_Normal(t *testing.T) {
 	// 先清理可能存在的测试数据
 	cleanSpecificTestData(t, svcCtx, ctx, testFullShortUrl, testGid)
 
-	// 先查找可能存在的同名数据进行删除
-	links, err := svcCtx.RepoManager.Link.FindByCondition(ctx, map[string]interface{}{
+	// 查找可能存在的同名数据进行删除（先尝试根据全局唯一的full_short_url查找）
+	existingLinks, err := svcCtx.RepoManager.Link.FindByGidWithCondition(ctx, testGid, map[string]interface{}{
 		"full_short_url": testFullShortUrl,
 	}, 1, 10)
 
-	if err == nil && len(links) > 0 {
-		for _, link := range links {
+	if err == nil && len(existingLinks) > 0 {
+		for _, link := range existingLinks {
 			t.Logf("软删除已存在的测试数据: %s (ID: %d)", link.FullShortUrl, link.ID)
 			// 使用软删除方法
-			svcCtx.RepoManager.Link.Delete(ctx, link.ID)
+			svcCtx.RepoManager.Link.Delete(ctx, link.ID, link.Gid)
 		}
 	}
 
@@ -41,12 +41,13 @@ func TestRecycleBinRecover_Normal(t *testing.T) {
 		FullShortUrl:  testFullShortUrl,
 		OriginUrl:     "https://github.com/zeromicro/go-zero",
 		Gid:           testGid,
-		EnableStatus:  1, // 未启用状态(在回收站中)
+		EnableStatus:  0, // 回收站中的链接 EnableStatus 仍为 0 (启用状态)
 		CreateTime:    time.Now(),
 		UpdateTime:    time.Now(),
 		ValidDateType: 0,
 		ValidDate:     time.Now().AddDate(10, 0, 0), // 10年后过期
-		DelFlag:       0,
+		DelFlag:       1,                            // 标记为删除，表示在回收站中
+		DelTime:       time.Now().Unix(),            // 设置删除时间
 	}
 
 	// 保存测试链接
@@ -59,7 +60,7 @@ func TestRecycleBinRecover_Normal(t *testing.T) {
 	defer func() {
 		// 软删除测试链接
 		if testLink.ID > 0 {
-			svcCtx.RepoManager.Link.Delete(ctx, testLink.ID)
+			svcCtx.RepoManager.Link.Delete(ctx, testLink.ID, testLink.Gid)
 		}
 	}()
 
@@ -108,16 +109,16 @@ func TestRecycleBinRecover_AlreadyEnabled(t *testing.T) {
 	// 先清理可能存在的测试数据
 	cleanSpecificTestData(t, svcCtx, ctx, testFullShortUrl, testGid)
 
-	// 先查找可能存在的同名数据进行删除
-	links, err := svcCtx.RepoManager.Link.FindByCondition(ctx, map[string]interface{}{
+	// 查找可能存在的同名数据进行删除（先尝试根据全局唯一的full_short_url查找）
+	existingLinks, err := svcCtx.RepoManager.Link.FindByGidWithCondition(ctx, testGid, map[string]interface{}{
 		"full_short_url": testFullShortUrl,
 	}, 1, 10)
 
-	if err == nil && len(links) > 0 {
-		for _, link := range links {
+	if err == nil && len(existingLinks) > 0 {
+		for _, link := range existingLinks {
 			t.Logf("软删除已存在的测试数据: %s (ID: %d)", link.FullShortUrl, link.ID)
 			// 使用软删除方法
-			svcCtx.RepoManager.Link.Delete(ctx, link.ID)
+			svcCtx.RepoManager.Link.Delete(ctx, link.ID, link.Gid)
 		}
 	}
 
@@ -146,7 +147,7 @@ func TestRecycleBinRecover_AlreadyEnabled(t *testing.T) {
 	defer func() {
 		// 软删除测试链接
 		if testLink.ID > 0 {
-			svcCtx.RepoManager.Link.Delete(ctx, testLink.ID)
+			svcCtx.RepoManager.Link.Delete(ctx, testLink.ID, testLink.Gid)
 		}
 	}()
 

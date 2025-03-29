@@ -28,8 +28,11 @@ type UserRepo interface {
 	// 更新用户
 	Update(ctx context.Context, user *model.User) error
 
-	// 删除用户
+	// 删除用户 (根据主键 ID，软删除)
 	Delete(ctx context.Context, id int64) error
+
+	// 根据用户名删除用户 (硬删除，用于测试清理)
+	DeleteByUsername(ctx context.Context, username string) error
 
 	// 更新密码
 	UpdatePassword(ctx context.Context, id int64, password string) error
@@ -112,7 +115,7 @@ func (r *userRepo) Update(ctx context.Context, user *model.User) error {
 	return r.db.WithContext(ctx).Save(user).Error
 }
 
-// Delete 删除用户
+// Delete 删除用户 (软删除)
 func (r *userRepo) Delete(ctx context.Context, id int64) error {
 	// 这里使用软删除
 	return r.db.WithContext(ctx).
@@ -122,6 +125,12 @@ func (r *userRepo) Delete(ctx context.Context, id int64) error {
 			"del_flag":      1,
 			"deletion_time": time.Now().Unix(),
 		}).Error
+}
+
+// DeleteByUsername 根据用户名删除用户 (硬删除)
+func (r *userRepo) DeleteByUsername(ctx context.Context, username string) error {
+	// 硬删除，同时使用 username 作为分片键进行路由
+	return r.db.WithContext(ctx).Unscoped().Where("username = ?", username).Delete(&model.User{}).Error
 }
 
 // UpdatePassword 更新密码

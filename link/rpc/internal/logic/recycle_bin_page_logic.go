@@ -99,8 +99,8 @@ func (l *RecycleBinPageLogic) RecycleBinPage(in *pb.PageRecycleBinShortLinkReque
 
 // 查询指定分组下回收站中的短链接
 func (l *RecycleBinPageLogic) queryRecycleBinLinksByGid(gid string, page, pageSize int) ([]*model.Link, error) {
-	links, err := l.svcCtx.RepoManager.Link.FindByCondition(l.ctx, map[string]interface{}{
-		"gid":           gid,
+	// 使用 FindByGidWithCondition 代替 FindByCondition
+	links, err := l.svcCtx.RepoManager.Link.FindByGidWithCondition(l.ctx, gid, map[string]interface{}{
 		"enable_status": 1, // 未启用状态表示在回收站中
 		"del_flag":      0, // 未删除
 	}, page, pageSize)
@@ -114,8 +114,8 @@ func (l *RecycleBinPageLogic) queryRecycleBinLinksByGid(gid string, page, pageSi
 
 // 统计指定分组下回收站中的短链接数量
 func (l *RecycleBinPageLogic) countRecycleBinLinksByGid(gid string) (int64, error) {
-	count, err := l.svcCtx.RepoManager.Link.CountByCondition(l.ctx, map[string]interface{}{
-		"gid":           gid,
+	// 使用 CountByGidWithCondition 代替 CountByCondition
+	count, err := l.svcCtx.RepoManager.Link.CountByGidWithCondition(l.ctx, gid, map[string]interface{}{
 		"enable_status": 1, // 未启用状态表示在回收站中
 		"del_flag":      0, // 未删除
 	})

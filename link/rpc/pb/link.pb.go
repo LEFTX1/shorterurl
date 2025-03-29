@@ -1310,6 +1310,7 @@ type LocaleCnStat struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Locale        string                 `protobuf:"bytes,1,opt,name=locale,proto3" json:"locale,omitempty"` // 地区
 	Cnt           int32                  `protobuf:"varint,2,opt,name=cnt,proto3" json:"cnt,omitempty"`      // 数量
+	Ratio         float64                `protobuf:"fixed64,3,opt,name=ratio,proto3" json:"ratio,omitempty"` // 比例
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1358,11 +1359,19 @@ func (x *LocaleCnStat) GetCnt() int32 {
 	return 0
 }
 
+func (x *LocaleCnStat) GetRatio() float64 {
+	if x != nil {
+		return x.Ratio
+	}
+	return 0
+}
+
 // 浏览器统计
 type BrowserStat struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Browser       string                 `protobuf:"bytes,1,opt,name=browser,proto3" json:"browser,omitempty"` // 浏览器
 	Cnt           int32                  `protobuf:"varint,2,opt,name=cnt,proto3" json:"cnt,omitempty"`        // 数量
+	Ratio         float64                `protobuf:"fixed64,3,opt,name=ratio,proto3" json:"ratio,omitempty"`   // 比例
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1411,11 +1420,19 @@ func (x *BrowserStat) GetCnt() int32 {
 	return 0
 }
 
+func (x *BrowserStat) GetRatio() float64 {
+	if x != nil {
+		return x.Ratio
+	}
+	return 0
+}
+
 // 操作系统统计
 type OSStat struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Os            string                 `protobuf:"bytes,1,opt,name=os,proto3" json:"os,omitempty"`    // 操作系统
-	Cnt           int32                  `protobuf:"varint,2,opt,name=cnt,proto3" json:"cnt,omitempty"` // 数量
+	Os            string                 `protobuf:"bytes,1,opt,name=os,proto3" json:"os,omitempty"`         // 操作系统
+	Cnt           int32                  `protobuf:"varint,2,opt,name=cnt,proto3" json:"cnt,omitempty"`      // 数量
+	Ratio         float64                `protobuf:"fixed64,3,opt,name=ratio,proto3" json:"ratio,omitempty"` // 比例
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1464,11 +1481,19 @@ func (x *OSStat) GetCnt() int32 {
 	return 0
 }
 
+func (x *OSStat) GetRatio() float64 {
+	if x != nil {
+		return x.Ratio
+	}
+	return 0
+}
+
 // 设备统计
 type DeviceStat struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Device        string                 `protobuf:"bytes,1,opt,name=device,proto3" json:"device,omitempty"` // 设备
 	Cnt           int32                  `protobuf:"varint,2,opt,name=cnt,proto3" json:"cnt,omitempty"`      // 数量
+	Ratio         float64                `protobuf:"fixed64,3,opt,name=ratio,proto3" json:"ratio,omitempty"` // 比例
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1517,11 +1542,19 @@ func (x *DeviceStat) GetCnt() int32 {
 	return 0
 }
 
+func (x *DeviceStat) GetRatio() float64 {
+	if x != nil {
+		return x.Ratio
+	}
+	return 0
+}
+
 // 网络统计
 type NetworkStat struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Network       string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"` // 网络类型
 	Cnt           int32                  `protobuf:"varint,2,opt,name=cnt,proto3" json:"cnt,omitempty"`        // 数量
+	Ratio         float64                `protobuf:"fixed64,3,opt,name=ratio,proto3" json:"ratio,omitempty"`   // 比例
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1570,25 +1603,158 @@ func (x *NetworkStat) GetCnt() int32 {
 	return 0
 }
 
+func (x *NetworkStat) GetRatio() float64 {
+	if x != nil {
+		return x.Ratio
+	}
+	return 0
+}
+
+// 高频访问IP统计
+type TopIpStat struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ip            string                 `protobuf:"bytes,1,opt,name=ip,proto3" json:"ip,omitempty"`         // IP地址
+	Cnt           int32                  `protobuf:"varint,2,opt,name=cnt,proto3" json:"cnt,omitempty"`      // 访问次数
+	Ratio         float64                `protobuf:"fixed64,3,opt,name=ratio,proto3" json:"ratio,omitempty"` // 比例
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TopIpStat) Reset() {
+	*x = TopIpStat{}
+	mi := &file_link_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TopIpStat) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TopIpStat) ProtoMessage() {}
+
+func (x *TopIpStat) ProtoReflect() protoreflect.Message {
+	mi := &file_link_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TopIpStat.ProtoReflect.Descriptor instead.
+func (*TopIpStat) Descriptor() ([]byte, []int) {
+	return file_link_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *TopIpStat) GetIp() string {
+	if x != nil {
+		return x.Ip
+	}
+	return ""
+}
+
+func (x *TopIpStat) GetCnt() int32 {
+	if x != nil {
+		return x.Cnt
+	}
+	return 0
+}
+
+func (x *TopIpStat) GetRatio() float64 {
+	if x != nil {
+		return x.Ratio
+	}
+	return 0
+}
+
+// 访客类型统计
+type UvTypeStat struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UvType        string                 `protobuf:"bytes,1,opt,name=uv_type,json=uvType,proto3" json:"uv_type,omitempty"` // 访客类型
+	Cnt           int32                  `protobuf:"varint,2,opt,name=cnt,proto3" json:"cnt,omitempty"`                    // 数量
+	Ratio         float64                `protobuf:"fixed64,3,opt,name=ratio,proto3" json:"ratio,omitempty"`               // 比例
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UvTypeStat) Reset() {
+	*x = UvTypeStat{}
+	mi := &file_link_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UvTypeStat) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UvTypeStat) ProtoMessage() {}
+
+func (x *UvTypeStat) ProtoReflect() protoreflect.Message {
+	mi := &file_link_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UvTypeStat.ProtoReflect.Descriptor instead.
+func (*UvTypeStat) Descriptor() ([]byte, []int) {
+	return file_link_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *UvTypeStat) GetUvType() string {
+	if x != nil {
+		return x.UvType
+	}
+	return ""
+}
+
+func (x *UvTypeStat) GetCnt() int32 {
+	if x != nil {
+		return x.Cnt
+	}
+	return 0
+}
+
+func (x *UvTypeStat) GetRatio() float64 {
+	if x != nil {
+		return x.Ratio
+	}
+	return 0
+}
+
 // 获取单个短链接统计数据响应
 type GetSingleStatsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pv            int32                  `protobuf:"varint,1,opt,name=pv,proto3" json:"pv,omitempty"`                                             // 访问量
-	Uv            int32                  `protobuf:"varint,2,opt,name=uv,proto3" json:"uv,omitempty"`                                             // 独立访问量
-	Uip           int32                  `protobuf:"varint,3,opt,name=uip,proto3" json:"uip,omitempty"`                                           // IP数
-	Daily         []*DailyStat           `protobuf:"bytes,4,rep,name=daily,proto3" json:"daily,omitempty"`                                        // 每日统计
-	LocaleCnStats []*LocaleCnStat        `protobuf:"bytes,5,rep,name=locale_cn_stats,json=localeCnStats,proto3" json:"locale_cn_stats,omitempty"` // 地域统计
-	BrowserStats  []*BrowserStat         `protobuf:"bytes,6,rep,name=browser_stats,json=browserStats,proto3" json:"browser_stats,omitempty"`      // 浏览器统计
-	OsStats       []*OSStat              `protobuf:"bytes,7,rep,name=os_stats,json=osStats,proto3" json:"os_stats,omitempty"`                     // 操作系统统计
-	DeviceStats   []*DeviceStat          `protobuf:"bytes,8,rep,name=device_stats,json=deviceStats,proto3" json:"device_stats,omitempty"`         // 设备统计
-	NetworkStats  []*NetworkStat         `protobuf:"bytes,9,rep,name=network_stats,json=networkStats,proto3" json:"network_stats,omitempty"`      // 网络统计
+	Pv            int32                  `protobuf:"varint,1,opt,name=pv,proto3" json:"pv,omitempty"`                                                // 访问量
+	Uv            int32                  `protobuf:"varint,2,opt,name=uv,proto3" json:"uv,omitempty"`                                                // 独立访问量
+	Uip           int32                  `protobuf:"varint,3,opt,name=uip,proto3" json:"uip,omitempty"`                                              // IP数
+	Daily         []*DailyStat           `protobuf:"bytes,4,rep,name=daily,proto3" json:"daily,omitempty"`                                           // 每日统计
+	LocaleCnStats []*LocaleCnStat        `protobuf:"bytes,5,rep,name=locale_cn_stats,json=localeCnStats,proto3" json:"locale_cn_stats,omitempty"`    // 地域统计
+	HourStats     []int32                `protobuf:"varint,6,rep,packed,name=hour_stats,json=hourStats,proto3" json:"hour_stats,omitempty"`          // 小时访问详情（24小时）
+	TopIpStats    []*TopIpStat           `protobuf:"bytes,7,rep,name=top_ip_stats,json=topIpStats,proto3" json:"top_ip_stats,omitempty"`             // 高频访问IP详情
+	WeekdayStats  []int32                `protobuf:"varint,8,rep,packed,name=weekday_stats,json=weekdayStats,proto3" json:"weekday_stats,omitempty"` // 一周访问详情（7天）
+	BrowserStats  []*BrowserStat         `protobuf:"bytes,9,rep,name=browser_stats,json=browserStats,proto3" json:"browser_stats,omitempty"`         // 浏览器统计
+	OsStats       []*OSStat              `protobuf:"bytes,10,rep,name=os_stats,json=osStats,proto3" json:"os_stats,omitempty"`                       // 操作系统统计
+	UvTypeStats   []*UvTypeStat          `protobuf:"bytes,11,rep,name=uv_type_stats,json=uvTypeStats,proto3" json:"uv_type_stats,omitempty"`         // 访客类型统计
+	DeviceStats   []*DeviceStat          `protobuf:"bytes,12,rep,name=device_stats,json=deviceStats,proto3" json:"device_stats,omitempty"`           // 设备统计
+	NetworkStats  []*NetworkStat         `protobuf:"bytes,13,rep,name=network_stats,json=networkStats,proto3" json:"network_stats,omitempty"`        // 网络统计
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetSingleStatsResponse) Reset() {
 	*x = GetSingleStatsResponse{}
-	mi := &file_link_proto_msgTypes[25]
+	mi := &file_link_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1600,7 +1766,7 @@ func (x *GetSingleStatsResponse) String() string {
 func (*GetSingleStatsResponse) ProtoMessage() {}
 
 func (x *GetSingleStatsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_link_proto_msgTypes[25]
+	mi := &file_link_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1613,7 +1779,7 @@ func (x *GetSingleStatsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSingleStatsResponse.ProtoReflect.Descriptor instead.
 func (*GetSingleStatsResponse) Descriptor() ([]byte, []int) {
-	return file_link_proto_rawDescGZIP(), []int{25}
+	return file_link_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *GetSingleStatsResponse) GetPv() int32 {
@@ -1651,6 +1817,27 @@ func (x *GetSingleStatsResponse) GetLocaleCnStats() []*LocaleCnStat {
 	return nil
 }
 
+func (x *GetSingleStatsResponse) GetHourStats() []int32 {
+	if x != nil {
+		return x.HourStats
+	}
+	return nil
+}
+
+func (x *GetSingleStatsResponse) GetTopIpStats() []*TopIpStat {
+	if x != nil {
+		return x.TopIpStats
+	}
+	return nil
+}
+
+func (x *GetSingleStatsResponse) GetWeekdayStats() []int32 {
+	if x != nil {
+		return x.WeekdayStats
+	}
+	return nil
+}
+
 func (x *GetSingleStatsResponse) GetBrowserStats() []*BrowserStat {
 	if x != nil {
 		return x.BrowserStats
@@ -1661,6 +1848,13 @@ func (x *GetSingleStatsResponse) GetBrowserStats() []*BrowserStat {
 func (x *GetSingleStatsResponse) GetOsStats() []*OSStat {
 	if x != nil {
 		return x.OsStats
+	}
+	return nil
+}
+
+func (x *GetSingleStatsResponse) GetUvTypeStats() []*UvTypeStat {
+	if x != nil {
+		return x.UvTypeStats
 	}
 	return nil
 }
@@ -1691,7 +1885,7 @@ type GetGroupStatsRequest struct {
 
 func (x *GetGroupStatsRequest) Reset() {
 	*x = GetGroupStatsRequest{}
-	mi := &file_link_proto_msgTypes[26]
+	mi := &file_link_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1703,7 +1897,7 @@ func (x *GetGroupStatsRequest) String() string {
 func (*GetGroupStatsRequest) ProtoMessage() {}
 
 func (x *GetGroupStatsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_link_proto_msgTypes[26]
+	mi := &file_link_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1716,7 +1910,7 @@ func (x *GetGroupStatsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGroupStatsRequest.ProtoReflect.Descriptor instead.
 func (*GetGroupStatsRequest) Descriptor() ([]byte, []int) {
-	return file_link_proto_rawDescGZIP(), []int{26}
+	return file_link_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *GetGroupStatsRequest) GetGid() string {
@@ -1743,22 +1937,26 @@ func (x *GetGroupStatsRequest) GetEndDate() string {
 // 获取分组短链接统计数据响应
 type GetGroupStatsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pv            int32                  `protobuf:"varint,1,opt,name=pv,proto3" json:"pv,omitempty"`                                             // 访问量
-	Uv            int32                  `protobuf:"varint,2,opt,name=uv,proto3" json:"uv,omitempty"`                                             // 独立访问量
-	Uip           int32                  `protobuf:"varint,3,opt,name=uip,proto3" json:"uip,omitempty"`                                           // IP数
-	Daily         []*DailyStat           `protobuf:"bytes,4,rep,name=daily,proto3" json:"daily,omitempty"`                                        // 每日统计
-	LocaleCnStats []*LocaleCnStat        `protobuf:"bytes,5,rep,name=locale_cn_stats,json=localeCnStats,proto3" json:"locale_cn_stats,omitempty"` // 地域统计
-	BrowserStats  []*BrowserStat         `protobuf:"bytes,6,rep,name=browser_stats,json=browserStats,proto3" json:"browser_stats,omitempty"`      // 浏览器统计
-	OsStats       []*OSStat              `protobuf:"bytes,7,rep,name=os_stats,json=osStats,proto3" json:"os_stats,omitempty"`                     // 操作系统统计
-	DeviceStats   []*DeviceStat          `protobuf:"bytes,8,rep,name=device_stats,json=deviceStats,proto3" json:"device_stats,omitempty"`         // 设备统计
-	NetworkStats  []*NetworkStat         `protobuf:"bytes,9,rep,name=network_stats,json=networkStats,proto3" json:"network_stats,omitempty"`      // 网络统计
+	Pv            int32                  `protobuf:"varint,1,opt,name=pv,proto3" json:"pv,omitempty"`                                                // 访问量
+	Uv            int32                  `protobuf:"varint,2,opt,name=uv,proto3" json:"uv,omitempty"`                                                // 独立访问量
+	Uip           int32                  `protobuf:"varint,3,opt,name=uip,proto3" json:"uip,omitempty"`                                              // IP数
+	Daily         []*DailyStat           `protobuf:"bytes,4,rep,name=daily,proto3" json:"daily,omitempty"`                                           // 每日统计
+	LocaleCnStats []*LocaleCnStat        `protobuf:"bytes,5,rep,name=locale_cn_stats,json=localeCnStats,proto3" json:"locale_cn_stats,omitempty"`    // 地域统计
+	HourStats     []int32                `protobuf:"varint,6,rep,packed,name=hour_stats,json=hourStats,proto3" json:"hour_stats,omitempty"`          // 小时访问详情（24小时）
+	TopIpStats    []*TopIpStat           `protobuf:"bytes,7,rep,name=top_ip_stats,json=topIpStats,proto3" json:"top_ip_stats,omitempty"`             // 高频访问IP详情
+	WeekdayStats  []int32                `protobuf:"varint,8,rep,packed,name=weekday_stats,json=weekdayStats,proto3" json:"weekday_stats,omitempty"` // 一周访问详情（7天）
+	BrowserStats  []*BrowserStat         `protobuf:"bytes,9,rep,name=browser_stats,json=browserStats,proto3" json:"browser_stats,omitempty"`         // 浏览器统计
+	OsStats       []*OSStat              `protobuf:"bytes,10,rep,name=os_stats,json=osStats,proto3" json:"os_stats,omitempty"`                       // 操作系统统计
+	UvTypeStats   []*UvTypeStat          `protobuf:"bytes,11,rep,name=uv_type_stats,json=uvTypeStats,proto3" json:"uv_type_stats,omitempty"`         // 访客类型统计
+	DeviceStats   []*DeviceStat          `protobuf:"bytes,12,rep,name=device_stats,json=deviceStats,proto3" json:"device_stats,omitempty"`           // 设备统计
+	NetworkStats  []*NetworkStat         `protobuf:"bytes,13,rep,name=network_stats,json=networkStats,proto3" json:"network_stats,omitempty"`        // 网络统计
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetGroupStatsResponse) Reset() {
 	*x = GetGroupStatsResponse{}
-	mi := &file_link_proto_msgTypes[27]
+	mi := &file_link_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1770,7 +1968,7 @@ func (x *GetGroupStatsResponse) String() string {
 func (*GetGroupStatsResponse) ProtoMessage() {}
 
 func (x *GetGroupStatsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_link_proto_msgTypes[27]
+	mi := &file_link_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1783,7 +1981,7 @@ func (x *GetGroupStatsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGroupStatsResponse.ProtoReflect.Descriptor instead.
 func (*GetGroupStatsResponse) Descriptor() ([]byte, []int) {
-	return file_link_proto_rawDescGZIP(), []int{27}
+	return file_link_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *GetGroupStatsResponse) GetPv() int32 {
@@ -1821,6 +2019,27 @@ func (x *GetGroupStatsResponse) GetLocaleCnStats() []*LocaleCnStat {
 	return nil
 }
 
+func (x *GetGroupStatsResponse) GetHourStats() []int32 {
+	if x != nil {
+		return x.HourStats
+	}
+	return nil
+}
+
+func (x *GetGroupStatsResponse) GetTopIpStats() []*TopIpStat {
+	if x != nil {
+		return x.TopIpStats
+	}
+	return nil
+}
+
+func (x *GetGroupStatsResponse) GetWeekdayStats() []int32 {
+	if x != nil {
+		return x.WeekdayStats
+	}
+	return nil
+}
+
 func (x *GetGroupStatsResponse) GetBrowserStats() []*BrowserStat {
 	if x != nil {
 		return x.BrowserStats
@@ -1831,6 +2050,13 @@ func (x *GetGroupStatsResponse) GetBrowserStats() []*BrowserStat {
 func (x *GetGroupStatsResponse) GetOsStats() []*OSStat {
 	if x != nil {
 		return x.OsStats
+	}
+	return nil
+}
+
+func (x *GetGroupStatsResponse) GetUvTypeStats() []*UvTypeStat {
+	if x != nil {
+		return x.UvTypeStats
 	}
 	return nil
 }
@@ -1849,51 +2075,6 @@ func (x *GetGroupStatsResponse) GetNetworkStats() []*NetworkStat {
 	return nil
 }
 
-// 短链接分组内数量查询请求
-type GetShortLinkCountRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RequestParam  []string               `protobuf:"bytes,1,rep,name=request_param,json=requestParam,proto3" json:"request_param,omitempty"` // 分组标识列表
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetShortLinkCountRequest) Reset() {
-	*x = GetShortLinkCountRequest{}
-	mi := &file_link_proto_msgTypes[28]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetShortLinkCountRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetShortLinkCountRequest) ProtoMessage() {}
-
-func (x *GetShortLinkCountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_link_proto_msgTypes[28]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetShortLinkCountRequest.ProtoReflect.Descriptor instead.
-func (*GetShortLinkCountRequest) Descriptor() ([]byte, []int) {
-	return file_link_proto_rawDescGZIP(), []int{28}
-}
-
-func (x *GetShortLinkCountRequest) GetRequestParam() []string {
-	if x != nil {
-		return x.RequestParam
-	}
-	return nil
-}
-
 // 单个分组数量结果
 type GroupCount struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
@@ -1905,7 +2086,7 @@ type GroupCount struct {
 
 func (x *GroupCount) Reset() {
 	*x = GroupCount{}
-	mi := &file_link_proto_msgTypes[29]
+	mi := &file_link_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1917,7 +2098,7 @@ func (x *GroupCount) String() string {
 func (*GroupCount) ProtoMessage() {}
 
 func (x *GroupCount) ProtoReflect() protoreflect.Message {
-	mi := &file_link_proto_msgTypes[29]
+	mi := &file_link_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1930,7 +2111,7 @@ func (x *GroupCount) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GroupCount.ProtoReflect.Descriptor instead.
 func (*GroupCount) Descriptor() ([]byte, []int) {
-	return file_link_proto_rawDescGZIP(), []int{29}
+	return file_link_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *GroupCount) GetGid() string {
@@ -1947,62 +2128,18 @@ func (x *GroupCount) GetShortLinkCount() int32 {
 	return 0
 }
 
-// 查询短链接分组内数量响应
-type GetShortLinkCountResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GroupCounts   []*GroupCount          `protobuf:"bytes,1,rep,name=group_counts,json=groupCounts,proto3" json:"group_counts,omitempty"` // 分组数量列表
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetShortLinkCountResponse) Reset() {
-	*x = GetShortLinkCountResponse{}
-	mi := &file_link_proto_msgTypes[30]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetShortLinkCountResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetShortLinkCountResponse) ProtoMessage() {}
-
-func (x *GetShortLinkCountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_link_proto_msgTypes[30]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetShortLinkCountResponse.ProtoReflect.Descriptor instead.
-func (*GetShortLinkCountResponse) Descriptor() ([]byte, []int) {
-	return file_link_proto_rawDescGZIP(), []int{30}
-}
-
-func (x *GetShortLinkCountResponse) GetGroupCounts() []*GroupCount {
-	if x != nil {
-		return x.GroupCounts
-	}
-	return nil
-}
-
 // 访问记录
 type AccessRecord struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Ip            string                 `protobuf:"bytes,1,opt,name=ip,proto3" json:"ip,omitempty"`                                   // 访问IP
+	UvType        string                 `protobuf:"bytes,1,opt,name=uv_type,json=uvType,proto3" json:"uv_type,omitempty"`             // 访客类型
 	Browser       string                 `protobuf:"bytes,2,opt,name=browser,proto3" json:"browser,omitempty"`                         // 浏览器
 	Os            string                 `protobuf:"bytes,3,opt,name=os,proto3" json:"os,omitempty"`                                   // 操作系统
-	Network       string                 `protobuf:"bytes,4,opt,name=network,proto3" json:"network,omitempty"`                         // 网络环境
-	Device        string                 `protobuf:"bytes,5,opt,name=device,proto3" json:"device,omitempty"`                           // 访问设备
-	Locale        string                 `protobuf:"bytes,6,opt,name=locale,proto3" json:"locale,omitempty"`                           // 地区
-	User          string                 `protobuf:"bytes,7,opt,name=user,proto3" json:"user,omitempty"`                               // 用户标识
-	CreateTime    string                 `protobuf:"bytes,8,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"` // 访问时间（ISO-8601格式）
+	Ip            string                 `protobuf:"bytes,4,opt,name=ip,proto3" json:"ip,omitempty"`                                   // 访问IP
+	Network       string                 `protobuf:"bytes,5,opt,name=network,proto3" json:"network,omitempty"`                         // 网络环境
+	Device        string                 `protobuf:"bytes,6,opt,name=device,proto3" json:"device,omitempty"`                           // 访问设备
+	Locale        string                 `protobuf:"bytes,7,opt,name=locale,proto3" json:"locale,omitempty"`                           // 地区
+	User          string                 `protobuf:"bytes,8,opt,name=user,proto3" json:"user,omitempty"`                               // 用户标识
+	CreateTime    string                 `protobuf:"bytes,9,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"` // 访问时间（ISO-8601格式）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2037,9 +2174,9 @@ func (*AccessRecord) Descriptor() ([]byte, []int) {
 	return file_link_proto_rawDescGZIP(), []int{31}
 }
 
-func (x *AccessRecord) GetIp() string {
+func (x *AccessRecord) GetUvType() string {
 	if x != nil {
-		return x.Ip
+		return x.UvType
 	}
 	return ""
 }
@@ -2054,6 +2191,13 @@ func (x *AccessRecord) GetBrowser() string {
 func (x *AccessRecord) GetOs() string {
 	if x != nil {
 		return x.Os
+	}
+	return ""
+}
+
+func (x *AccessRecord) GetIp() string {
+	if x != nil {
+		return x.Ip
 	}
 	return ""
 }
@@ -2100,8 +2244,9 @@ type AccessRecordQueryRequest struct {
 	Gid           string                 `protobuf:"bytes,2,opt,name=gid,proto3" json:"gid,omitempty"`                                         // 分组标识
 	StartDate     string                 `protobuf:"bytes,3,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`            // 开始日期（ISO-8601格式）
 	EndDate       string                 `protobuf:"bytes,4,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`                  // 结束日期（ISO-8601格式）
-	Current       int32                  `protobuf:"varint,5,opt,name=current,proto3" json:"current,omitempty"`                                // 当前页
-	Size          int32                  `protobuf:"varint,6,opt,name=size,proto3" json:"size,omitempty"`                                      // 每页大小
+	EnableStatus  int32                  `protobuf:"varint,5,opt,name=enable_status,json=enableStatus,proto3" json:"enable_status,omitempty"`  // 启用状态 0：启用 1：未启用
+	Current       int64                  `protobuf:"varint,6,opt,name=current,proto3" json:"current,omitempty"`                                // 当前页
+	Size          int64                  `protobuf:"varint,7,opt,name=size,proto3" json:"size,omitempty"`                                      // 每页大小
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2164,14 +2309,21 @@ func (x *AccessRecordQueryRequest) GetEndDate() string {
 	return ""
 }
 
-func (x *AccessRecordQueryRequest) GetCurrent() int32 {
+func (x *AccessRecordQueryRequest) GetEnableStatus() int32 {
+	if x != nil {
+		return x.EnableStatus
+	}
+	return 0
+}
+
+func (x *AccessRecordQueryRequest) GetCurrent() int64 {
 	if x != nil {
 		return x.Current
 	}
 	return 0
 }
 
-func (x *AccessRecordQueryRequest) GetSize() int32 {
+func (x *AccessRecordQueryRequest) GetSize() int64 {
 	if x != nil {
 		return x.Size
 	}
@@ -2182,9 +2334,9 @@ func (x *AccessRecordQueryRequest) GetSize() int32 {
 type AccessRecordQueryResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Records       []*AccessRecord        `protobuf:"bytes,1,rep,name=records,proto3" json:"records,omitempty"`  // 访问记录列表
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`     // 总记录数
-	Size          int32                  `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`       // 每页大小
-	Current       int32                  `protobuf:"varint,4,opt,name=current,proto3" json:"current,omitempty"` // 当前页
+	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`     // 总记录数
+	Size          int64                  `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`       // 每页大小
+	Current       int64                  `protobuf:"varint,4,opt,name=current,proto3" json:"current,omitempty"` // 当前页
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2226,21 +2378,21 @@ func (x *AccessRecordQueryResponse) GetRecords() []*AccessRecord {
 	return nil
 }
 
-func (x *AccessRecordQueryResponse) GetTotal() int32 {
+func (x *AccessRecordQueryResponse) GetTotal() int64 {
 	if x != nil {
 		return x.Total
 	}
 	return 0
 }
 
-func (x *AccessRecordQueryResponse) GetSize() int32 {
+func (x *AccessRecordQueryResponse) GetSize() int64 {
 	if x != nil {
 		return x.Size
 	}
 	return 0
 }
 
-func (x *AccessRecordQueryResponse) GetCurrent() int32 {
+func (x *AccessRecordQueryResponse) GetCurrent() int64 {
 	if x != nil {
 		return x.Current
 	}
@@ -2253,8 +2405,8 @@ type GroupAccessRecordQueryRequest struct {
 	Gid           string                 `protobuf:"bytes,1,opt,name=gid,proto3" json:"gid,omitempty"`                              // 分组标识
 	StartDate     string                 `protobuf:"bytes,2,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"` // 开始日期（ISO-8601格式）
 	EndDate       string                 `protobuf:"bytes,3,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`       // 结束日期（ISO-8601格式）
-	Current       int32                  `protobuf:"varint,4,opt,name=current,proto3" json:"current,omitempty"`                     // 当前页
-	Size          int32                  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`                           // 每页大小
+	Current       int64                  `protobuf:"varint,4,opt,name=current,proto3" json:"current,omitempty"`                     // 当前页
+	Size          int64                  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`                           // 每页大小
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2310,14 +2462,14 @@ func (x *GroupAccessRecordQueryRequest) GetEndDate() string {
 	return ""
 }
 
-func (x *GroupAccessRecordQueryRequest) GetCurrent() int32 {
+func (x *GroupAccessRecordQueryRequest) GetCurrent() int64 {
 	if x != nil {
 		return x.Current
 	}
 	return 0
 }
 
-func (x *GroupAccessRecordQueryRequest) GetSize() int32 {
+func (x *GroupAccessRecordQueryRequest) GetSize() int64 {
 	if x != nil {
 		return x.Size
 	}
@@ -2328,9 +2480,9 @@ func (x *GroupAccessRecordQueryRequest) GetSize() int32 {
 type GroupAccessRecordQueryResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Records       []*AccessRecord        `protobuf:"bytes,1,rep,name=records,proto3" json:"records,omitempty"`  // 访问记录列表
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`     // 总记录数
-	Size          int32                  `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`       // 每页大小
-	Current       int32                  `protobuf:"varint,4,opt,name=current,proto3" json:"current,omitempty"` // 当前页
+	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`     // 总记录数
+	Size          int64                  `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`       // 每页大小
+	Current       int64                  `protobuf:"varint,4,opt,name=current,proto3" json:"current,omitempty"` // 当前页
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2372,21 +2524,21 @@ func (x *GroupAccessRecordQueryResponse) GetRecords() []*AccessRecord {
 	return nil
 }
 
-func (x *GroupAccessRecordQueryResponse) GetTotal() int32 {
+func (x *GroupAccessRecordQueryResponse) GetTotal() int64 {
 	if x != nil {
 		return x.Total
 	}
 	return 0
 }
 
-func (x *GroupAccessRecordQueryResponse) GetSize() int32 {
+func (x *GroupAccessRecordQueryResponse) GetSize() int64 {
 	if x != nil {
 		return x.Size
 	}
 	return 0
 }
 
-func (x *GroupAccessRecordQueryResponse) GetCurrent() int32 {
+func (x *GroupAccessRecordQueryResponse) GetCurrent() int64 {
 	if x != nil {
 		return x.Current
 	}
@@ -2976,91 +3128,117 @@ const file_link_proto_rawDesc = "" +
 	"\x04date\x18\x01 \x01(\tR\x04date\x12\x0e\n" +
 	"\x02pv\x18\x02 \x01(\x05R\x02pv\x12\x0e\n" +
 	"\x02uv\x18\x03 \x01(\x05R\x02uv\x12\x10\n" +
-	"\x03uip\x18\x04 \x01(\x05R\x03uip\"8\n" +
+	"\x03uip\x18\x04 \x01(\x05R\x03uip\"N\n" +
 	"\fLocaleCnStat\x12\x16\n" +
 	"\x06locale\x18\x01 \x01(\tR\x06locale\x12\x10\n" +
-	"\x03cnt\x18\x02 \x01(\x05R\x03cnt\"9\n" +
+	"\x03cnt\x18\x02 \x01(\x05R\x03cnt\x12\x14\n" +
+	"\x05ratio\x18\x03 \x01(\x01R\x05ratio\"O\n" +
 	"\vBrowserStat\x12\x18\n" +
 	"\abrowser\x18\x01 \x01(\tR\abrowser\x12\x10\n" +
-	"\x03cnt\x18\x02 \x01(\x05R\x03cnt\"*\n" +
+	"\x03cnt\x18\x02 \x01(\x05R\x03cnt\x12\x14\n" +
+	"\x05ratio\x18\x03 \x01(\x01R\x05ratio\"@\n" +
 	"\x06OSStat\x12\x0e\n" +
 	"\x02os\x18\x01 \x01(\tR\x02os\x12\x10\n" +
-	"\x03cnt\x18\x02 \x01(\x05R\x03cnt\"6\n" +
+	"\x03cnt\x18\x02 \x01(\x05R\x03cnt\x12\x14\n" +
+	"\x05ratio\x18\x03 \x01(\x01R\x05ratio\"L\n" +
 	"\n" +
 	"DeviceStat\x12\x16\n" +
 	"\x06device\x18\x01 \x01(\tR\x06device\x12\x10\n" +
-	"\x03cnt\x18\x02 \x01(\x05R\x03cnt\"9\n" +
+	"\x03cnt\x18\x02 \x01(\x05R\x03cnt\x12\x14\n" +
+	"\x05ratio\x18\x03 \x01(\x01R\x05ratio\"O\n" +
 	"\vNetworkStat\x12\x18\n" +
 	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x10\n" +
-	"\x03cnt\x18\x02 \x01(\x05R\x03cnt\"\x99\x03\n" +
+	"\x03cnt\x18\x02 \x01(\x05R\x03cnt\x12\x14\n" +
+	"\x05ratio\x18\x03 \x01(\x01R\x05ratio\"C\n" +
+	"\tTopIpStat\x12\x0e\n" +
+	"\x02ip\x18\x01 \x01(\tR\x02ip\x12\x10\n" +
+	"\x03cnt\x18\x02 \x01(\x05R\x03cnt\x12\x14\n" +
+	"\x05ratio\x18\x03 \x01(\x01R\x05ratio\"M\n" +
+	"\n" +
+	"UvTypeStat\x12\x17\n" +
+	"\auv_type\x18\x01 \x01(\tR\x06uvType\x12\x10\n" +
+	"\x03cnt\x18\x02 \x01(\x05R\x03cnt\x12\x14\n" +
+	"\x05ratio\x18\x03 \x01(\x01R\x05ratio\"\xd0\x04\n" +
 	"\x16GetSingleStatsResponse\x12\x0e\n" +
 	"\x02pv\x18\x01 \x01(\x05R\x02pv\x12\x0e\n" +
 	"\x02uv\x18\x02 \x01(\x05R\x02uv\x12\x10\n" +
 	"\x03uip\x18\x03 \x01(\x05R\x03uip\x12*\n" +
 	"\x05daily\x18\x04 \x03(\v2\x14.shortlink.DailyStatR\x05daily\x12?\n" +
-	"\x0flocale_cn_stats\x18\x05 \x03(\v2\x17.shortlink.LocaleCnStatR\rlocaleCnStats\x12;\n" +
-	"\rbrowser_stats\x18\x06 \x03(\v2\x16.shortlink.BrowserStatR\fbrowserStats\x12,\n" +
-	"\bos_stats\x18\a \x03(\v2\x11.shortlink.OSStatR\aosStats\x128\n" +
-	"\fdevice_stats\x18\b \x03(\v2\x15.shortlink.DeviceStatR\vdeviceStats\x12;\n" +
-	"\rnetwork_stats\x18\t \x03(\v2\x16.shortlink.NetworkStatR\fnetworkStats\"b\n" +
+	"\x0flocale_cn_stats\x18\x05 \x03(\v2\x17.shortlink.LocaleCnStatR\rlocaleCnStats\x12\x1d\n" +
+	"\n" +
+	"hour_stats\x18\x06 \x03(\x05R\thourStats\x126\n" +
+	"\ftop_ip_stats\x18\a \x03(\v2\x14.shortlink.TopIpStatR\n" +
+	"topIpStats\x12#\n" +
+	"\rweekday_stats\x18\b \x03(\x05R\fweekdayStats\x12;\n" +
+	"\rbrowser_stats\x18\t \x03(\v2\x16.shortlink.BrowserStatR\fbrowserStats\x12,\n" +
+	"\bos_stats\x18\n" +
+	" \x03(\v2\x11.shortlink.OSStatR\aosStats\x129\n" +
+	"\ruv_type_stats\x18\v \x03(\v2\x15.shortlink.UvTypeStatR\vuvTypeStats\x128\n" +
+	"\fdevice_stats\x18\f \x03(\v2\x15.shortlink.DeviceStatR\vdeviceStats\x12;\n" +
+	"\rnetwork_stats\x18\r \x03(\v2\x16.shortlink.NetworkStatR\fnetworkStats\"b\n" +
 	"\x14GetGroupStatsRequest\x12\x10\n" +
 	"\x03gid\x18\x01 \x01(\tR\x03gid\x12\x1d\n" +
 	"\n" +
 	"start_date\x18\x02 \x01(\tR\tstartDate\x12\x19\n" +
-	"\bend_date\x18\x03 \x01(\tR\aendDate\"\x98\x03\n" +
+	"\bend_date\x18\x03 \x01(\tR\aendDate\"\xcf\x04\n" +
 	"\x15GetGroupStatsResponse\x12\x0e\n" +
 	"\x02pv\x18\x01 \x01(\x05R\x02pv\x12\x0e\n" +
 	"\x02uv\x18\x02 \x01(\x05R\x02uv\x12\x10\n" +
 	"\x03uip\x18\x03 \x01(\x05R\x03uip\x12*\n" +
 	"\x05daily\x18\x04 \x03(\v2\x14.shortlink.DailyStatR\x05daily\x12?\n" +
-	"\x0flocale_cn_stats\x18\x05 \x03(\v2\x17.shortlink.LocaleCnStatR\rlocaleCnStats\x12;\n" +
-	"\rbrowser_stats\x18\x06 \x03(\v2\x16.shortlink.BrowserStatR\fbrowserStats\x12,\n" +
-	"\bos_stats\x18\a \x03(\v2\x11.shortlink.OSStatR\aosStats\x128\n" +
-	"\fdevice_stats\x18\b \x03(\v2\x15.shortlink.DeviceStatR\vdeviceStats\x12;\n" +
-	"\rnetwork_stats\x18\t \x03(\v2\x16.shortlink.NetworkStatR\fnetworkStats\"?\n" +
-	"\x18GetShortLinkCountRequest\x12#\n" +
-	"\rrequest_param\x18\x01 \x03(\tR\frequestParam\"H\n" +
+	"\x0flocale_cn_stats\x18\x05 \x03(\v2\x17.shortlink.LocaleCnStatR\rlocaleCnStats\x12\x1d\n" +
+	"\n" +
+	"hour_stats\x18\x06 \x03(\x05R\thourStats\x126\n" +
+	"\ftop_ip_stats\x18\a \x03(\v2\x14.shortlink.TopIpStatR\n" +
+	"topIpStats\x12#\n" +
+	"\rweekday_stats\x18\b \x03(\x05R\fweekdayStats\x12;\n" +
+	"\rbrowser_stats\x18\t \x03(\v2\x16.shortlink.BrowserStatR\fbrowserStats\x12,\n" +
+	"\bos_stats\x18\n" +
+	" \x03(\v2\x11.shortlink.OSStatR\aosStats\x129\n" +
+	"\ruv_type_stats\x18\v \x03(\v2\x15.shortlink.UvTypeStatR\vuvTypeStats\x128\n" +
+	"\fdevice_stats\x18\f \x03(\v2\x15.shortlink.DeviceStatR\vdeviceStats\x12;\n" +
+	"\rnetwork_stats\x18\r \x03(\v2\x16.shortlink.NetworkStatR\fnetworkStats\"H\n" +
 	"\n" +
 	"GroupCount\x12\x10\n" +
 	"\x03gid\x18\x01 \x01(\tR\x03gid\x12(\n" +
-	"\x10short_link_count\x18\x02 \x01(\x05R\x0eshortLinkCount\"U\n" +
-	"\x19GetShortLinkCountResponse\x128\n" +
-	"\fgroup_counts\x18\x01 \x03(\v2\x15.shortlink.GroupCountR\vgroupCounts\"\xc7\x01\n" +
-	"\fAccessRecord\x12\x0e\n" +
-	"\x02ip\x18\x01 \x01(\tR\x02ip\x12\x18\n" +
+	"\x10short_link_count\x18\x02 \x01(\x05R\x0eshortLinkCount\"\xe0\x01\n" +
+	"\fAccessRecord\x12\x17\n" +
+	"\auv_type\x18\x01 \x01(\tR\x06uvType\x12\x18\n" +
 	"\abrowser\x18\x02 \x01(\tR\abrowser\x12\x0e\n" +
-	"\x02os\x18\x03 \x01(\tR\x02os\x12\x18\n" +
-	"\anetwork\x18\x04 \x01(\tR\anetwork\x12\x16\n" +
-	"\x06device\x18\x05 \x01(\tR\x06device\x12\x16\n" +
-	"\x06locale\x18\x06 \x01(\tR\x06locale\x12\x12\n" +
-	"\x04user\x18\a \x01(\tR\x04user\x12\x1f\n" +
-	"\vcreate_time\x18\b \x01(\tR\n" +
-	"createTime\"\xba\x01\n" +
+	"\x02os\x18\x03 \x01(\tR\x02os\x12\x0e\n" +
+	"\x02ip\x18\x04 \x01(\tR\x02ip\x12\x18\n" +
+	"\anetwork\x18\x05 \x01(\tR\anetwork\x12\x16\n" +
+	"\x06device\x18\x06 \x01(\tR\x06device\x12\x16\n" +
+	"\x06locale\x18\a \x01(\tR\x06locale\x12\x12\n" +
+	"\x04user\x18\b \x01(\tR\x04user\x12\x1f\n" +
+	"\vcreate_time\x18\t \x01(\tR\n" +
+	"createTime\"\xdf\x01\n" +
 	"\x18AccessRecordQueryRequest\x12$\n" +
 	"\x0efull_short_url\x18\x01 \x01(\tR\ffullShortUrl\x12\x10\n" +
 	"\x03gid\x18\x02 \x01(\tR\x03gid\x12\x1d\n" +
 	"\n" +
 	"start_date\x18\x03 \x01(\tR\tstartDate\x12\x19\n" +
-	"\bend_date\x18\x04 \x01(\tR\aendDate\x12\x18\n" +
-	"\acurrent\x18\x05 \x01(\x05R\acurrent\x12\x12\n" +
-	"\x04size\x18\x06 \x01(\x05R\x04size\"\x92\x01\n" +
+	"\bend_date\x18\x04 \x01(\tR\aendDate\x12#\n" +
+	"\renable_status\x18\x05 \x01(\x05R\fenableStatus\x12\x18\n" +
+	"\acurrent\x18\x06 \x01(\x03R\acurrent\x12\x12\n" +
+	"\x04size\x18\a \x01(\x03R\x04size\"\x92\x01\n" +
 	"\x19AccessRecordQueryResponse\x121\n" +
 	"\arecords\x18\x01 \x03(\v2\x17.shortlink.AccessRecordR\arecords\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
-	"\x04size\x18\x03 \x01(\x05R\x04size\x12\x18\n" +
-	"\acurrent\x18\x04 \x01(\x05R\acurrent\"\x99\x01\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x12\n" +
+	"\x04size\x18\x03 \x01(\x03R\x04size\x12\x18\n" +
+	"\acurrent\x18\x04 \x01(\x03R\acurrent\"\x99\x01\n" +
 	"\x1dGroupAccessRecordQueryRequest\x12\x10\n" +
 	"\x03gid\x18\x01 \x01(\tR\x03gid\x12\x1d\n" +
 	"\n" +
 	"start_date\x18\x02 \x01(\tR\tstartDate\x12\x19\n" +
 	"\bend_date\x18\x03 \x01(\tR\aendDate\x12\x18\n" +
-	"\acurrent\x18\x04 \x01(\x05R\acurrent\x12\x12\n" +
-	"\x04size\x18\x05 \x01(\x05R\x04size\"\x97\x01\n" +
+	"\acurrent\x18\x04 \x01(\x03R\acurrent\x12\x12\n" +
+	"\x04size\x18\x05 \x01(\x03R\x04size\"\x97\x01\n" +
 	"\x1eGroupAccessRecordQueryResponse\x121\n" +
 	"\arecords\x18\x01 \x03(\v2\x17.shortlink.AccessRecordR\arecords\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
-	"\x04size\x18\x03 \x01(\x05R\x04size\x12\x18\n" +
-	"\acurrent\x18\x04 \x01(\x05R\acurrent\"&\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x12\n" +
+	"\x04size\x18\x03 \x01(\x03R\x04size\x12\x18\n" +
+	"\acurrent\x18\x04 \x01(\x03R\acurrent\"&\n" +
 	"\x12GetUrlTitleRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\"+\n" +
 	"\x13GetUrlTitleResponse\x12\x14\n" +
@@ -3089,7 +3267,7 @@ const file_link_proto_rawDesc = "" +
 	"\x06locale\x18\t \x01(\tR\x06locale\x12\x17\n" +
 	"\auv_type\x18\n" +
 	" \x01(\tR\x06uvType\"\x0f\n" +
-	"\rEmptyResponse2\xce\f\n" +
+	"\rEmptyResponse2\xe9\v\n" +
 	"\x10ShortLinkService\x12X\n" +
 	"\x0fShortLinkCreate\x12!.shortlink.CreateShortLinkRequest\x1a\".shortlink.CreateShortLinkResponse\x12g\n" +
 	"\x14ShortLinkBatchCreate\x12&.shortlink.BatchCreateShortLinkRequest\x1a'.shortlink.BatchCreateShortLinkResponse\x12X\n" +
@@ -3105,7 +3283,6 @@ const file_link_proto_rawDesc = "" +
 	"\x0eRecycleBinPage\x12).shortlink.PageRecycleBinShortLinkRequest\x1a*.shortlink.PageRecycleBinShortLinkResponse\x12U\n" +
 	"\x0eStatsGetSingle\x12 .shortlink.GetSingleStatsRequest\x1a!.shortlink.GetSingleStatsResponse\x12R\n" +
 	"\rStatsGetGroup\x12\x1f.shortlink.GetGroupStatsRequest\x1a .shortlink.GetGroupStatsResponse\x12c\n" +
-	"\x16StatsGetShortLinkCount\x12#.shortlink.GetShortLinkCountRequest\x1a$.shortlink.GetShortLinkCountResponse\x12c\n" +
 	"\x16StatsAccessRecordQuery\x12#.shortlink.AccessRecordQueryRequest\x1a$.shortlink.AccessRecordQueryResponse\x12r\n" +
 	"\x1bStatsGroupAccessRecordQuery\x12(.shortlink.GroupAccessRecordQueryRequest\x1a).shortlink.GroupAccessRecordQueryResponse\x12L\n" +
 	"\vUrlTitleGet\x12\x1d.shortlink.GetUrlTitleRequest\x1a\x1e.shortlink.GetUrlTitleResponseB\x06Z\x04./pbb\x06proto3"
@@ -3149,12 +3326,12 @@ var file_link_proto_goTypes = []any{
 	(*OSStat)(nil),                          // 22: shortlink.OSStat
 	(*DeviceStat)(nil),                      // 23: shortlink.DeviceStat
 	(*NetworkStat)(nil),                     // 24: shortlink.NetworkStat
-	(*GetSingleStatsResponse)(nil),          // 25: shortlink.GetSingleStatsResponse
-	(*GetGroupStatsRequest)(nil),            // 26: shortlink.GetGroupStatsRequest
-	(*GetGroupStatsResponse)(nil),           // 27: shortlink.GetGroupStatsResponse
-	(*GetShortLinkCountRequest)(nil),        // 28: shortlink.GetShortLinkCountRequest
-	(*GroupCount)(nil),                      // 29: shortlink.GroupCount
-	(*GetShortLinkCountResponse)(nil),       // 30: shortlink.GetShortLinkCountResponse
+	(*TopIpStat)(nil),                       // 25: shortlink.TopIpStat
+	(*UvTypeStat)(nil),                      // 26: shortlink.UvTypeStat
+	(*GetSingleStatsResponse)(nil),          // 27: shortlink.GetSingleStatsResponse
+	(*GetGroupStatsRequest)(nil),            // 28: shortlink.GetGroupStatsRequest
+	(*GetGroupStatsResponse)(nil),           // 29: shortlink.GetGroupStatsResponse
+	(*GroupCount)(nil),                      // 30: shortlink.GroupCount
 	(*AccessRecord)(nil),                    // 31: shortlink.AccessRecord
 	(*AccessRecordQueryRequest)(nil),        // 32: shortlink.AccessRecordQueryRequest
 	(*AccessRecordQueryResponse)(nil),       // 33: shortlink.AccessRecordQueryResponse
@@ -3176,59 +3353,60 @@ var file_link_proto_depIdxs = []int32{
 	8,  // 2: shortlink.PageRecycleBinShortLinkResponse.records:type_name -> shortlink.ShortLinkRecord
 	19, // 3: shortlink.GetSingleStatsResponse.daily:type_name -> shortlink.DailyStat
 	20, // 4: shortlink.GetSingleStatsResponse.locale_cn_stats:type_name -> shortlink.LocaleCnStat
-	21, // 5: shortlink.GetSingleStatsResponse.browser_stats:type_name -> shortlink.BrowserStat
-	22, // 6: shortlink.GetSingleStatsResponse.os_stats:type_name -> shortlink.OSStat
-	23, // 7: shortlink.GetSingleStatsResponse.device_stats:type_name -> shortlink.DeviceStat
-	24, // 8: shortlink.GetSingleStatsResponse.network_stats:type_name -> shortlink.NetworkStat
-	19, // 9: shortlink.GetGroupStatsResponse.daily:type_name -> shortlink.DailyStat
-	20, // 10: shortlink.GetGroupStatsResponse.locale_cn_stats:type_name -> shortlink.LocaleCnStat
-	21, // 11: shortlink.GetGroupStatsResponse.browser_stats:type_name -> shortlink.BrowserStat
-	22, // 12: shortlink.GetGroupStatsResponse.os_stats:type_name -> shortlink.OSStat
-	23, // 13: shortlink.GetGroupStatsResponse.device_stats:type_name -> shortlink.DeviceStat
-	24, // 14: shortlink.GetGroupStatsResponse.network_stats:type_name -> shortlink.NetworkStat
-	29, // 15: shortlink.GetShortLinkCountResponse.group_counts:type_name -> shortlink.GroupCount
-	31, // 16: shortlink.AccessRecordQueryResponse.records:type_name -> shortlink.AccessRecord
-	31, // 17: shortlink.GroupAccessRecordQueryResponse.records:type_name -> shortlink.AccessRecord
-	39, // 18: shortlink.GroupShortLinkCountResponse.group_counts:type_name -> shortlink.ShortLinkGroupCountItem
-	0,  // 19: shortlink.ShortLinkService.ShortLinkCreate:input_type -> shortlink.CreateShortLinkRequest
-	2,  // 20: shortlink.ShortLinkService.ShortLinkBatchCreate:input_type -> shortlink.BatchCreateShortLinkRequest
-	5,  // 21: shortlink.ShortLinkService.ShortLinkUpdate:input_type -> shortlink.UpdateShortLinkRequest
-	7,  // 22: shortlink.ShortLinkService.ShortLinkPage:input_type -> shortlink.PageShortLinkRequest
-	38, // 23: shortlink.ShortLinkService.ShortLinkListGroupCount:input_type -> shortlink.GroupShortLinkCountRequest
-	41, // 24: shortlink.ShortLinkService.RestoreUrl:input_type -> shortlink.RestoreUrlRequest
-	43, // 25: shortlink.ShortLinkService.ShortLinkStats:input_type -> shortlink.ShortLinkStatsRequest
-	10, // 26: shortlink.ShortLinkService.RecycleBinSave:input_type -> shortlink.SaveToRecycleBinRequest
-	12, // 27: shortlink.ShortLinkService.RecycleBinRecover:input_type -> shortlink.RecoverFromRecycleBinRequest
-	14, // 28: shortlink.ShortLinkService.RecycleBinRemove:input_type -> shortlink.RemoveFromRecycleBinRequest
-	16, // 29: shortlink.ShortLinkService.RecycleBinPage:input_type -> shortlink.PageRecycleBinShortLinkRequest
-	18, // 30: shortlink.ShortLinkService.StatsGetSingle:input_type -> shortlink.GetSingleStatsRequest
-	26, // 31: shortlink.ShortLinkService.StatsGetGroup:input_type -> shortlink.GetGroupStatsRequest
-	28, // 32: shortlink.ShortLinkService.StatsGetShortLinkCount:input_type -> shortlink.GetShortLinkCountRequest
-	32, // 33: shortlink.ShortLinkService.StatsAccessRecordQuery:input_type -> shortlink.AccessRecordQueryRequest
-	34, // 34: shortlink.ShortLinkService.StatsGroupAccessRecordQuery:input_type -> shortlink.GroupAccessRecordQueryRequest
-	36, // 35: shortlink.ShortLinkService.UrlTitleGet:input_type -> shortlink.GetUrlTitleRequest
-	1,  // 36: shortlink.ShortLinkService.ShortLinkCreate:output_type -> shortlink.CreateShortLinkResponse
-	4,  // 37: shortlink.ShortLinkService.ShortLinkBatchCreate:output_type -> shortlink.BatchCreateShortLinkResponse
-	6,  // 38: shortlink.ShortLinkService.ShortLinkUpdate:output_type -> shortlink.UpdateShortLinkResponse
-	9,  // 39: shortlink.ShortLinkService.ShortLinkPage:output_type -> shortlink.PageShortLinkResponse
-	40, // 40: shortlink.ShortLinkService.ShortLinkListGroupCount:output_type -> shortlink.GroupShortLinkCountResponse
-	42, // 41: shortlink.ShortLinkService.RestoreUrl:output_type -> shortlink.RestoreUrlResponse
-	44, // 42: shortlink.ShortLinkService.ShortLinkStats:output_type -> shortlink.EmptyResponse
-	11, // 43: shortlink.ShortLinkService.RecycleBinSave:output_type -> shortlink.SaveToRecycleBinResponse
-	13, // 44: shortlink.ShortLinkService.RecycleBinRecover:output_type -> shortlink.RecoverFromRecycleBinResponse
-	15, // 45: shortlink.ShortLinkService.RecycleBinRemove:output_type -> shortlink.RemoveFromRecycleBinResponse
-	17, // 46: shortlink.ShortLinkService.RecycleBinPage:output_type -> shortlink.PageRecycleBinShortLinkResponse
-	25, // 47: shortlink.ShortLinkService.StatsGetSingle:output_type -> shortlink.GetSingleStatsResponse
-	27, // 48: shortlink.ShortLinkService.StatsGetGroup:output_type -> shortlink.GetGroupStatsResponse
-	30, // 49: shortlink.ShortLinkService.StatsGetShortLinkCount:output_type -> shortlink.GetShortLinkCountResponse
-	33, // 50: shortlink.ShortLinkService.StatsAccessRecordQuery:output_type -> shortlink.AccessRecordQueryResponse
-	35, // 51: shortlink.ShortLinkService.StatsGroupAccessRecordQuery:output_type -> shortlink.GroupAccessRecordQueryResponse
-	37, // 52: shortlink.ShortLinkService.UrlTitleGet:output_type -> shortlink.GetUrlTitleResponse
-	36, // [36:53] is the sub-list for method output_type
-	19, // [19:36] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	25, // 5: shortlink.GetSingleStatsResponse.top_ip_stats:type_name -> shortlink.TopIpStat
+	21, // 6: shortlink.GetSingleStatsResponse.browser_stats:type_name -> shortlink.BrowserStat
+	22, // 7: shortlink.GetSingleStatsResponse.os_stats:type_name -> shortlink.OSStat
+	26, // 8: shortlink.GetSingleStatsResponse.uv_type_stats:type_name -> shortlink.UvTypeStat
+	23, // 9: shortlink.GetSingleStatsResponse.device_stats:type_name -> shortlink.DeviceStat
+	24, // 10: shortlink.GetSingleStatsResponse.network_stats:type_name -> shortlink.NetworkStat
+	19, // 11: shortlink.GetGroupStatsResponse.daily:type_name -> shortlink.DailyStat
+	20, // 12: shortlink.GetGroupStatsResponse.locale_cn_stats:type_name -> shortlink.LocaleCnStat
+	25, // 13: shortlink.GetGroupStatsResponse.top_ip_stats:type_name -> shortlink.TopIpStat
+	21, // 14: shortlink.GetGroupStatsResponse.browser_stats:type_name -> shortlink.BrowserStat
+	22, // 15: shortlink.GetGroupStatsResponse.os_stats:type_name -> shortlink.OSStat
+	26, // 16: shortlink.GetGroupStatsResponse.uv_type_stats:type_name -> shortlink.UvTypeStat
+	23, // 17: shortlink.GetGroupStatsResponse.device_stats:type_name -> shortlink.DeviceStat
+	24, // 18: shortlink.GetGroupStatsResponse.network_stats:type_name -> shortlink.NetworkStat
+	31, // 19: shortlink.AccessRecordQueryResponse.records:type_name -> shortlink.AccessRecord
+	31, // 20: shortlink.GroupAccessRecordQueryResponse.records:type_name -> shortlink.AccessRecord
+	39, // 21: shortlink.GroupShortLinkCountResponse.group_counts:type_name -> shortlink.ShortLinkGroupCountItem
+	0,  // 22: shortlink.ShortLinkService.ShortLinkCreate:input_type -> shortlink.CreateShortLinkRequest
+	2,  // 23: shortlink.ShortLinkService.ShortLinkBatchCreate:input_type -> shortlink.BatchCreateShortLinkRequest
+	5,  // 24: shortlink.ShortLinkService.ShortLinkUpdate:input_type -> shortlink.UpdateShortLinkRequest
+	7,  // 25: shortlink.ShortLinkService.ShortLinkPage:input_type -> shortlink.PageShortLinkRequest
+	38, // 26: shortlink.ShortLinkService.ShortLinkListGroupCount:input_type -> shortlink.GroupShortLinkCountRequest
+	41, // 27: shortlink.ShortLinkService.RestoreUrl:input_type -> shortlink.RestoreUrlRequest
+	43, // 28: shortlink.ShortLinkService.ShortLinkStats:input_type -> shortlink.ShortLinkStatsRequest
+	10, // 29: shortlink.ShortLinkService.RecycleBinSave:input_type -> shortlink.SaveToRecycleBinRequest
+	12, // 30: shortlink.ShortLinkService.RecycleBinRecover:input_type -> shortlink.RecoverFromRecycleBinRequest
+	14, // 31: shortlink.ShortLinkService.RecycleBinRemove:input_type -> shortlink.RemoveFromRecycleBinRequest
+	16, // 32: shortlink.ShortLinkService.RecycleBinPage:input_type -> shortlink.PageRecycleBinShortLinkRequest
+	18, // 33: shortlink.ShortLinkService.StatsGetSingle:input_type -> shortlink.GetSingleStatsRequest
+	28, // 34: shortlink.ShortLinkService.StatsGetGroup:input_type -> shortlink.GetGroupStatsRequest
+	32, // 35: shortlink.ShortLinkService.StatsAccessRecordQuery:input_type -> shortlink.AccessRecordQueryRequest
+	34, // 36: shortlink.ShortLinkService.StatsGroupAccessRecordQuery:input_type -> shortlink.GroupAccessRecordQueryRequest
+	36, // 37: shortlink.ShortLinkService.UrlTitleGet:input_type -> shortlink.GetUrlTitleRequest
+	1,  // 38: shortlink.ShortLinkService.ShortLinkCreate:output_type -> shortlink.CreateShortLinkResponse
+	4,  // 39: shortlink.ShortLinkService.ShortLinkBatchCreate:output_type -> shortlink.BatchCreateShortLinkResponse
+	6,  // 40: shortlink.ShortLinkService.ShortLinkUpdate:output_type -> shortlink.UpdateShortLinkResponse
+	9,  // 41: shortlink.ShortLinkService.ShortLinkPage:output_type -> shortlink.PageShortLinkResponse
+	40, // 42: shortlink.ShortLinkService.ShortLinkListGroupCount:output_type -> shortlink.GroupShortLinkCountResponse
+	42, // 43: shortlink.ShortLinkService.RestoreUrl:output_type -> shortlink.RestoreUrlResponse
+	44, // 44: shortlink.ShortLinkService.ShortLinkStats:output_type -> shortlink.EmptyResponse
+	11, // 45: shortlink.ShortLinkService.RecycleBinSave:output_type -> shortlink.SaveToRecycleBinResponse
+	13, // 46: shortlink.ShortLinkService.RecycleBinRecover:output_type -> shortlink.RecoverFromRecycleBinResponse
+	15, // 47: shortlink.ShortLinkService.RecycleBinRemove:output_type -> shortlink.RemoveFromRecycleBinResponse
+	17, // 48: shortlink.ShortLinkService.RecycleBinPage:output_type -> shortlink.PageRecycleBinShortLinkResponse
+	27, // 49: shortlink.ShortLinkService.StatsGetSingle:output_type -> shortlink.GetSingleStatsResponse
+	29, // 50: shortlink.ShortLinkService.StatsGetGroup:output_type -> shortlink.GetGroupStatsResponse
+	33, // 51: shortlink.ShortLinkService.StatsAccessRecordQuery:output_type -> shortlink.AccessRecordQueryResponse
+	35, // 52: shortlink.ShortLinkService.StatsGroupAccessRecordQuery:output_type -> shortlink.GroupAccessRecordQueryResponse
+	37, // 53: shortlink.ShortLinkService.UrlTitleGet:output_type -> shortlink.GetUrlTitleResponse
+	38, // [38:54] is the sub-list for method output_type
+	22, // [22:38] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_link_proto_init() }

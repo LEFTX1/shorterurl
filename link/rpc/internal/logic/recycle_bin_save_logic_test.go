@@ -16,7 +16,7 @@ func cleanSpecificTestData(t *testing.T, svcCtx *svc.ServiceContext, ctx context
 	link, err := svcCtx.RepoManager.Link.FindByFullShortUrlAndGid(ctx, fullShortUrl, gid)
 	if err == nil && link != nil {
 		// 找到了数据，执行删除
-		err := svcCtx.RepoManager.Link.Delete(ctx, link.ID)
+		err := svcCtx.RepoManager.Link.Delete(ctx, link.ID, link.Gid)
 		if err != nil {
 			t.Logf("删除链接数据失败: %v", err)
 		} else {

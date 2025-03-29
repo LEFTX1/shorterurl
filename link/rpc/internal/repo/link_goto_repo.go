@@ -17,6 +17,8 @@ type LinkGotoRepo interface {
 	Delete(ctx context.Context, id interface{}) error
 	// 批量创建链接跳转
 	BatchCreate(ctx context.Context, linkGotos []*model.LinkGoto) error
+	// 根据分组ID和完整短链接删除记录
+	DeleteByGidAndFullShortUrl(ctx context.Context, gid string, fullShortUrl string) error
 }
 
 // linkGotoRepo 链接跳转仓库实现
@@ -68,4 +70,12 @@ func (r *linkGotoRepo) Delete(ctx context.Context, id interface{}) error {
 // BatchCreate 批量创建链接跳转
 func (r *linkGotoRepo) BatchCreate(ctx context.Context, linkGotos []*model.LinkGoto) error {
 	return r.db.WithContext(ctx).CreateInBatches(linkGotos, 100).Error
+}
+
+// DeleteByGidAndFullShortUrl 根据分组ID和完整短链接删除记录
+// 注意：full_short_url是分片键，这个删除操作会被正确路由到对应的分片
+func (r *linkGotoRepo) DeleteByGidAndFullShortUrl(ctx context.Context, gid string, fullShortUrl string) error {
+	return r.db.WithContext(ctx).
+		Where("gid = ? AND full_short_url = ?", gid, fullShortUrl).
+		Delete(&model.LinkGoto{}).Error
 }

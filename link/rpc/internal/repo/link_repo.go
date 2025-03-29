@@ -41,7 +41,7 @@ type LinkRepo interface {
 	Update(ctx context.Context, link *model.Link) error
 
 	// 删除短链接
-	Delete(ctx context.Context, id int64) error
+	Delete(ctx context.Context, id int64, gid string) error
 
 	// 批量创建短链接
 	BatchCreate(ctx context.Context, links []*model.Link) error
@@ -51,6 +51,15 @@ type LinkRepo interface {
 
 	// 根据条件统计短链接数量
 	CountByCondition(ctx context.Context, conditions map[string]interface{}) (int64, error)
+
+	// 根据分组ID和附加条件查询短链接
+	FindByGidWithCondition(ctx context.Context, gid string, conditions map[string]interface{}, page, pageSize int) ([]*model.Link, error)
+
+	// 根据分组ID和附加条件统计短链接数量
+	CountByGidWithCondition(ctx context.Context, gid string, conditions map[string]interface{}) (int64, error)
+
+	// 根据完整短链接和分组ID查询回收站中的链接
+	FindRecycleBinByFullShortUrlAndGid(ctx context.Context, fullShortUrl, gid string) (*model.Link, error)
 }
 
 // linkRepo 短链接仓库实现
@@ -223,15 +232,29 @@ func (r *linkRepo) Update(ctx context.Context, link *model.Link) error {
 		}).Error
 }
 
-// Delete 删除短链接
-func (r *linkRepo) Delete(ctx context.Context, id int64) error {
-	// 这里使用软删除
-	return r.db.WithContext(ctx).Model(&model.Link{}).
-		Where("id = ?", id).
+// Delete 删除短链接（软删除）
+func (r *linkRepo) Delete(ctx context.Context, id int64, gid string) error {
+	// 直接使用提供的id和gid(分片键)执行软删除
+	result := r.db.WithContext(ctx).
+		Model(&model.Link{}).                 // 指定模型以确保使用正确的表名和分片规则
+		Where("id = ? AND gid = ?", id, gid). // 明确提供 id 和分片键 gid
 		Updates(map[string]interface{}{
 			"del_flag": 1,
 			"del_time": time.Now().Unix(),
-		}).Error
+		})
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	// 检查是否有记录被更新
+	if result.RowsAffected == 0 {
+		// 可以返回特定错误或者忽略
+		// 根据业务需求，可能记录不存在时也视为"删除成功"
+		return nil
+	}
+
+	return nil
 }
 
 // BatchCreate 批量创建短链接
@@ -240,15 +263,80 @@ func (r *linkRepo) BatchCreate(ctx context.Context, links []*model.Link) error {
 }
 
 // FindByCondition 根据条件查询短链接
+// 警告: 此方法缺少强制分片键，可能在生产环境不安全，建议使用 FindByGidWithCondition
 func (r *linkRepo) FindByCondition(ctx context.Context, conditions map[string]interface{}, page, pageSize int) ([]*model.Link, error) {
 	var links []*model.Link
+
+	// 检查是否包含分片键 gid
+	_, hasGid := conditions["gid"]
+	if !hasGid {
+		// 如果没有 gid，记录一条警告日志（实际项目中可以使用日志框架）
+		// log.Warn("FindByCondition called without sharding key 'gid', may cause full table scan")
+	}
+
 	err := r.db.WithContext(ctx).Where(conditions).Offset((page - 1) * pageSize).Limit(pageSize).Find(&links).Error
 	return links, err
 }
 
 // CountByCondition 根据条件统计短链接数量
+// 警告: 此方法缺少强制分片键，可能在生产环境不安全，建议使用 CountByGidWithCondition
 func (r *linkRepo) CountByCondition(ctx context.Context, conditions map[string]interface{}) (int64, error) {
 	var count int64
+
+	// 检查是否包含分片键 gid
+	_, hasGid := conditions["gid"]
+	if !hasGid {
+		// 如果没有 gid，记录一条警告日志
+		// log.Warn("CountByCondition called without sharding key 'gid', may cause full table scan")
+	}
+
 	err := r.db.WithContext(ctx).Model(&model.Link{}).Where(conditions).Count(&count).Error
 	return count, err
+}
+
+// FindByGidWithCondition 根据分组ID和附加条件查询短链接
+// 推荐: 强制使用分片键 gid，可以保证查询正确路由
+func (r *linkRepo) FindByGidWithCondition(ctx context.Context, gid string, conditions map[string]interface{}, page, pageSize int) ([]*model.Link, error) {
+	var links []*model.Link
+
+	query := r.db.WithContext(ctx).Where("gid = ?", gid) // 强制使用分片键
+
+	// 添加其他条件
+	if len(conditions) > 0 {
+		query = query.Where(conditions)
+	}
+
+	// 分页和查询
+	err := query.Offset((page - 1) * pageSize).Limit(pageSize).Find(&links).Error
+	return links, err
+}
+
+// CountByGidWithCondition 根据分组ID和附加条件统计短链接数量
+// 推荐: 强制使用分片键 gid，可以保证查询正确路由
+func (r *linkRepo) CountByGidWithCondition(ctx context.Context, gid string, conditions map[string]interface{}) (int64, error) {
+	var count int64
+
+	query := r.db.WithContext(ctx).Model(&model.Link{}).Where("gid = ?", gid) // 强制使用分片键
+
+	// 添加其他条件
+	if len(conditions) > 0 {
+		query = query.Where(conditions)
+	}
+
+	// 统计
+	err := query.Count(&count).Error
+	return count, err
+}
+
+// FindRecycleBinByFullShortUrlAndGid 根据完整短链接和分组ID查询回收站中的链接
+func (r *linkRepo) FindRecycleBinByFullShortUrlAndGid(ctx context.Context, fullShortUrl, gid string) (*model.Link, error) {
+	var link model.Link
+	err := r.db.WithContext(ctx).
+		Where("full_short_url = ? AND gid = ?", fullShortUrl, gid).
+		Where("del_flag = ?", 1). // 查询回收站中的记录 (del_flag = 1)
+		First(&link).Error
+	if err != nil {
+		return nil, err
+	}
+	return &link, nil
 }

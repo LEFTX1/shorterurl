@@ -28,8 +28,6 @@ type (
 	EmptyResponse                   = pb.EmptyResponse
 	GetGroupStatsRequest            = pb.GetGroupStatsRequest
 	GetGroupStatsResponse           = pb.GetGroupStatsResponse
-	GetShortLinkCountRequest        = pb.GetShortLinkCountRequest
-	GetShortLinkCountResponse       = pb.GetShortLinkCountResponse
 	GetSingleStatsRequest           = pb.GetSingleStatsRequest
 	GetSingleStatsResponse          = pb.GetSingleStatsResponse
 	GetUrlTitleRequest              = pb.GetUrlTitleRequest
@@ -57,8 +55,10 @@ type (
 	ShortLinkGroupCountItem         = pb.ShortLinkGroupCountItem
 	ShortLinkRecord                 = pb.ShortLinkRecord
 	ShortLinkStatsRequest           = pb.ShortLinkStatsRequest
+	TopIpStat                       = pb.TopIpStat
 	UpdateShortLinkRequest          = pb.UpdateShortLinkRequest
 	UpdateShortLinkResponse         = pb.UpdateShortLinkResponse
+	UvTypeStat                      = pb.UvTypeStat
 
 	ShortLinkService interface {
 		// --------------------- 短链接管理接口 ---------------------
@@ -80,7 +80,6 @@ type (
 		// --------------------- 短链接统计接口 ---------------------
 		StatsGetSingle(ctx context.Context, in *GetSingleStatsRequest, opts ...grpc.CallOption) (*GetSingleStatsResponse, error)
 		StatsGetGroup(ctx context.Context, in *GetGroupStatsRequest, opts ...grpc.CallOption) (*GetGroupStatsResponse, error)
-		StatsGetShortLinkCount(ctx context.Context, in *GetShortLinkCountRequest, opts ...grpc.CallOption) (*GetShortLinkCountResponse, error)
 		StatsAccessRecordQuery(ctx context.Context, in *AccessRecordQueryRequest, opts ...grpc.CallOption) (*AccessRecordQueryResponse, error)
 		StatsGroupAccessRecordQuery(ctx context.Context, in *GroupAccessRecordQueryRequest, opts ...grpc.CallOption) (*GroupAccessRecordQueryResponse, error)
 		// --------------------- URL标题功能接口 ---------------------
@@ -167,11 +166,6 @@ func (m *defaultShortLinkService) StatsGetSingle(ctx context.Context, in *GetSin
 func (m *defaultShortLinkService) StatsGetGroup(ctx context.Context, in *GetGroupStatsRequest, opts ...grpc.CallOption) (*GetGroupStatsResponse, error) {
 	client := pb.NewShortLinkServiceClient(m.cli.Conn())
 	return client.StatsGetGroup(ctx, in, opts...)
-}
-
-func (m *defaultShortLinkService) StatsGetShortLinkCount(ctx context.Context, in *GetShortLinkCountRequest, opts ...grpc.CallOption) (*GetShortLinkCountResponse, error) {
-	client := pb.NewShortLinkServiceClient(m.cli.Conn())
-	return client.StatsGetShortLinkCount(ctx, in, opts...)
 }
 
 func (m *defaultShortLinkService) StatsAccessRecordQuery(ctx context.Context, in *AccessRecordQueryRequest, opts ...grpc.CallOption) (*AccessRecordQueryResponse, error) {
