@@ -80,7 +80,7 @@ func TestTokenValidateMiddleware(t *testing.T) {
 	t.Run("有效的令牌应该成功通过", func(t *testing.T) {
 		// 在 Redis 中设置测试数据
 		userInfo := `{"id":"123","realName":"Test User"}`
-		err := redisClient.Hset("short-link:login:testuser", "valid_token", userInfo)
+		err := redisClient.Hset("user:login:testuser", "valid_token", userInfo)
 		require.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/protected", nil)

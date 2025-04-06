@@ -39,6 +39,7 @@ func TestUserGetActualInfo(t *testing.T) {
 		require.NotNil(t, resp, "响应不应为空")
 
 		// 验证返回的用户信息（无脱敏）
+		assert.Greater(t, resp.Id, int64(0), "用户ID应该大于0")
 		assert.Equal(t, username, resp.Username)
 		assert.Equal(t, registerReq.RealName, resp.RealName)
 		assert.Equal(t, registerReq.Phone, resp.Phone)

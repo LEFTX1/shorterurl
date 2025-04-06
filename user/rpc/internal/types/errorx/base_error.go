@@ -15,6 +15,7 @@ const (
 	ErrBloomFilterCheck         = "B000002" // 布隆过滤器检查失败
 	ErrDistributedLock          = "B000003" // 分布式锁操作失败
 	ErrDatabaseOperation        = "B000004" // 数据库操作失败
+	ErrInvalidUsername          = "A000152" // 用户名无效
 )
 
 // 错误消息映射
@@ -32,6 +33,7 @@ var messages = map[string]string{
 	ErrBloomFilterCheck:         "布隆过滤器检查失败",
 	ErrDistributedLock:          "分布式锁操作失败",
 	ErrDatabaseOperation:        "数据库操作失败",
+	ErrInvalidUsername:          "用户名只能包含ASCII字符，不能使用中文",
 }
 
 // Message 获取错误码对应的消息

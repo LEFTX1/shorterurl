@@ -10,7 +10,7 @@ info (
 type (
 	// 用户注册请求
 	UserRegisterReq {
-		Username string `json:"username" validate:"required,min=4,max=32"` // 用户名
+		Username string `json:"username" validate:"required,min=4,max=32"` // 用户名，只能使用ASCII字符
 		Password string `json:"password" validate:"required,min=6,max=32"` // 密码
 		RealName string `json:"realname" validate:"required"` // 真实姓名
 		Phone    string `json:"phone" validate:"required,phone"` // 手机号
@@ -18,7 +18,7 @@ type (
 	}
 	// 用户登录请求
 	UserLoginReq {
-		Username string `json:"username" validate:"required"` // 用户名
+		Username string `json:"username" validate:"required"` // 用户名，只能使用ASCII字符
 		Password string `json:"password" validate:"required"` // 密码
 	}
 	// 用户更新请求
@@ -31,6 +31,7 @@ type (
 	}
 	// 用户详情响应
 	UserInfoResp {
+		Id         int64  `json:"id"` // 用户ID
 		Username   string `json:"username"` // 用户名
 		RealName   string `json:"realname"` // 真实姓名
 		Phone      string `json:"phone"` // 手机号
@@ -117,6 +118,122 @@ type (
 	}
 )
 
+// =================短链接统计相关类型定义=================
+type (
+	// 统计请求参数
+	ShortLinkStatsReq {
+		FullShortUrl string `form:"fullShortUrl" validate:"required"` // 完整短链接
+		Gid          string `form:"gid" validate:"required"` // 分组标识
+		EnableStatus int    `form:"enableStatus,optional"` // 启用状态
+		StartDate    string `form:"startDate" validate:"required"` // 开始日期
+		EndDate      string `form:"endDate" validate:"required"` // 结束日期
+	}
+	// 分组统计请求参数
+	ShortLinkGroupStatsReq {
+		Gid       string `form:"gid" validate:"required"` // 分组标识
+		StartDate string `form:"startDate" validate:"required"` // 开始日期
+		EndDate   string `form:"endDate" validate:"required"` // 结束日期
+	}
+	// 访问记录查询请求
+	ShortLinkAccessRecordReq {
+		FullShortUrl string `form:"fullShortUrl" validate:"required"` // 完整短链接
+		Gid          string `form:"gid" validate:"required"` // 分组标识
+		StartDate    string `form:"startDate" validate:"required"` // 开始日期
+		EndDate      string `form:"endDate" validate:"required"` // 结束日期
+		EnableStatus int    `form:"enableStatus,optional"` // 启用状态
+		Current      int64  `form:"current,default=1"` // 当前页码
+		Size         int64  `form:"size,default=10"` // 每页大小
+	}
+	// 分组访问记录查询请求
+	ShortLinkGroupAccessRecordReq {
+		Gid       string `form:"gid" validate:"required"` // 分组标识
+		StartDate string `form:"startDate" validate:"required"` // 开始日期
+		EndDate   string `form:"endDate" validate:"required"` // 结束日期
+		Current   int64  `form:"current,default=1"` // 当前页码
+		Size      int64  `form:"size,default=10"` // 每页大小
+	}
+	// 统计响应
+	ShortLinkStatsRespDTO {
+		PvUvUipStatsList    []PvUvUipStats `json:"pvUvUipStatsList"` // PV/UV/UIP统计列表
+		OverallPvUvUipStats PvUvUipStats   `json:"overallPvUvUipStats"` // 总体PV/UV/UIP统计
+		LocaleCnStats       []LocaleCnStat `json:"localeCnStats"` // 地域统计
+		HourStats           []int          `json:"hourStats"` // 小时访问详情
+		TopIpStats          []TopIpStat    `json:"topIpStats"` // 高频访问IP详情
+		WeekdayStats        []int          `json:"weekdayStats"` // 一周访问详情
+		BrowserStats        []BrowserStat  `json:"browserStats"` // 浏览器统计
+		OsStats             []OsStat       `json:"osStats"` // 操作系统统计
+		UvTypeStats         []UvTypeStat   `json:"uvTypeStats"` // 访客类型统计
+		DeviceStats         []DeviceStat   `json:"deviceStats"` // 设备统计
+		NetworkStats        []NetworkStat  `json:"networkStats"` // 网络统计
+	}
+	// PV/UV/UIP统计
+	PvUvUipStats {
+		Date string `json:"date"` // 日期
+		Pv   int64  `json:"pv"` // 访问量
+		Uv   int64  `json:"uv"` // 独立访客数
+		Uip  int64  `json:"uip"` // IP数
+	}
+	// 访问记录分页响应
+	AccessRecordPageResp {
+		Records []AccessRecord `json:"records"` // 访问记录列表
+		Total   int64          `json:"total"` // 总记录数
+		Size    int64          `json:"size"` // 每页大小
+		Current int64          `json:"current"` // 当前页码
+	}
+	// 访问记录
+	AccessRecord {
+		Ip         string `json:"ip"` // IP地址
+		Browser    string `json:"browser"` // 浏览器
+		Os         string `json:"os"` // 操作系统
+		Network    string `json:"network"` // 网络环境
+		Device     string `json:"device"` // 设备
+		Locale     string `json:"locale"` // 地域
+		AccessTime string `json:"accessTime"` // 访问时间
+	}
+	// 地域统计
+	LocaleCnStat {
+		Locale string  `json:"locale"` // 地区
+		Cnt    int64   `json:"cnt"` // 数量
+		Ratio  float64 `json:"ratio"` // 比例
+	}
+	// 高频访问IP统计
+	TopIpStat {
+		Ip    string  `json:"ip"` // IP地址
+		Cnt   int64   `json:"cnt"` // 访问次数
+		Ratio float64 `json:"ratio"` // 比例
+	}
+	// 浏览器统计
+	BrowserStat {
+		Browser string  `json:"browser"` // 浏览器
+		Cnt     int64   `json:"cnt"` // 数量
+		Ratio   float64 `json:"ratio"` // 比例
+	}
+	// 操作系统统计
+	OsStat {
+		Os    string  `json:"os"` // 操作系统
+		Cnt   int64   `json:"cnt"` // 数量
+		Ratio float64 `json:"ratio"` // 比例
+	}
+	// 访客类型统计
+	UvTypeStat {
+		UvType string  `json:"uvType"` // 访客类型
+		Cnt    int64   `json:"cnt"` // 数量
+		Ratio  float64 `json:"ratio"` // 比例
+	}
+	// 设备统计
+	DeviceStat {
+		Device string  `json:"device"` // 设备
+		Cnt    int64   `json:"cnt"` // 数量
+		Ratio  float64 `json:"ratio"` // 比例
+	}
+	// 网络统计
+	NetworkStat {
+		Network string  `json:"network"` // 网络类型
+		Cnt     int64   `json:"cnt"` // 数量
+		Ratio   float64 `json:"ratio"` // 比例
+	}
+)
+
 // =================回收站相关类型定义=================
 type (
 	// 回收站分页查询请求
@@ -153,79 +270,257 @@ type (
 		TotalUip      int64  `json:"totalUip"` // 总IP数
 		TodayUip      int64  `json:"todayUip"` // 今日IP数
 	}
+	// 回收站操作请求
+	RecycleBinOperateReq {
+		Gid          string `json:"gid" validate:"required"` // 分组标识
+		FullShortUrl string `json:"fullShortUrl" validate:"required"` // 完整短链接
+	}
 )
 
-// =================用户接口定义=================
+// =================辅助功能类型定义=================
+type (
+	// 获取网站标题请求
+	GetUrlTitleReq {
+		Url string `form:"url" validate:"required,url"` // 目标网站地址
+	}
+	// 网站标题响应
+	UrlTitleResp {
+		Data string `json:"data"` // 网站标题
+	}
+)
+
+// =================无需中间件验证的公共接口=================
 @server (
 	group: user
 )
 service gateway {
-	// 用户注册
+	@doc "用户注册"
 	@handler ApiUserRegister
 	post /api/short-link/admin/v1/user (UserRegisterReq) returns (UserRegisterResp)
 
-	// 用户登录
+	@doc "用户登录"
 	@handler ApiUserLogin
 	post /api/short-link/admin/v1/user/login (UserLoginReq) returns (UserLoginResp)
 
-	// 获取用户信息
+	@doc "检查用户名是否存在"
+	@handler ApiCheckUsername
+	get /api/short-link/admin/v1/user/has-username (UserCheckUsernameReq) returns (UserCheckUsernameResp)
+}
+
+// =================需要中间件验证的接口=================
+@server (
+	middleware: TokenValidateMiddleware
+	group:      user
+)
+service gateway {
+	@doc "获取用户信息"
 	@handler ApiUserInfo
 	get /api/short-link/admin/v1/user/:username (UserUsernameReq) returns (UserInfoResp)
 
-	// 获取无脱敏用户信息
+	@doc "获取无脱敏用户信息"
 	@handler ApiActualUserInfo
 	get /api/short-link/admin/v1/actual/user/:username (UserUsernameReq) returns (UserInfoResp)
 
-	// 检查用户名是否存在
-	@handler ApiCheckUsername
-	get /api/short-link/admin/v1/user/has-username (UserCheckUsernameReq) returns (UserCheckUsernameResp)
-
-	// 更新用户信息
+	@doc "更新用户信息"
 	@handler ApiUserUpdate
 	put /api/short-link/admin/v1/user (UserUpdateReq) returns (UserUpdateResp)
 
-	// 检查用户是否登录
+	@doc "检查用户是否登录"
 	@handler ApiCheckLogin
 	get /api/short-link/admin/v1/user/check-login (UserCheckLoginReq) returns (SuccessResp)
 
-	// 用户退出登录
+	@doc "用户退出登录"
 	@handler ApiLogout
 	delete /api/short-link/admin/v1/user/logout (UserLogOutReq) returns (SuccessResp)
 }
 
 // =================分组接口定义=================
 @server (
-	group: group
+	middleware: TokenValidateMiddleware
+	group:      group
 )
 service gateway {
-	// 创建分组
+	@doc "创建分组"
 	@handler CreateGroup
 	post /api/short-link/admin/v1/group (ShortLinkGroupSaveReq) returns (SuccessResp)
 
-	// 获取分组列表
+	@doc "获取分组列表"
 	@handler ListGroups
 	get /api/short-link/admin/v1/group returns ([]ShortLinkGroupResp)
 
-	// 更新分组
+	@doc "更新分组"
 	@handler UpdateGroup
 	put /api/short-link/admin/v1/group (ShortLinkGroupUpdateReq) returns (SuccessResp)
 
-	// 删除分组
+	@doc "删除分组"
 	@handler DeleteGroup
 	delete /api/short-link/admin/v1/group (ShortLinkGroupDeleteReq) returns (SuccessResp)
 
-	// 分组排序
+	@doc "分组排序"
 	@handler SortGroups
 	post /api/short-link/admin/v1/group/sort (ShortLinkGroupSortReq) returns (SuccessResp)
 }
 
+// =================统计接口定义=================
+@server (
+	middleware: TokenValidateMiddleware
+	group:      stats
+)
+service gateway {
+	@doc "获取单个短链接监控数据"
+	@handler ShortLinkStats
+	get /api/short-link/admin/v1/stats (ShortLinkStatsReq) returns (ShortLinkStatsRespDTO)
+
+	@doc "获取分组短链接监控数据"
+	@handler ShortLinkGroupStats
+	get /api/short-link/admin/v1/stats/group (ShortLinkGroupStatsReq) returns (ShortLinkStatsRespDTO)
+
+	@doc "短链接访问记录查询"
+	@handler ShortLinkAccessRecord
+	get /api/short-link/admin/v1/stats/access-record (ShortLinkAccessRecordReq) returns (AccessRecordPageResp)
+
+	@doc "分组短链接访问记录查询"
+	@handler ShortLinkGroupAccessRecord
+	get /api/short-link/admin/v1/stats/access-record/group (ShortLinkGroupAccessRecordReq) returns (AccessRecordPageResp)
+}
+
 // =================回收站接口定义=================
 @server (
-	group: recycle
+	middleware: TokenValidateMiddleware
+	group:      recycle
 )
 service gateway {
 	@doc "分页查询回收站短链接"
 	@handler RecycleBinPage
-	get /recycle-bin/page (RecycleBinPageReq) returns (RecycleBinPageResp)
+	get /api/short-link/admin/v1/recycle-bin/page (RecycleBinPageReq) returns (RecycleBinPageResp)
+
+	@doc "保存到回收站"
+	@handler RecycleBinSave
+	post /api/short-link/admin/v1/recycle-bin/save (RecycleBinOperateReq) returns (SuccessResp)
+
+	@doc "恢复短链接"
+	@handler RecycleBinRecover
+	post /api/short-link/admin/v1/recycle-bin/recover (RecycleBinOperateReq) returns (SuccessResp)
+
+	@doc "移除短链接"
+	@handler RecycleBinRemove
+	post /api/short-link/admin/v1/recycle-bin/remove (RecycleBinOperateReq) returns (SuccessResp)
 }
+
+// =================辅助功能接口定义=================
+@server (
+	middleware: TokenValidateMiddleware
+	group:      utility
+)
+service gateway {
+	@doc "获取网站标题"
+	@handler GetUrlTitle
+	get /api/short-link/admin/v1/title (GetUrlTitleReq) returns (UrlTitleResp)
+}
+
+// =================短链接接口定义=================
+@server (
+	middleware: TokenValidateMiddleware
+	group:      link
+)
+service gateway {
+	@doc "分页查询短链接"
+	@handler PageShortLink
+	get /api/short-link/admin/v1/link (PageLinkReq) returns (PageLinkResp)
+
+	@doc "创建短链接"
+	@handler CreateShortLink
+	post /api/short-link/admin/v1/link (CreateLinkReq) returns (CreateLinkResp)
+
+	@doc "更新短链接"
+	@handler UpdateShortLink
+	put /api/short-link/admin/v1/link (UpdateLinkReq) returns (SuccessResp)
+
+	@doc "批量创建短链接"
+	@handler BatchCreateShortLink
+	post /api/short-link/admin/v1/link/batch (BatchCreateLinkReq) returns (BatchCreateLinkResp)
+}
+
+// =================分组短链接计数=================
+type (
+	// 创建链接请求
+	CreateLinkReq {
+		OriginUrl     string `json:"originUrl" validate:"required"` // 原始URL
+		Gid           string `json:"gid" validate:"required"` // 分组标识
+		CreatedType   int    `json:"createdType,default=0"` // 创建类型 0:接口创建 1:控制台创建
+		ValidDateType int    `json:"validDateType"` // 有效期类型 0:永久有效 1:自定义
+		ValidDate     string `json:"validDate,optional"` // 有效日期
+		Describe      string `json:"describe,optional"` // 描述
+	}
+	// 创建链接响应
+	CreateLinkResp {
+		FullShortUrl string `json:"fullShortUrl"` // 完整短链接
+		OriginUrl    string `json:"originUrl"` // 原始URL
+		Gid          string `json:"gid"` // 分组标识
+	}
+	// 批量创建链接请求
+	BatchCreateLinkReq {
+		OriginUrls    []string `json:"originUrls" validate:"required,min=1"` // 原始URL列表
+		Describes     []string `json:"describes" validate:"required,min=1"` // 描述列表
+		Gid           string   `json:"gid" validate:"required"` // 分组标识
+		CreatedType   int      `json:"createdType,default=0"` // 创建类型
+		ValidDateType int      `json:"validDateType"` // 有效期类型
+		ValidDate     string   `json:"validDate,optional"` // 有效日期
+	}
+	// 链接基本信息
+	LinkBaseInfo {
+		FullShortUrl string `json:"fullShortUrl"` // 完整短链接
+		OriginUrl    string `json:"originUrl"` // 原始URL
+		Describe     string `json:"describe"` // 描述
+	}
+	// 批量创建链接响应
+	BatchCreateLinkResp {
+		Total         int            `json:"total"` // 总数
+		BaseLinkInfos []LinkBaseInfo `json:"baseLinkInfos"` // 基本链接信息列表
+	}
+	// 更新链接请求
+	UpdateLinkReq {
+		FullShortUrl  string `json:"fullShortUrl" validate:"required"` // 完整短链接
+		OriginGid     string `json:"originGid" validate:"required"` // 原始分组标识
+		Gid           string `json:"gid" validate:"required"` // 新分组标识
+		OriginUrl     string `json:"originUrl" validate:"required"` // 原始URL
+		Describe      string `json:"describe,optional"` // 描述
+		ValidDateType int    `json:"validDateType"` // 有效期类型
+		ValidDate     string `json:"validDate,optional"` // 有效日期
+	}
+	// 分页查询请求
+	PageLinkReq {
+		Current int    `form:"current,default=1"` // 页码
+		Size    int    `form:"size,default=10"` // 每页大小
+		Gid     string `form:"gid" validate:"required"` // 分组标识
+	}
+	// 短链接记录
+	ShortLinkRecord {
+		Id            int64  `json:"id"` // 短链ID
+		Domain        string `json:"domain"` // 域名
+		ShortUri      string `json:"shortUri"` // 短链接URI
+		FullShortUrl  string `json:"fullShortUrl"` // 完整短链接
+		OriginUrl     string `json:"originUrl"` // 原始链接
+		Gid           string `json:"gid"` // 分组标识
+		ValidDateType int    `json:"validDateType"` // 有效期类型：0永久有效，1自定义
+		ValidDate     string `json:"validDate"` // 有效期
+		CreateTime    string `json:"createTime"` // 创建时间
+		Describe      string `json:"describe"` // 描述
+		Favicon       string `json:"favicon"` // 网站图标
+		EnableStatus  int    `json:"enableStatus"` // 启用状态：0启用，1未启用
+		TotalPv       int64  `json:"totalPv"` // 总访问量
+		TodayPv       int64  `json:"todayPv"` // 今日访问量
+		TotalUv       int64  `json:"totalUv"` // 总独立访客数
+		TodayUv       int64  `json:"todayUv"` // 今日独立访客数
+		TotalUip      int64  `json:"totalUip"` // 总IP数
+		TodayUip      int64  `json:"todayUip"` // 今日IP数
+	}
+	// 分页查询响应
+	PageLinkResp {
+		Records []ShortLinkRecord `json:"records"` // 记录列表
+		Total   int64             `json:"total"` // 总记录数
+		Size    int               `json:"size"` // 每页大小
+		Current int               `json:"current"` // 当前页
+	}
+)
 

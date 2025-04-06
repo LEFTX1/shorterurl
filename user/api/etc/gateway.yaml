@@ -6,6 +6,9 @@ Auth:
   WhitePathList:
     - /api/short-link/admin/v1/user/login
     - /api/short-link/admin/v1/user/has-username
+  AccessSecret: xxxx123
+  AccessExpire: 86400
+  LoginKeyPrefix: "user:login:"
 
 Middleware:
   TokenValidate:
@@ -37,6 +40,13 @@ UserRpc:
     Hosts:
       - 127.0.0.1:2379
     Key: user.rpc
+
+# 链接服务配置
+LinkRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: link.rpc
 
 # 日志配置
 Log:

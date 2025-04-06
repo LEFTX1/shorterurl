@@ -36,12 +36,13 @@ message LoginResponse {
 
 // 用户信息响应
 message UserInfoResponse {
-  string username = 1;     // 用户名
-  string real_name = 2;    // 真实姓名
-  string phone = 3;        // 手机号
-  string mail = 4;         // 邮箱
-  string create_time = 5;  // 创建时间
-  string update_time = 6;  // 更新时间
+  int64 id = 1;          // 用户ID
+  string username = 2;     // 用户名
+  string real_name = 3;    // 真实姓名
+  string phone = 4;        // 手机号
+  string mail = 5;         // 邮箱
+  string create_time = 6;  // 创建时间
+  string update_time = 7;  // 更新时间
 }
 
 // 用户更新请求

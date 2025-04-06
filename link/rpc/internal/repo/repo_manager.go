@@ -74,12 +74,10 @@ func NewRepoManager(common, linkDB, gotoLinkDB, groupDB, userDB *gorm.DB) *RepoM
 
 // GetCurrentUsername 获取当前登录用户名
 func (m *RepoManager) GetCurrentUsername(ctx context.Context) (string, error) {
-	// 根据实际认证机制，从上下文中获取用户名
-	// 如果使用了认证中间件，可以从ctx中获取
+	// 从上下文中获取用户名，使用中间件定义的常量
 	username, ok := ctx.Value("username").(string)
+	// 如果没有找到用户名或为空，返回错误
 	if !ok || username == "" {
-		// 为了测试方便，可以返回一个默认用户名
-		// return "test_user", nil
 		return "", ErrUserNotLogin
 	}
 	return username, nil

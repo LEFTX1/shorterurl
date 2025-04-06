@@ -38,6 +38,7 @@ func (l *UserGetActualInfoLogic) UserGetActualInfo(in *__.CheckUsernameRequest) 
 
 	// 2. 返回用户信息（无需脱敏）
 	return &__.UserInfoResponse{
+		Id:         user.ID,
 		Username:   user.Username,
 		RealName:   user.RealName,
 		Phone:      user.Phone,

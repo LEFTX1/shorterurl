@@ -35,11 +35,12 @@ func (l *ApiActualUserInfoLogic) ApiActualUserInfo(req *types.UserUsernameReq) (
 	}
 
 	return &types.UserInfoResp{
-		Username:   Response.GetUsername(),
-		RealName:   Response.GetRealName(),
-		Phone:      Response.GetPhone(),
-		Mail:       Response.GetMail(),
-		CreateTime: Response.GetCreateTime(),
-		UpdateTime: Response.GetUpdateTime(),
+		Id:         Response.Id,
+		Username:   Response.Username,
+		RealName:   Response.RealName,
+		Phone:      Response.Phone,
+		Mail:       Response.Mail,
+		CreateTime: Response.CreateTime,
+		UpdateTime: Response.UpdateTime,
 	}, nil
 }

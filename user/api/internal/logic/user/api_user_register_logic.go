@@ -2,8 +2,10 @@ package user
 
 import (
 	"context"
+	"regexp"
 	"shorterurl/user/api/internal/svc"
 	"shorterurl/user/api/internal/types"
+	"shorterurl/user/api/internal/types/errorx"
 	"shorterurl/user/rpc/userservice"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -24,6 +26,12 @@ func NewApiUserRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *A
 }
 
 func (l *ApiUserRegisterLogic) ApiUserRegister(req *types.UserRegisterReq) (resp *types.UserRegisterResp, err error) {
+	// 检查用户名是否只包含ASCII字符
+	isAscii := regexp.MustCompile(`^[\x00-\x7F]+$`).MatchString(req.Username)
+	if !isAscii {
+		return nil, errorx.New(errorx.ClientError, errorx.ErrInvalidUsername, errorx.Message(errorx.ErrInvalidUsername))
+	}
+
 	// 调用RPC服务注册用户
 	rpcResp, err := l.svcCtx.UserRpc.UserRegister(l.ctx, &userservice.RegisterRequest{
 		Username: req.Username,
@@ -40,5 +48,6 @@ func (l *ApiUserRegisterLogic) ApiUserRegister(req *types.UserRegisterReq) (resp
 	return &types.UserRegisterResp{
 		Username:   rpcResp.Username,
 		CreateTime: rpcResp.CreateTime,
+		Message:    rpcResp.Message,
 	}, nil
 }

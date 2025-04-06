@@ -24,6 +24,10 @@ func main() {
 	defer server.Stop()
 
 	ctx := svc.NewServiceContext(c)
+
+	// 不再需要全局注册中间件，改为在API文件中通过注解声明
+	// 中间件已经在 API 文件中声明，并在 ServiceContext 中实例化
+
 	handler.RegisterHandlers(server, ctx)
 
 	fmt.Printf("Starting server at %s:%d...\n", c.Host, c.Port)

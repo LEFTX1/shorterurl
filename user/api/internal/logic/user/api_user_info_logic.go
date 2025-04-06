@@ -34,6 +34,7 @@ func (l *ApiUserInfoLogic) ApiUserInfo(req *types.UserUsernameReq) (resp *types.
 	}
 
 	return &types.UserInfoResp{
+		Id:         rpcResp.Id,
 		Username:   rpcResp.Username,
 		RealName:   rpcResp.RealName,
 		Phone:      rpcResp.Phone,

@@ -37,8 +37,8 @@ func (l *UserLogoutLogic) UserLogout(in *__.LogoutRequest) (*__.CommonResponse, 
 	}
 
 	// 2. 验证token是否匹配
-	username, err := l.svcCtx.Redis.HgetCtx(l.ctx, loginKey, in.Token)
-	if err != nil || username != in.Username {
+	_, err = l.svcCtx.Redis.HgetCtx(l.ctx, loginKey, in.Token)
+	if err != nil {
 		return nil, errorx.New(errorx.ClientError, errorx.ErrUserNotFound, "登录token无效")
 	}
 

@@ -74,6 +74,7 @@ func (l *GroupUpdateLogic) GroupUpdate(in *__.GroupUpdateRequest) (*__.CommonRes
 
 	// 4. 更新分组
 	group, err := l.svcCtx.Query.TGroup.WithContext(l.ctx).
+		Where(l.svcCtx.Query.TGroup.Username.Eq(username)).
 		Where(l.svcCtx.Query.TGroup.Gid.Eq(in.Gid)).
 		Where(l.svcCtx.Query.TGroup.DelFlag.Is(false)).
 		First()
@@ -89,19 +90,49 @@ func (l *GroupUpdateLogic) GroupUpdate(in *__.GroupUpdateRequest) (*__.CommonRes
 		return nil, errorx.New(errorx.ClientError, errorx.ErrGroupNotFound, "无权限更新该分组")
 	}
 
-	// 使用主键更新
+	// 保存原始时间以便于日志记录
+	originalTime := group.UpdateTime
+
+	// 使用 username 和 gid 作为条件更新，而不是主键 ID
+	currentTime := time.Now()
+
+	// 确保新时间与原时间至少相差1秒
+	if currentTime.Sub(originalTime) < time.Second {
+		time.Sleep(time.Second - currentTime.Sub(originalTime))
+		currentTime = time.Now()
+	}
+
+	l.Infof("更新分组，原时间: %v, 设置更新时间为: %v", originalTime, currentTime)
+
 	_, err = l.svcCtx.Query.TGroup.WithContext(l.ctx).
-		Where(l.svcCtx.Query.TGroup.ID.Eq(group.ID)).
+		Where(l.svcCtx.Query.TGroup.Username.Eq(username)).
+		Where(l.svcCtx.Query.TGroup.Gid.Eq(in.Gid)).
+		Where(l.svcCtx.Query.TGroup.DelFlag.Is(false)).
 		UpdateSimple(
 			l.svcCtx.Query.TGroup.Name.Value(in.Name),
-			l.svcCtx.Query.TGroup.UpdateTime.Value(time.Now()),
+			l.svcCtx.Query.TGroup.UpdateTime.Value(currentTime),
 		)
 	if err != nil {
 		return nil, errorx.New(errorx.SystemError, errorx.ErrInternalServer, errorx.Message(errorx.ErrInternalServer))
 	}
 
-	return &__.CommonResponse{
-		Success: true,
-		Message: "更新成功",
-	}, nil
+	// 创建新的响应函数
+	createSuccessResponse := func() *__.CommonResponse {
+		return &__.CommonResponse{
+			Success: true,
+			Message: "更新成功",
+		}
+	}
+
+	response := createSuccessResponse()
+
+	// 额外检查
+	if !response.GetSuccess() {
+		l.Error("响应对象创建后Success字段为false，尝试手动修正")
+		response.Success = true
+	}
+
+	l.Infof("返回响应: Success=%v, Message=%s", response.GetSuccess(), response.GetMessage())
+
+	return response, nil
 }

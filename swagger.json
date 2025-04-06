@@ -1,0 +1,1909 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "短链接api gateway",
+    "version": "v1"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/short-link/admin/v1/actual/user/{username}": {
+      "get": {
+        "summary": "获取无脱敏用户信息",
+        "operationId": "ApiActualUserInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UserInfoResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/group": {
+      "get": {
+        "summary": "获取分组列表",
+        "operationId": "ListGroups",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ShortLinkGroupResp"
+              }
+            }
+          }
+        },
+        "tags": [
+          "group"
+        ]
+      },
+      "delete": {
+        "summary": "删除分组",
+        "operationId": "DeleteGroup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SuccessResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 删除分组请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ShortLinkGroupDeleteReq"
+            }
+          }
+        ],
+        "tags": [
+          "group"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ]
+      },
+      "post": {
+        "summary": "创建分组",
+        "operationId": "CreateGroup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SuccessResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 创建分组请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ShortLinkGroupSaveReq"
+            }
+          }
+        ],
+        "tags": [
+          "group"
+        ]
+      },
+      "put": {
+        "summary": "更新分组",
+        "operationId": "UpdateGroup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SuccessResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 更新分组请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ShortLinkGroupUpdateReq"
+            }
+          }
+        ],
+        "tags": [
+          "group"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/group/sort": {
+      "post": {
+        "summary": "分组排序",
+        "operationId": "SortGroups",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SuccessResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 分组排序请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ShortLinkGroupSortReq"
+            }
+          }
+        ],
+        "tags": [
+          "group"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/recycle-bin/page": {
+      "get": {
+        "summary": "分页查询回收站短链接",
+        "operationId": "RecycleBinPage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/RecycleBinPageResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gidList",
+            "description": " 分组标识列表，可选",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "current",
+            "description": " 当前页码，从1开始",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "default": "1"
+          },
+          {
+            "name": "size",
+            "description": " 每页记录数",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "default": "10"
+          }
+        ],
+        "tags": [
+          "recycle"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/recycle-bin/recover": {
+      "post": {
+        "summary": "恢复短链接",
+        "operationId": "RecycleBinRecover",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SuccessResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 回收站操作请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RecycleBinOperateReq"
+            }
+          }
+        ],
+        "tags": [
+          "recycle"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/recycle-bin/remove": {
+      "post": {
+        "summary": "移除短链接",
+        "operationId": "RecycleBinRemove",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SuccessResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 回收站操作请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RecycleBinOperateReq"
+            }
+          }
+        ],
+        "tags": [
+          "recycle"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/recycle-bin/save": {
+      "post": {
+        "summary": "保存到回收站",
+        "operationId": "RecycleBinSave",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SuccessResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 回收站操作请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RecycleBinOperateReq"
+            }
+          }
+        ],
+        "tags": [
+          "recycle"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/stats": {
+      "get": {
+        "summary": "获取单个短链接监控数据",
+        "operationId": "ShortLinkStats",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ShortLinkStatsRespDTO"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "fullShortUrl",
+            "description": " 完整短链接",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "gid",
+            "description": " 分组标识",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "enableStatus",
+            "description": " 启用状态",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "startDate",
+            "description": " 开始日期",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "endDate",
+            "description": " 结束日期",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "stats"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/stats/access-record": {
+      "get": {
+        "summary": "短链接访问记录查询",
+        "operationId": "ShortLinkAccessRecord",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/AccessRecordPageResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "fullShortUrl",
+            "description": " 完整短链接",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "gid",
+            "description": " 分组标识",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "startDate",
+            "description": " 开始日期",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "endDate",
+            "description": " 结束日期",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "enableStatus",
+            "description": " 启用状态",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "current",
+            "description": " 当前页码",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "1"
+          },
+          {
+            "name": "size",
+            "description": " 每页大小",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "10"
+          }
+        ],
+        "tags": [
+          "stats"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/stats/access-record/group": {
+      "get": {
+        "summary": "分组短链接访问记录查询",
+        "operationId": "ShortLinkGroupAccessRecord",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/AccessRecordPageResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gid",
+            "description": " 分组标识",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "startDate",
+            "description": " 开始日期",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "endDate",
+            "description": " 结束日期",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "current",
+            "description": " 当前页码",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "1"
+          },
+          {
+            "name": "size",
+            "description": " 每页大小",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": "10"
+          }
+        ],
+        "tags": [
+          "stats"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/stats/group": {
+      "get": {
+        "summary": "获取分组短链接监控数据",
+        "operationId": "ShortLinkGroupStats",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ShortLinkStatsRespDTO"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gid",
+            "description": " 分组标识",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "startDate",
+            "description": " 开始日期",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "endDate",
+            "description": " 结束日期",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "stats"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/title": {
+      "get": {
+        "summary": "获取网站标题",
+        "operationId": "GetUrlTitle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UrlTitleResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "url",
+            "description": " 目标网站地址",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "utility"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/user": {
+      "post": {
+        "summary": "用户注册",
+        "operationId": "ApiUserRegister",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UserRegisterResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 用户注册请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserRegisterReq"
+            }
+          }
+        ],
+        "tags": [
+          "user"
+        ]
+      },
+      "put": {
+        "summary": "更新用户信息",
+        "operationId": "ApiUserUpdate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UserUpdateResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 用户更新请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserUpdateReq"
+            }
+          }
+        ],
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/user/check-login": {
+      "get": {
+        "summary": "检查用户是否登录",
+        "operationId": "ApiCheckLogin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SuccessResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "description": " 用户名",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "token",
+            "description": " Token",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "user"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/user/has-username": {
+      "get": {
+        "summary": "检查用户名是否存在",
+        "operationId": "ApiCheckUsername",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UserCheckUsernameResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "description": " 用户名",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "user"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/user/login": {
+      "post": {
+        "summary": "用户登录",
+        "operationId": "ApiUserLogin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UserLoginResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 用户登录请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserLoginReq"
+            }
+          }
+        ],
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/user/logout": {
+      "delete": {
+        "summary": "用户退出登录",
+        "operationId": "ApiLogout",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SuccessResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 用户退出登录请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserLogOutReq"
+            }
+          }
+        ],
+        "tags": [
+          "user"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ]
+      }
+    },
+    "/api/short-link/admin/v1/user/{username}": {
+      "get": {
+        "summary": "获取用户信息",
+        "operationId": "ApiUserInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UserInfoResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "user"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "AccessRecord": {
+      "type": "object",
+      "properties": {
+        "ip": {
+          "type": "string",
+          "description": " IP地址"
+        },
+        "browser": {
+          "type": "string",
+          "description": " 浏览器"
+        },
+        "os": {
+          "type": "string",
+          "description": " 操作系统"
+        },
+        "network": {
+          "type": "string",
+          "description": " 网络环境"
+        },
+        "device": {
+          "type": "string",
+          "description": " 设备"
+        },
+        "locale": {
+          "type": "string",
+          "description": " 地域"
+        },
+        "accessTime": {
+          "type": "string",
+          "description": " 访问时间"
+        }
+      },
+      "title": "AccessRecord",
+      "required": [
+        "ip",
+        "browser",
+        "os",
+        "network",
+        "device",
+        "locale",
+        "accessTime"
+      ]
+    },
+    "AccessRecordPageResp": {
+      "type": "object",
+      "properties": {
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AccessRecord"
+          },
+          "description": " 访问记录列表"
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 总记录数"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 每页大小"
+        },
+        "current": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 当前页码"
+        }
+      },
+      "title": "AccessRecordPageResp",
+      "required": [
+        "records",
+        "total",
+        "size",
+        "current"
+      ]
+    },
+    "BrowserStat": {
+      "type": "object",
+      "properties": {
+        "browser": {
+          "type": "string",
+          "description": " 浏览器"
+        },
+        "cnt": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 数量"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "double",
+          "description": " 比例"
+        }
+      },
+      "title": "BrowserStat",
+      "required": [
+        "browser",
+        "cnt",
+        "ratio"
+      ]
+    },
+    "DeviceStat": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "type": "string",
+          "description": " 设备"
+        },
+        "cnt": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 数量"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "double",
+          "description": " 比例"
+        }
+      },
+      "title": "DeviceStat",
+      "required": [
+        "device",
+        "cnt",
+        "ratio"
+      ]
+    },
+    "GetUrlTitleReq": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": " 目标网站地址"
+        }
+      },
+      "title": "GetUrlTitleReq",
+      "required": [
+        "url"
+      ]
+    },
+    "LocaleCnStat": {
+      "type": "object",
+      "properties": {
+        "locale": {
+          "type": "string",
+          "description": " 地区"
+        },
+        "cnt": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 数量"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "double",
+          "description": " 比例"
+        }
+      },
+      "title": "LocaleCnStat",
+      "required": [
+        "locale",
+        "cnt",
+        "ratio"
+      ]
+    },
+    "NetworkStat": {
+      "type": "object",
+      "properties": {
+        "network": {
+          "type": "string",
+          "description": " 网络类型"
+        },
+        "cnt": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 数量"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "double",
+          "description": " 比例"
+        }
+      },
+      "title": "NetworkStat",
+      "required": [
+        "network",
+        "cnt",
+        "ratio"
+      ]
+    },
+    "OsStat": {
+      "type": "object",
+      "properties": {
+        "os": {
+          "type": "string",
+          "description": " 操作系统"
+        },
+        "cnt": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 数量"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "double",
+          "description": " 比例"
+        }
+      },
+      "title": "OsStat",
+      "required": [
+        "os",
+        "cnt",
+        "ratio"
+      ]
+    },
+    "PvUvUipStats": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "description": " 日期"
+        },
+        "pv": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 访问量"
+        },
+        "uv": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 独立访客数"
+        },
+        "uip": {
+          "type": "integer",
+          "format": "int64",
+          "description": " IP数"
+        }
+      },
+      "title": "PvUvUipStats",
+      "required": [
+        "date",
+        "pv",
+        "uv",
+        "uip"
+      ]
+    },
+    "RecycleBinOperateReq": {
+      "type": "object",
+      "properties": {
+        "gid": {
+          "type": "string",
+          "description": " 分组标识"
+        },
+        "fullShortUrl": {
+          "type": "string",
+          "description": " 完整短链接"
+        }
+      },
+      "title": "RecycleBinOperateReq",
+      "required": [
+        "gid",
+        "fullShortUrl"
+      ]
+    },
+    "RecycleBinPageReq": {
+      "type": "object",
+      "properties": {
+        "gidList": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": " 分组标识列表，可选"
+        },
+        "current": {
+          "type": "integer",
+          "format": "int32",
+          "default": "1",
+          "description": " 当前页码，从1开始"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32",
+          "default": "10",
+          "description": " 每页记录数"
+        }
+      },
+      "title": "RecycleBinPageReq",
+      "required": [
+        "current",
+        "size"
+      ]
+    },
+    "RecycleBinPageResp": {
+      "type": "object",
+      "properties": {
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ShortLinkPageRecordDTO"
+          },
+          "description": " 短链接记录列表"
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 总记录数"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32",
+          "description": " 每页大小"
+        },
+        "current": {
+          "type": "integer",
+          "format": "int32",
+          "description": " 当前页码"
+        }
+      },
+      "title": "RecycleBinPageResp",
+      "required": [
+        "records",
+        "total",
+        "size",
+        "current"
+      ]
+    },
+    "ShortLinkAccessRecordReq": {
+      "type": "object",
+      "properties": {
+        "fullShortUrl": {
+          "type": "string",
+          "description": " 完整短链接"
+        },
+        "gid": {
+          "type": "string",
+          "description": " 分组标识"
+        },
+        "startDate": {
+          "type": "string",
+          "description": " 开始日期"
+        },
+        "endDate": {
+          "type": "string",
+          "description": " 结束日期"
+        },
+        "enableStatus": {
+          "type": "integer",
+          "format": "int32",
+          "description": " 启用状态"
+        },
+        "current": {
+          "type": "integer",
+          "format": "int64",
+          "default": "1",
+          "description": " 当前页码"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int64",
+          "default": "10",
+          "description": " 每页大小"
+        }
+      },
+      "title": "ShortLinkAccessRecordReq",
+      "required": [
+        "fullShortUrl",
+        "gid",
+        "startDate",
+        "endDate",
+        "current",
+        "size"
+      ]
+    },
+    "ShortLinkGroupAccessRecordReq": {
+      "type": "object",
+      "properties": {
+        "gid": {
+          "type": "string",
+          "description": " 分组标识"
+        },
+        "startDate": {
+          "type": "string",
+          "description": " 开始日期"
+        },
+        "endDate": {
+          "type": "string",
+          "description": " 结束日期"
+        },
+        "current": {
+          "type": "integer",
+          "format": "int64",
+          "default": "1",
+          "description": " 当前页码"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int64",
+          "default": "10",
+          "description": " 每页大小"
+        }
+      },
+      "title": "ShortLinkGroupAccessRecordReq",
+      "required": [
+        "gid",
+        "startDate",
+        "endDate",
+        "current",
+        "size"
+      ]
+    },
+    "ShortLinkGroupDeleteReq": {
+      "type": "object",
+      "properties": {
+        "gid": {
+          "type": "string",
+          "description": " 分组标识"
+        }
+      },
+      "title": "ShortLinkGroupDeleteReq",
+      "required": [
+        "gid"
+      ]
+    },
+    "ShortLinkGroupResp": {
+      "type": "object",
+      "properties": {
+        "gid": {
+          "type": "string",
+          "description": " 分组标识"
+        },
+        "name": {
+          "type": "string",
+          "description": " 分组名称"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "format": "int32",
+          "description": " 排序序号"
+        },
+        "shortLinkCount": {
+          "type": "integer",
+          "format": "int32",
+          "description": " 短链接数量"
+        }
+      },
+      "title": "ShortLinkGroupResp",
+      "required": [
+        "gid",
+        "name",
+        "sortOrder",
+        "shortLinkCount"
+      ]
+    },
+    "ShortLinkGroupSaveReq": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": " 分组名称"
+        }
+      },
+      "title": "ShortLinkGroupSaveReq",
+      "required": [
+        "name"
+      ]
+    },
+    "ShortLinkGroupSortReq": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SortGroup"
+          }
+        }
+      },
+      "title": "ShortLinkGroupSortReq",
+      "required": [
+        "groups"
+      ]
+    },
+    "ShortLinkGroupStatsReq": {
+      "type": "object",
+      "properties": {
+        "gid": {
+          "type": "string",
+          "description": " 分组标识"
+        },
+        "startDate": {
+          "type": "string",
+          "description": " 开始日期"
+        },
+        "endDate": {
+          "type": "string",
+          "description": " 结束日期"
+        }
+      },
+      "title": "ShortLinkGroupStatsReq",
+      "required": [
+        "gid",
+        "startDate",
+        "endDate"
+      ]
+    },
+    "ShortLinkGroupUpdateReq": {
+      "type": "object",
+      "properties": {
+        "gid": {
+          "type": "string",
+          "description": " 分组标识"
+        },
+        "name": {
+          "type": "string",
+          "description": " 分组名称"
+        }
+      },
+      "title": "ShortLinkGroupUpdateReq",
+      "required": [
+        "gid",
+        "name"
+      ]
+    },
+    "ShortLinkPageRecordDTO": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 短链ID"
+        },
+        "domain": {
+          "type": "string",
+          "description": " 域名"
+        },
+        "shortUri": {
+          "type": "string",
+          "description": " 短链接URI"
+        },
+        "fullShortUrl": {
+          "type": "string",
+          "description": " 完整短链接"
+        },
+        "originUrl": {
+          "type": "string",
+          "description": " 原始链接"
+        },
+        "gid": {
+          "type": "string",
+          "description": " 分组标识"
+        },
+        "validDateType": {
+          "type": "integer",
+          "format": "int32",
+          "description": " 有效期类型：0永久有效，1自定义"
+        },
+        "validDate": {
+          "type": "string",
+          "description": " 有效期"
+        },
+        "createTime": {
+          "type": "string",
+          "description": " 创建时间"
+        },
+        "describe": {
+          "type": "string",
+          "description": " 描述"
+        },
+        "favicon": {
+          "type": "string",
+          "description": " 网站图标"
+        },
+        "enableStatus": {
+          "type": "integer",
+          "format": "int32",
+          "description": " 启用状态：0启用，1未启用"
+        },
+        "totalPv": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 总访问量"
+        },
+        "todayPv": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 今日访问量"
+        },
+        "totalUv": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 总独立访客数"
+        },
+        "todayUv": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 今日独立访客数"
+        },
+        "totalUip": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 总IP数"
+        },
+        "todayUip": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 今日IP数"
+        }
+      },
+      "title": "ShortLinkPageRecordDTO",
+      "required": [
+        "id",
+        "domain",
+        "shortUri",
+        "fullShortUrl",
+        "originUrl",
+        "gid",
+        "validDateType",
+        "validDate",
+        "createTime",
+        "describe",
+        "favicon",
+        "enableStatus",
+        "totalPv",
+        "todayPv",
+        "totalUv",
+        "todayUv",
+        "totalUip",
+        "todayUip"
+      ]
+    },
+    "ShortLinkStatsReq": {
+      "type": "object",
+      "properties": {
+        "fullShortUrl": {
+          "type": "string",
+          "description": " 完整短链接"
+        },
+        "gid": {
+          "type": "string",
+          "description": " 分组标识"
+        },
+        "enableStatus": {
+          "type": "integer",
+          "format": "int32",
+          "description": " 启用状态"
+        },
+        "startDate": {
+          "type": "string",
+          "description": " 开始日期"
+        },
+        "endDate": {
+          "type": "string",
+          "description": " 结束日期"
+        }
+      },
+      "title": "ShortLinkStatsReq",
+      "required": [
+        "fullShortUrl",
+        "gid",
+        "startDate",
+        "endDate"
+      ]
+    },
+    "ShortLinkStatsRespDTO": {
+      "type": "object",
+      "properties": {
+        "pvUvUipStatsList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PvUvUipStats"
+          },
+          "description": " PV/UV/UIP统计列表"
+        },
+        "overallPvUvUipStats": {
+          "$ref": "#/definitions/PvUvUipStats",
+          "description": " 总体PV/UV/UIP统计"
+        },
+        "localeCnStats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LocaleCnStat"
+          },
+          "description": " 地域统计"
+        },
+        "hourStats": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": " 小时访问详情"
+        },
+        "topIpStats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TopIpStat"
+          },
+          "description": " 高频访问IP详情"
+        },
+        "weekdayStats": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": " 一周访问详情"
+        },
+        "browserStats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BrowserStat"
+          },
+          "description": " 浏览器统计"
+        },
+        "osStats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OsStat"
+          },
+          "description": " 操作系统统计"
+        },
+        "uvTypeStats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UvTypeStat"
+          },
+          "description": " 访客类型统计"
+        },
+        "deviceStats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DeviceStat"
+          },
+          "description": " 设备统计"
+        },
+        "networkStats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/NetworkStat"
+          },
+          "description": " 网络统计"
+        }
+      },
+      "title": "ShortLinkStatsRespDTO",
+      "required": [
+        "pvUvUipStatsList",
+        "overallPvUvUipStats",
+        "localeCnStats",
+        "hourStats",
+        "topIpStats",
+        "weekdayStats",
+        "browserStats",
+        "osStats",
+        "uvTypeStats",
+        "deviceStats",
+        "networkStats"
+      ]
+    },
+    "SortGroup": {
+      "type": "object",
+      "properties": {
+        "gid": {
+          "type": "string",
+          "description": " 分组标识"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "format": "int32",
+          "description": " 排序序号"
+        }
+      },
+      "title": "SortGroup",
+      "required": [
+        "gid",
+        "sortOrder"
+      ]
+    },
+    "SuccessResp": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": " 响应码"
+        },
+        "success": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": " 是否成功"
+        }
+      },
+      "title": "SuccessResp",
+      "required": [
+        "code",
+        "success"
+      ]
+    },
+    "TopIpStat": {
+      "type": "object",
+      "properties": {
+        "ip": {
+          "type": "string",
+          "description": " IP地址"
+        },
+        "cnt": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 访问次数"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "double",
+          "description": " 比例"
+        }
+      },
+      "title": "TopIpStat",
+      "required": [
+        "ip",
+        "cnt",
+        "ratio"
+      ]
+    },
+    "UrlTitleResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": " 网站标题"
+        }
+      },
+      "title": "UrlTitleResp",
+      "required": [
+        "data"
+      ]
+    },
+    "UserCheckLoginReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": " 用户名"
+        },
+        "token": {
+          "type": "string",
+          "description": " Token"
+        }
+      },
+      "title": "UserCheckLoginReq",
+      "required": [
+        "username",
+        "token"
+      ]
+    },
+    "UserCheckUsernameReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": " 用户名"
+        }
+      },
+      "title": "UserCheckUsernameReq",
+      "required": [
+        "username"
+      ]
+    },
+    "UserCheckUsernameResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": " 是否存在"
+        },
+        "success": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": " 是否成功"
+        },
+        "code": {
+          "type": "string",
+          "description": " 响应码"
+        }
+      },
+      "title": "UserCheckUsernameResp",
+      "required": [
+        "data",
+        "success",
+        "code"
+      ]
+    },
+    "UserInfoResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 用户ID"
+        },
+        "username": {
+          "type": "string",
+          "description": " 用户名"
+        },
+        "realname": {
+          "type": "string",
+          "description": " 真实姓名"
+        },
+        "phone": {
+          "type": "string",
+          "description": " 手机号"
+        },
+        "mail": {
+          "type": "string",
+          "description": " 邮箱"
+        },
+        "createTime": {
+          "type": "string",
+          "description": " 创建时间"
+        },
+        "updateTime": {
+          "type": "string",
+          "description": " 更新时间"
+        }
+      },
+      "title": "UserInfoResp",
+      "required": [
+        "id",
+        "username",
+        "realname",
+        "phone",
+        "mail",
+        "createTime",
+        "updateTime"
+      ]
+    },
+    "UserLogOutReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": " 用户名"
+        },
+        "token": {
+          "type": "string",
+          "description": " Token"
+        }
+      },
+      "title": "UserLogOutReq",
+      "required": [
+        "username",
+        "token"
+      ]
+    },
+    "UserLoginReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": " 用户名"
+        },
+        "password": {
+          "type": "string",
+          "description": " 密码"
+        }
+      },
+      "title": "UserLoginReq",
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "UserLoginResp": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "  Token"
+        },
+        "username": {
+          "type": "string",
+          "description": " 用户名"
+        },
+        "realname": {
+          "type": "string",
+          "description": " 真实姓名"
+        },
+        "createTime": {
+          "type": "string",
+          "description": " 创建时间"
+        }
+      },
+      "title": "UserLoginResp",
+      "required": [
+        "token",
+        "username",
+        "realname",
+        "createTime"
+      ]
+    },
+    "UserRegisterReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": " 用户名"
+        },
+        "password": {
+          "type": "string",
+          "description": " 密码"
+        },
+        "realname": {
+          "type": "string",
+          "description": " 真实姓名"
+        },
+        "phone": {
+          "type": "string",
+          "description": " 手机号"
+        },
+        "mail": {
+          "type": "string",
+          "description": " 邮箱"
+        }
+      },
+      "title": "UserRegisterReq",
+      "required": [
+        "username",
+        "password",
+        "realname",
+        "phone",
+        "mail"
+      ]
+    },
+    "UserRegisterResp": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": " 用户名"
+        },
+        "createTime": {
+          "type": "string",
+          "description": " 创建时间"
+        },
+        "message": {
+          "type": "string",
+          "description": " 响应消息"
+        }
+      },
+      "title": "UserRegisterResp",
+      "required": [
+        "username",
+        "createTime",
+        "message"
+      ]
+    },
+    "UserUpdateReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": " 用户名"
+        },
+        "password": {
+          "type": "string",
+          "description": " 密码（可选）"
+        },
+        "realName": {
+          "type": "string",
+          "description": " 真实姓名（可选）"
+        },
+        "phone": {
+          "type": "string",
+          "description": " 手机号（可选）"
+        },
+        "mail": {
+          "type": "string",
+          "description": " 邮箱（可选）"
+        }
+      },
+      "title": "UserUpdateReq",
+      "required": [
+        "username"
+      ]
+    },
+    "UserUpdateResp": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": " 响应码"
+        }
+      },
+      "title": "UserUpdateResp",
+      "required": [
+        "code"
+      ]
+    },
+    "UserUsernameReq": {
+      "type": "object",
+      "title": "UserUsernameReq"
+    },
+    "UvTypeStat": {
+      "type": "object",
+      "properties": {
+        "uvType": {
+          "type": "string",
+          "description": " 访客类型"
+        },
+        "cnt": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 数量"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "double",
+          "description": " 比例"
+        }
+      },
+      "title": "UvTypeStat",
+      "required": [
+        "uvType",
+        "cnt",
+        "ratio"
+      ]
+    }
+  },
+  "securityDefinitions": {
+    "apiKey": {
+      "type": "apiKey",
+      "description": "Enter JWT Bearer token **_only_**",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}

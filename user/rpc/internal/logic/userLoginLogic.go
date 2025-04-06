@@ -2,12 +2,13 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"shorterurl/user/rpc/internal/constant"
-	"shorterurl/user/rpc/internal/dal/query"
 	"shorterurl/user/rpc/internal/svc"
 	"shorterurl/user/rpc/internal/types/errorx"
 	__ "shorterurl/user/rpc/pb"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,9 +31,7 @@ func NewUserLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserLog
 
 // 用户登录
 func (l *UserLoginLogic) UserLogin(in *__.LoginRequest) (*__.LoginResponse, error) {
-	// 1. 查询用户是否存在
-	q := query.Use(l.svcCtx.DB)
-	user, err := q.TUser.WithContext(l.ctx).Where(q.TUser.Username.Eq(in.Username), q.TUser.Password.Eq(in.Password)).First()
+	user, err := l.svcCtx.Query.TUser.WithContext(l.ctx).Where(l.svcCtx.Query.TUser.Username.Eq(in.Username), l.svcCtx.Query.TUser.Password.Eq(in.Password)).First()
 	if err != nil {
 		return nil, errorx.New(errorx.ClientError, errorx.ErrUserNotFound, errorx.Message(errorx.ErrUserNotFound))
 	}
@@ -60,8 +59,20 @@ func (l *UserLoginLogic) UserLogin(in *__.LoginRequest) (*__.LoginResponse, erro
 	// 3. 生成新的登录token
 	token := uuid.New().String()
 
-	// 4. 存储登录信息到Redis，只存储用户名作为标识
-	err = l.svcCtx.Redis.HsetCtx(l.ctx, loginKey, token, user.Username)
+	// 4. 存储登录信息到Redis，以JSON格式存储用户信息
+	userInfo := map[string]interface{}{
+		"id":       strconv.FormatInt(user.ID, 10),
+		"realName": user.RealName,
+	}
+
+	// 将用户信息序列化为JSON
+	userInfoJson, err := json.Marshal(userInfo)
+	if err != nil {
+		return nil, errorx.New(errorx.SystemError, errorx.ErrInternalServer, fmt.Sprintf("序列化用户信息失败: %v", err))
+	}
+
+	// 存储到Redis
+	err = l.svcCtx.Redis.HsetCtx(l.ctx, loginKey, token, string(userInfoJson))
 	if err != nil {
 		return nil, errorx.New(errorx.SystemError, errorx.ErrInternalServer, fmt.Sprintf("存储登录信息失败: %v", err))
 	}

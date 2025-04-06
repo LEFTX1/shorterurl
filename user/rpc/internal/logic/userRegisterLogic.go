@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"regexp"
 	"shorterurl/user/rpc/internal/constant"
 	"shorterurl/user/rpc/internal/dal/model"
 	"shorterurl/user/rpc/internal/dal/query"
@@ -34,6 +35,12 @@ func NewUserRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *User
 
 // 用户注册
 func (l *UserRegisterLogic) UserRegister(in *__.RegisterRequest) (*__.RegisterResponse, error) {
+	// 检查用户名是否只包含ASCII字符
+	isAscii := regexp.MustCompile(`^[\x00-\x7F]+$`).MatchString(in.Username)
+	if !isAscii {
+		return nil, errorx.New(errorx.ClientError, errorx.ErrInvalidUsername, errorx.Message("用户名只能包含ASCII字符，不能使用中文"))
+	}
+
 	// 1. 检查布隆过滤器中是否存在该用户名
 	exists, err := l.svcCtx.BloomFilters.UserExists(l.ctx, in.Username)
 	if err != nil {
@@ -101,8 +108,11 @@ func (l *UserRegisterLogic) UserRegister(in *__.RegisterRequest) (*__.RegisterRe
 		group := &model.TGroup{
 			Username:   in.Username,
 			Name:       "默认分组",
+			Gid:        generateRandomString(8), // 添加随机生成的Gid，引用已有的函数
+			SortOrder:  0,                       // 设置默认排序为0
 			CreateTime: createTime,
 			UpdateTime: createTime,
+			DelFlag:    false, // 确保未删除标识
 		}
 
 		// 4.4 尝试将分组信息插入数据库

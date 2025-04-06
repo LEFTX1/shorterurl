@@ -57,6 +57,7 @@ func (l *UserGetInfoLogic) UserGetInfo(in *__.CheckUsernameRequest) (*__.UserInf
 
 	// 3. 返回用户信息
 	return &__.UserInfoResponse{
+		Id:         user.ID,
 		Username:   user.Username,
 		RealName:   user.RealName,
 		Phone:      phone,
