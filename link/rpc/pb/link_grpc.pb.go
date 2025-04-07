@@ -35,6 +35,7 @@ const (
 	ShortLinkService_StatsAccessRecordQuery_FullMethodName      = "/shortlink.ShortLinkService/StatsAccessRecordQuery"
 	ShortLinkService_StatsGroupAccessRecordQuery_FullMethodName = "/shortlink.ShortLinkService/StatsGroupAccessRecordQuery"
 	ShortLinkService_UrlTitleGet_FullMethodName                 = "/shortlink.ShortLinkService/UrlTitleGet"
+	ShortLinkService_GetIpLocation_FullMethodName               = "/shortlink.ShortLinkService/GetIpLocation"
 )
 
 // ShortLinkServiceClient is the client API for ShortLinkService service.
@@ -66,6 +67,8 @@ type ShortLinkServiceClient interface {
 	StatsGroupAccessRecordQuery(ctx context.Context, in *GroupAccessRecordQueryRequest, opts ...grpc.CallOption) (*GroupAccessRecordQueryResponse, error)
 	// --------------------- URL标题功能接口 ---------------------
 	UrlTitleGet(ctx context.Context, in *GetUrlTitleRequest, opts ...grpc.CallOption) (*GetUrlTitleResponse, error)
+	// --------------------- IP位置查询接口 ---------------------
+	GetIpLocation(ctx context.Context, in *GetIPLocationRequest, opts ...grpc.CallOption) (*GetIPLocationResponse, error)
 }
 
 type shortLinkServiceClient struct {
@@ -236,6 +239,16 @@ func (c *shortLinkServiceClient) UrlTitleGet(ctx context.Context, in *GetUrlTitl
 	return out, nil
 }
 
+func (c *shortLinkServiceClient) GetIpLocation(ctx context.Context, in *GetIPLocationRequest, opts ...grpc.CallOption) (*GetIPLocationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetIPLocationResponse)
+	err := c.cc.Invoke(ctx, ShortLinkService_GetIpLocation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ShortLinkServiceServer is the server API for ShortLinkService service.
 // All implementations must embed UnimplementedShortLinkServiceServer
 // for forward compatibility.
@@ -265,6 +278,8 @@ type ShortLinkServiceServer interface {
 	StatsGroupAccessRecordQuery(context.Context, *GroupAccessRecordQueryRequest) (*GroupAccessRecordQueryResponse, error)
 	// --------------------- URL标题功能接口 ---------------------
 	UrlTitleGet(context.Context, *GetUrlTitleRequest) (*GetUrlTitleResponse, error)
+	// --------------------- IP位置查询接口 ---------------------
+	GetIpLocation(context.Context, *GetIPLocationRequest) (*GetIPLocationResponse, error)
 	mustEmbedUnimplementedShortLinkServiceServer()
 }
 
@@ -322,6 +337,9 @@ func (UnimplementedShortLinkServiceServer) StatsGroupAccessRecordQuery(context.C
 }
 func (UnimplementedShortLinkServiceServer) UrlTitleGet(context.Context, *GetUrlTitleRequest) (*GetUrlTitleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UrlTitleGet not implemented")
+}
+func (UnimplementedShortLinkServiceServer) GetIpLocation(context.Context, *GetIPLocationRequest) (*GetIPLocationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIpLocation not implemented")
 }
 func (UnimplementedShortLinkServiceServer) mustEmbedUnimplementedShortLinkServiceServer() {}
 func (UnimplementedShortLinkServiceServer) testEmbeddedByValue()                          {}
@@ -632,6 +650,24 @@ func _ShortLinkService_UrlTitleGet_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ShortLinkService_GetIpLocation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetIPLocationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShortLinkServiceServer).GetIpLocation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ShortLinkService_GetIpLocation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShortLinkServiceServer).GetIpLocation(ctx, req.(*GetIPLocationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ShortLinkService_ServiceDesc is the grpc.ServiceDesc for ShortLinkService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -702,6 +738,10 @@ var ShortLinkService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UrlTitleGet",
 			Handler:    _ShortLinkService_UrlTitleGet_Handler,
+		},
+		{
+			MethodName: "GetIpLocation",
+			Handler:    _ShortLinkService_GetIpLocation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

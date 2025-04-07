@@ -41,7 +41,6 @@ func (l *RecycleBinSaveLogic) RecycleBinSave(in *pb.SaveToRecycleBinRequest) (*p
 
 	l.Logger.Infof("保存短链接到回收站, 短链接: %s, 分组: %s", in.FullShortUrl, in.Gid)
 
-	// 更新短链接状态为未启用(1)
 	// 查询短链接
 	link, err := l.svcCtx.RepoManager.Link.FindByFullShortUrlAndGid(l.ctx, in.FullShortUrl, in.Gid)
 	if err != nil {
@@ -49,15 +48,21 @@ func (l *RecycleBinSaveLogic) RecycleBinSave(in *pb.SaveToRecycleBinRequest) (*p
 		return nil, status.Error(codes.NotFound, "短链接不存在")
 	}
 
-	// 检查是否已经在回收站中
-	if link.EnableStatus != 0 {
+	// 检查是否已经在回收站中 (enable_status=1表示在回收站中)
+	if link.EnableStatus == 1 {
 		l.Logger.Infof("短链接已经在回收站中: %s", in.FullShortUrl)
 		return &pb.SaveToRecycleBinResponse{
 			Success: true,
 		}, nil
 	}
 
-	// 更新为未启用状态
+	// 检查是否已被永久删除 (del_flag=1表示已永久删除)
+	if link.DelFlag == 1 {
+		l.Logger.Infof("短链接已被永久删除，无法保存到回收站: %s", in.FullShortUrl)
+		return nil, status.Error(codes.FailedPrecondition, "短链接已被永久删除")
+	}
+
+	// 将短链接移至回收站（设置enable_status=1表示将链接放入回收站）
 	link.EnableStatus = 1
 	if err := l.svcCtx.RepoManager.Link.Update(l.ctx, link); err != nil {
 		l.Logger.Errorf("更新短链接状态失败: %v", err)

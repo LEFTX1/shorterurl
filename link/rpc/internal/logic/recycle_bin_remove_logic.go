@@ -45,20 +45,20 @@ func (l *RecycleBinRemoveLogic) RecycleBinRemove(in *pb.RemoveFromRecycleBinRequ
 		return nil, status.Error(codes.NotFound, "短链接不存在")
 	}
 
-	// 检查是否在回收站中（未启用状态）
+	// 检查是否在回收站中（EnableStatus为1表示在回收站中）
 	if link.EnableStatus != 1 {
-		return nil, status.Error(codes.FailedPrecondition, "只能删除回收站中的短链接")
+		return nil, status.Error(codes.FailedPrecondition, "只能永久删除回收站中的短链接")
 	}
 
-	// 检查是否已经标记为删除
+	// 检查是否已经标记为永久删除
 	if link.DelFlag == 1 {
-		l.Logger.Infof("短链接已经标记为删除: %s", in.FullShortUrl)
+		l.Logger.Infof("短链接已经标记为永久删除: %s", in.FullShortUrl)
 		return &pb.RemoveFromRecycleBinResponse{
 			Success: true,
 		}, nil
 	}
 
-	// 标记为删除状态
+	// 执行永久删除操作（设置DelFlag = 1表示永久删除，不可恢复）
 	link.DelFlag = 1
 	link.DelTime = time.Now().Unix()
 

@@ -28,6 +28,8 @@ type (
 	EmptyResponse                   = pb.EmptyResponse
 	GetGroupStatsRequest            = pb.GetGroupStatsRequest
 	GetGroupStatsResponse           = pb.GetGroupStatsResponse
+	GetIPLocationRequest            = pb.GetIPLocationRequest
+	GetIPLocationResponse           = pb.GetIPLocationResponse
 	GetSingleStatsRequest           = pb.GetSingleStatsRequest
 	GetSingleStatsResponse          = pb.GetSingleStatsResponse
 	GetUrlTitleRequest              = pb.GetUrlTitleRequest
@@ -84,6 +86,8 @@ type (
 		StatsGroupAccessRecordQuery(ctx context.Context, in *GroupAccessRecordQueryRequest, opts ...grpc.CallOption) (*GroupAccessRecordQueryResponse, error)
 		// --------------------- URL标题功能接口 ---------------------
 		UrlTitleGet(ctx context.Context, in *GetUrlTitleRequest, opts ...grpc.CallOption) (*GetUrlTitleResponse, error)
+		// --------------------- IP位置查询接口 ---------------------
+		GetIpLocation(ctx context.Context, in *GetIPLocationRequest, opts ...grpc.CallOption) (*GetIPLocationResponse, error)
 	}
 
 	defaultShortLinkService struct {
@@ -182,4 +186,10 @@ func (m *defaultShortLinkService) StatsGroupAccessRecordQuery(ctx context.Contex
 func (m *defaultShortLinkService) UrlTitleGet(ctx context.Context, in *GetUrlTitleRequest, opts ...grpc.CallOption) (*GetUrlTitleResponse, error) {
 	client := pb.NewShortLinkServiceClient(m.cli.Conn())
 	return client.UrlTitleGet(ctx, in, opts...)
+}
+
+// --------------------- IP位置查询接口 ---------------------
+func (m *defaultShortLinkService) GetIpLocation(ctx context.Context, in *GetIPLocationRequest, opts ...grpc.CallOption) (*GetIPLocationResponse, error) {
+	client := pb.NewShortLinkServiceClient(m.cli.Conn())
+	return client.GetIpLocation(ctx, in, opts...)
 }

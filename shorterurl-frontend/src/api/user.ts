@@ -47,6 +47,7 @@ export interface UserUpdateReq {
 export interface SuccessResp {
   code: string;
   success: boolean;
+  message?: string;
 }
 
 // 用户API

@@ -9,6 +9,7 @@ import (
 	"shorterurl/link/rpc/pb"
 	"shorterurl/link/rpc/pkg/hash"
 	"shorterurl/link/rpc/pkg/util"
+	"strings"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -170,14 +171,21 @@ func (l *ShortLinkCreateLogic) verificationWhitelist(originUrl string) error {
 		return nil
 	}
 
+	// 添加日志输出
+	l.Logger.Infof("正在验证域名: %s", domain)
+	l.Logger.Infof("白名单域名列表: %v", details)
+
 	for _, whiteDomain := range details {
-		if whiteDomain == domain {
+		// 支持子域名匹配
+		if domain == whiteDomain || strings.HasSuffix(domain, "."+whiteDomain) {
+			l.Logger.Infof("域名 %s 匹配白名单域名 %s", domain, whiteDomain)
 			return nil
 		}
 	}
 
 	// 如果不在白名单中，返回错误
 	errMsg := fmt.Sprintf("演示环境为避免恶意攻击，请生成以下网站跳转链接：%s", l.svcCtx.Config.GotoDomainWhiteList.Names)
+	l.Logger.Errorf("域名 %s 不在白名单中", domain)
 	return status.Error(codes.PermissionDenied, errMsg)
 }
 

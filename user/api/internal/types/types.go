@@ -115,9 +115,9 @@ type RecycleBinOperateReq struct {
 }
 
 type RecycleBinPageReq struct {
-	GidList []string `json:"gidList,optional"`  // 分组标识列表，可选
-	Current int      `form:"current,default=1"` // 当前页码，从1开始
-	Size    int      `form:"size,default=10"`   // 每页记录数
+	Gid     string `form:"gid" validate:"required"` // 分组标识，必选项
+	Current int    `form:"current,default=1"`       // 当前页码，从1开始
+	Size    int    `form:"size,default=10"`         // 每页记录数
 }
 
 type RecycleBinPageResp struct {
@@ -215,6 +215,10 @@ type ShortLinkRecord struct {
 	TodayUv       int64  `json:"todayUv"`       // 今日独立访客数
 	TotalUip      int64  `json:"totalUip"`      // 总IP数
 	TodayUip      int64  `json:"todayUip"`      // 今日IP数
+}
+
+type ShortLinkRedirectReq struct {
+	ShortUri string `path:"short_uri"` // 短链接URI
 }
 
 type ShortLinkStatsReq struct {

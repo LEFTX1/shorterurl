@@ -49,4 +49,5 @@ GotoDomainWhiteList:
     - "gitee.com"
     - "google.com"
     - "baidu.com"
-  Names: "github, gitee, google, baidu"
+    - "bilibili.com"
+  Names: "github, gitee, google, baidu, bilibili"

@@ -1032,7 +1032,7 @@ func (x *RemoveFromRecycleBinResponse) GetSuccess() bool {
 // 分页查询回收站短链接请求
 type PageRecycleBinShortLinkRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Gids          []string               `protobuf:"bytes,1,rep,name=gids,proto3" json:"gids,omitempty"`        // 分组标识列表
+	Gid           string                 `protobuf:"bytes,1,opt,name=gid,proto3" json:"gid,omitempty"`          // 分组标识
 	Current       int32                  `protobuf:"varint,2,opt,name=current,proto3" json:"current,omitempty"` // 当前页
 	Size          int32                  `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`       // 每页大小
 	unknownFields protoimpl.UnknownFields
@@ -1069,11 +1069,11 @@ func (*PageRecycleBinShortLinkRequest) Descriptor() ([]byte, []int) {
 	return file_link_proto_rawDescGZIP(), []int{16}
 }
 
-func (x *PageRecycleBinShortLinkRequest) GetGids() []string {
+func (x *PageRecycleBinShortLinkRequest) GetGid() string {
 	if x != nil {
-		return x.Gids
+		return x.Gid
 	}
-	return nil
+	return ""
 }
 
 func (x *PageRecycleBinShortLinkRequest) GetCurrent() int32 {
@@ -3022,6 +3022,145 @@ func (*EmptyResponse) Descriptor() ([]byte, []int) {
 	return file_link_proto_rawDescGZIP(), []int{44}
 }
 
+// --------------------- IP位置查询接口 ---------------------
+// IP位置查询请求
+type GetIPLocationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ip            string                 `protobuf:"bytes,1,opt,name=ip,proto3" json:"ip,omitempty"` // IP地址
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetIPLocationRequest) Reset() {
+	*x = GetIPLocationRequest{}
+	mi := &file_link_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetIPLocationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetIPLocationRequest) ProtoMessage() {}
+
+func (x *GetIPLocationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_link_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetIPLocationRequest.ProtoReflect.Descriptor instead.
+func (*GetIPLocationRequest) Descriptor() ([]byte, []int) {
+	return file_link_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *GetIPLocationRequest) GetIp() string {
+	if x != nil {
+		return x.Ip
+	}
+	return ""
+}
+
+// IP位置查询响应
+type GetIPLocationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`       // 返回结果状态值：1成功，0失败
+	Info          string                 `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`           // 返回状态说明
+	Province      string                 `protobuf:"bytes,3,opt,name=province,proto3" json:"province,omitempty"`   // 省份名称
+	City          string                 `protobuf:"bytes,4,opt,name=city,proto3" json:"city,omitempty"`           // 城市名称
+	Adcode        string                 `protobuf:"bytes,5,opt,name=adcode,proto3" json:"adcode,omitempty"`       // 城市的adcode编码
+	Rectangle     string                 `protobuf:"bytes,6,opt,name=rectangle,proto3" json:"rectangle,omitempty"` // 所在城市矩形区域范围
+	Infocode      string                 `protobuf:"bytes,7,opt,name=infocode,proto3" json:"infocode,omitempty"`   // 状态码，10000代表正确
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetIPLocationResponse) Reset() {
+	*x = GetIPLocationResponse{}
+	mi := &file_link_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetIPLocationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetIPLocationResponse) ProtoMessage() {}
+
+func (x *GetIPLocationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_link_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetIPLocationResponse.ProtoReflect.Descriptor instead.
+func (*GetIPLocationResponse) Descriptor() ([]byte, []int) {
+	return file_link_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *GetIPLocationResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *GetIPLocationResponse) GetInfo() string {
+	if x != nil {
+		return x.Info
+	}
+	return ""
+}
+
+func (x *GetIPLocationResponse) GetProvince() string {
+	if x != nil {
+		return x.Province
+	}
+	return ""
+}
+
+func (x *GetIPLocationResponse) GetCity() string {
+	if x != nil {
+		return x.City
+	}
+	return ""
+}
+
+func (x *GetIPLocationResponse) GetAdcode() string {
+	if x != nil {
+		return x.Adcode
+	}
+	return ""
+}
+
+func (x *GetIPLocationResponse) GetRectangle() string {
+	if x != nil {
+		return x.Rectangle
+	}
+	return ""
+}
+
+func (x *GetIPLocationResponse) GetInfocode() string {
+	if x != nil {
+		return x.Infocode
+	}
+	return ""
+}
+
 var File_link_proto protoreflect.FileDescriptor
 
 const file_link_proto_rawDesc = "" +
@@ -3107,9 +3246,9 @@ const file_link_proto_rawDesc = "" +
 	"\x03gid\x18\x01 \x01(\tR\x03gid\x12$\n" +
 	"\x0efull_short_url\x18\x02 \x01(\tR\ffullShortUrl\"8\n" +
 	"\x1cRemoveFromRecycleBinResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"b\n" +
-	"\x1ePageRecycleBinShortLinkRequest\x12\x12\n" +
-	"\x04gids\x18\x01 \x03(\tR\x04gids\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"`\n" +
+	"\x1ePageRecycleBinShortLinkRequest\x12\x10\n" +
+	"\x03gid\x18\x01 \x01(\tR\x03gid\x12\x18\n" +
 	"\acurrent\x18\x02 \x01(\x05R\acurrent\x12\x12\n" +
 	"\x04size\x18\x03 \x01(\x05R\x04size\"\x9b\x01\n" +
 	"\x1fPageRecycleBinShortLinkResponse\x124\n" +
@@ -3267,7 +3406,17 @@ const file_link_proto_rawDesc = "" +
 	"\x06locale\x18\t \x01(\tR\x06locale\x12\x17\n" +
 	"\auv_type\x18\n" +
 	" \x01(\tR\x06uvType\"\x0f\n" +
-	"\rEmptyResponse2\xe9\v\n" +
+	"\rEmptyResponse\"&\n" +
+	"\x14GetIPLocationRequest\x12\x0e\n" +
+	"\x02ip\x18\x01 \x01(\tR\x02ip\"\xc5\x01\n" +
+	"\x15GetIPLocationResponse\x12\x16\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\x12\x12\n" +
+	"\x04info\x18\x02 \x01(\tR\x04info\x12\x1a\n" +
+	"\bprovince\x18\x03 \x01(\tR\bprovince\x12\x12\n" +
+	"\x04city\x18\x04 \x01(\tR\x04city\x12\x16\n" +
+	"\x06adcode\x18\x05 \x01(\tR\x06adcode\x12\x1c\n" +
+	"\trectangle\x18\x06 \x01(\tR\trectangle\x12\x1a\n" +
+	"\binfocode\x18\a \x01(\tR\binfocode2\xbd\f\n" +
 	"\x10ShortLinkService\x12X\n" +
 	"\x0fShortLinkCreate\x12!.shortlink.CreateShortLinkRequest\x1a\".shortlink.CreateShortLinkResponse\x12g\n" +
 	"\x14ShortLinkBatchCreate\x12&.shortlink.BatchCreateShortLinkRequest\x1a'.shortlink.BatchCreateShortLinkResponse\x12X\n" +
@@ -3285,7 +3434,8 @@ const file_link_proto_rawDesc = "" +
 	"\rStatsGetGroup\x12\x1f.shortlink.GetGroupStatsRequest\x1a .shortlink.GetGroupStatsResponse\x12c\n" +
 	"\x16StatsAccessRecordQuery\x12#.shortlink.AccessRecordQueryRequest\x1a$.shortlink.AccessRecordQueryResponse\x12r\n" +
 	"\x1bStatsGroupAccessRecordQuery\x12(.shortlink.GroupAccessRecordQueryRequest\x1a).shortlink.GroupAccessRecordQueryResponse\x12L\n" +
-	"\vUrlTitleGet\x12\x1d.shortlink.GetUrlTitleRequest\x1a\x1e.shortlink.GetUrlTitleResponseB\x06Z\x04./pbb\x06proto3"
+	"\vUrlTitleGet\x12\x1d.shortlink.GetUrlTitleRequest\x1a\x1e.shortlink.GetUrlTitleResponse\x12R\n" +
+	"\rGetIpLocation\x12\x1f.shortlink.GetIPLocationRequest\x1a .shortlink.GetIPLocationResponseB\x06Z\x04./pbb\x06proto3"
 
 var (
 	file_link_proto_rawDescOnce sync.Once
@@ -3299,7 +3449,7 @@ func file_link_proto_rawDescGZIP() []byte {
 	return file_link_proto_rawDescData
 }
 
-var file_link_proto_msgTypes = make([]protoimpl.MessageInfo, 45)
+var file_link_proto_msgTypes = make([]protoimpl.MessageInfo, 47)
 var file_link_proto_goTypes = []any{
 	(*CreateShortLinkRequest)(nil),          // 0: shortlink.CreateShortLinkRequest
 	(*CreateShortLinkResponse)(nil),         // 1: shortlink.CreateShortLinkResponse
@@ -3346,6 +3496,8 @@ var file_link_proto_goTypes = []any{
 	(*RestoreUrlResponse)(nil),              // 42: shortlink.RestoreUrlResponse
 	(*ShortLinkStatsRequest)(nil),           // 43: shortlink.ShortLinkStatsRequest
 	(*EmptyResponse)(nil),                   // 44: shortlink.EmptyResponse
+	(*GetIPLocationRequest)(nil),            // 45: shortlink.GetIPLocationRequest
+	(*GetIPLocationResponse)(nil),           // 46: shortlink.GetIPLocationResponse
 }
 var file_link_proto_depIdxs = []int32{
 	3,  // 0: shortlink.BatchCreateShortLinkResponse.results:type_name -> shortlink.BatchCreateResult
@@ -3386,24 +3538,26 @@ var file_link_proto_depIdxs = []int32{
 	32, // 35: shortlink.ShortLinkService.StatsAccessRecordQuery:input_type -> shortlink.AccessRecordQueryRequest
 	34, // 36: shortlink.ShortLinkService.StatsGroupAccessRecordQuery:input_type -> shortlink.GroupAccessRecordQueryRequest
 	36, // 37: shortlink.ShortLinkService.UrlTitleGet:input_type -> shortlink.GetUrlTitleRequest
-	1,  // 38: shortlink.ShortLinkService.ShortLinkCreate:output_type -> shortlink.CreateShortLinkResponse
-	4,  // 39: shortlink.ShortLinkService.ShortLinkBatchCreate:output_type -> shortlink.BatchCreateShortLinkResponse
-	6,  // 40: shortlink.ShortLinkService.ShortLinkUpdate:output_type -> shortlink.UpdateShortLinkResponse
-	9,  // 41: shortlink.ShortLinkService.ShortLinkPage:output_type -> shortlink.PageShortLinkResponse
-	40, // 42: shortlink.ShortLinkService.ShortLinkListGroupCount:output_type -> shortlink.GroupShortLinkCountResponse
-	42, // 43: shortlink.ShortLinkService.RestoreUrl:output_type -> shortlink.RestoreUrlResponse
-	44, // 44: shortlink.ShortLinkService.ShortLinkStats:output_type -> shortlink.EmptyResponse
-	11, // 45: shortlink.ShortLinkService.RecycleBinSave:output_type -> shortlink.SaveToRecycleBinResponse
-	13, // 46: shortlink.ShortLinkService.RecycleBinRecover:output_type -> shortlink.RecoverFromRecycleBinResponse
-	15, // 47: shortlink.ShortLinkService.RecycleBinRemove:output_type -> shortlink.RemoveFromRecycleBinResponse
-	17, // 48: shortlink.ShortLinkService.RecycleBinPage:output_type -> shortlink.PageRecycleBinShortLinkResponse
-	27, // 49: shortlink.ShortLinkService.StatsGetSingle:output_type -> shortlink.GetSingleStatsResponse
-	29, // 50: shortlink.ShortLinkService.StatsGetGroup:output_type -> shortlink.GetGroupStatsResponse
-	33, // 51: shortlink.ShortLinkService.StatsAccessRecordQuery:output_type -> shortlink.AccessRecordQueryResponse
-	35, // 52: shortlink.ShortLinkService.StatsGroupAccessRecordQuery:output_type -> shortlink.GroupAccessRecordQueryResponse
-	37, // 53: shortlink.ShortLinkService.UrlTitleGet:output_type -> shortlink.GetUrlTitleResponse
-	38, // [38:54] is the sub-list for method output_type
-	22, // [22:38] is the sub-list for method input_type
+	45, // 38: shortlink.ShortLinkService.GetIpLocation:input_type -> shortlink.GetIPLocationRequest
+	1,  // 39: shortlink.ShortLinkService.ShortLinkCreate:output_type -> shortlink.CreateShortLinkResponse
+	4,  // 40: shortlink.ShortLinkService.ShortLinkBatchCreate:output_type -> shortlink.BatchCreateShortLinkResponse
+	6,  // 41: shortlink.ShortLinkService.ShortLinkUpdate:output_type -> shortlink.UpdateShortLinkResponse
+	9,  // 42: shortlink.ShortLinkService.ShortLinkPage:output_type -> shortlink.PageShortLinkResponse
+	40, // 43: shortlink.ShortLinkService.ShortLinkListGroupCount:output_type -> shortlink.GroupShortLinkCountResponse
+	42, // 44: shortlink.ShortLinkService.RestoreUrl:output_type -> shortlink.RestoreUrlResponse
+	44, // 45: shortlink.ShortLinkService.ShortLinkStats:output_type -> shortlink.EmptyResponse
+	11, // 46: shortlink.ShortLinkService.RecycleBinSave:output_type -> shortlink.SaveToRecycleBinResponse
+	13, // 47: shortlink.ShortLinkService.RecycleBinRecover:output_type -> shortlink.RecoverFromRecycleBinResponse
+	15, // 48: shortlink.ShortLinkService.RecycleBinRemove:output_type -> shortlink.RemoveFromRecycleBinResponse
+	17, // 49: shortlink.ShortLinkService.RecycleBinPage:output_type -> shortlink.PageRecycleBinShortLinkResponse
+	27, // 50: shortlink.ShortLinkService.StatsGetSingle:output_type -> shortlink.GetSingleStatsResponse
+	29, // 51: shortlink.ShortLinkService.StatsGetGroup:output_type -> shortlink.GetGroupStatsResponse
+	33, // 52: shortlink.ShortLinkService.StatsAccessRecordQuery:output_type -> shortlink.AccessRecordQueryResponse
+	35, // 53: shortlink.ShortLinkService.StatsGroupAccessRecordQuery:output_type -> shortlink.GroupAccessRecordQueryResponse
+	37, // 54: shortlink.ShortLinkService.UrlTitleGet:output_type -> shortlink.GetUrlTitleResponse
+	46, // 55: shortlink.ShortLinkService.GetIpLocation:output_type -> shortlink.GetIPLocationResponse
+	39, // [39:56] is the sub-list for method output_type
+	22, // [22:39] is the sub-list for method input_type
 	22, // [22:22] is the sub-list for extension type_name
 	22, // [22:22] is the sub-list for extension extendee
 	0,  // [0:22] is the sub-list for field type_name
@@ -3420,7 +3574,7 @@ func file_link_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_link_proto_rawDesc), len(file_link_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   45,
+			NumMessages:   47,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -30,5 +30,11 @@ func ExtractDomain(originUrl string) string {
 		host = strings.Split(host, ":")[0]
 	}
 
+	// 如果是子域名，返回主域名
+	parts := strings.Split(host, ".")
+	if len(parts) > 2 {
+		return strings.Join(parts[len(parts)-2:], ".")
+	}
+
 	return host
 }

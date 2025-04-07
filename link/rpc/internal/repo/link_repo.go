@@ -13,34 +13,34 @@ type LinkRepo interface {
 	// 创建短链接
 	Create(ctx context.Context, link *model.Link) error
 
-	// 根据ID查询短链接
+	// 根据ID查询短链接（只查询未永久删除的，即del_flag=0）
 	FindByID(ctx context.Context, id int64) (*model.Link, error)
 
-	// 根据短链接查询
+	// 根据短链接查询（只查询未永久删除的，即del_flag=0）
 	FindByShortUri(ctx context.Context, shortUri string) (*model.Link, error)
 
-	// 根据完整短链接查询
+	// 根据完整短链接查询（只查询未永久删除的，即del_flag=0）
 	FindByFullShortUrl(ctx context.Context, fullShortUrl string) (*model.Link, error)
 
-	// 根据短链接和分组ID查询
+	// 根据短链接和分组ID查询（只查询未永久删除的，即del_flag=0）
 	FindByShortUriAndGid(ctx context.Context, shortUri, gid string) (*model.Link, error)
 
-	// 根据完整短链接和分组ID查询
+	// 根据完整短链接和分组ID查询（只查询未永久删除的，即del_flag=0）
 	FindByFullShortUrlAndGid(ctx context.Context, fullShortUrl, gid string) (*model.Link, error)
 
-	// 根据分组ID查询短链接列表
+	// 根据分组ID查询短链接列表（正常状态的链接，即enable_status=0且del_flag=0）
 	FindByGid(ctx context.Context, gid string, page, pageSize int) ([]*model.Link, int64, error)
 
-	// 查询回收站中的短链接列表
+	// 查询回收站中的短链接列表（未启用状态的链接，即enable_status=1且del_flag=0）
 	FindRecycleBin(ctx context.Context, gid string, page, pageSize int) ([]*model.Link, int64, error)
 
-	// 统计分组中的短链接数量
+	// 统计分组中的短链接数量（正常状态的链接，即enable_status=0且del_flag=0）
 	CountByGid(ctx context.Context, gid string) (int64, error)
 
 	// 更新短链接
 	Update(ctx context.Context, link *model.Link) error
 
-	// 删除短链接
+	// 删除短链接（永久删除，设置del_flag=1）
 	Delete(ctx context.Context, id int64, gid string) error
 
 	// 批量创建短链接
@@ -58,7 +58,7 @@ type LinkRepo interface {
 	// 根据分组ID和附加条件统计短链接数量
 	CountByGidWithCondition(ctx context.Context, gid string, conditions map[string]interface{}) (int64, error)
 
-	// 根据完整短链接和分组ID查询回收站中的链接
+	// 根据完整短链接和分组ID查询回收站中的链接（未启用状态的链接，即enable_status=1且del_flag=0）
 	FindRecycleBinByFullShortUrlAndGid(ctx context.Context, fullShortUrl, gid string) (*model.Link, error)
 }
 
@@ -79,7 +79,7 @@ func (r *linkRepo) Create(ctx context.Context, link *model.Link) error {
 	return r.db.WithContext(ctx).Create(link).Error
 }
 
-// FindByID 根据ID查询短链接
+// FindByID 根据ID查询短链接（只查询未永久删除的短链接，即del_flag=0）
 func (r *linkRepo) FindByID(ctx context.Context, id int64) (*model.Link, error) {
 	var link model.Link
 	err := r.db.WithContext(ctx).Where("id = ? AND del_flag = 0", id).First(&link).Error
@@ -93,7 +93,8 @@ func (r *linkRepo) FindByID(ctx context.Context, id int64) (*model.Link, error) 
 func (r *linkRepo) FindByShortUri(ctx context.Context, shortUri string) (*model.Link, error) {
 	var link model.Link
 	// 由于分片键是 gid，我们需要先通过 short_uri 找到对应的记录
-	err := r.db.WithContext(ctx).Where("short_uri = ?", shortUri).First(&link).Error
+	// 只查询未永久删除的记录（del_flag=0）
+	err := r.db.WithContext(ctx).Where("short_uri = ? AND del_flag = 0", shortUri).First(&link).Error
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +105,8 @@ func (r *linkRepo) FindByShortUri(ctx context.Context, shortUri string) (*model.
 func (r *linkRepo) FindByFullShortUrl(ctx context.Context, fullShortUrl string) (*model.Link, error) {
 	var link model.Link
 	// 由于分片键是 gid，我们需要先通过 full_short_url 找到对应的记录
-	err := r.db.WithContext(ctx).Where("full_short_url = ?", fullShortUrl).First(&link).Error
+	// 只查询未永久删除的记录（del_flag=0）
+	err := r.db.WithContext(ctx).Where("full_short_url = ? AND del_flag = 0", fullShortUrl).First(&link).Error
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +116,8 @@ func (r *linkRepo) FindByFullShortUrl(ctx context.Context, fullShortUrl string) 
 // FindByShortUriAndGid 根据短链接和分组ID查询
 func (r *linkRepo) FindByShortUriAndGid(ctx context.Context, shortUri, gid string) (*model.Link, error) {
 	var link model.Link
-	err := r.db.WithContext(ctx).Where("short_uri = ? AND gid = ?", shortUri, gid).First(&link).Error
+	// 只查询未永久删除的记录（del_flag=0）
+	err := r.db.WithContext(ctx).Where("short_uri = ? AND gid = ? AND del_flag = 0", shortUri, gid).First(&link).Error
 	if err != nil {
 		return nil, err
 	}
@@ -131,15 +134,16 @@ func (r *linkRepo) FindByFullShortUrlAndGid(ctx context.Context, fullShortUrl, g
 	return &link, nil
 }
 
-// FindByGid 根据分组ID查询短链接列表
+// FindByGid 根据分组ID查询短链接列表（正常状态，非回收站）
 func (r *linkRepo) FindByGid(ctx context.Context, gid string, page, pageSize int) ([]*model.Link, int64, error) {
 	var links []*model.Link
 	var count int64
 
-	// 查询总数
+	// 查询总数 - 正常状态（enable_status=0）且未永久删除（del_flag=0）的链接
 	err := r.db.WithContext(ctx).Model(&model.Link{}).
 		Where("gid = ?", gid).
-		Where("del_flag = ?", 0).
+		Where("del_flag = ?", 0).      // 未被永久删除
+		Where("enable_status = ?", 0). // 正常状态，不在回收站中
 		Count(&count).Error
 	if err != nil {
 		return nil, 0, err
@@ -149,7 +153,8 @@ func (r *linkRepo) FindByGid(ctx context.Context, gid string, page, pageSize int
 	offset := (page - 1) * pageSize
 	err = r.db.WithContext(ctx).
 		Where("gid = ?", gid).
-		Where("del_flag = ?", 0).
+		Where("del_flag = ?", 0).      // 未被永久删除
+		Where("enable_status = ?", 0). // 正常状态，不在回收站中
 		Offset(offset).
 		Limit(pageSize).
 		Order("id DESC").
@@ -161,15 +166,16 @@ func (r *linkRepo) FindByGid(ctx context.Context, gid string, page, pageSize int
 	return links, count, nil
 }
 
-// FindRecycleBin 查询回收站中的短链接列表
+// FindRecycleBin 查询回收站中的短链接列表（未启用状态的链接，即enable_status=1且del_flag=0）
 func (r *linkRepo) FindRecycleBin(ctx context.Context, gid string, page, pageSize int) ([]*model.Link, int64, error) {
 	var links []*model.Link
 	var count int64
 
-	// 查询总数
+	// 查询总数 - 回收站中的链接是enable_status=1且del_flag=0的链接
 	err := r.db.WithContext(ctx).Model(&model.Link{}).
 		Where("gid = ?", gid).
-		Where("del_flag = ?", 1).
+		Where("enable_status = ?", 1). // 未启用状态(1)表示在回收站中
+		Where("del_flag = ?", 0).      // 未被永久删除(0)
 		Count(&count).Error
 	if err != nil {
 		return nil, 0, err
@@ -179,10 +185,11 @@ func (r *linkRepo) FindRecycleBin(ctx context.Context, gid string, page, pageSiz
 	offset := (page - 1) * pageSize
 	err = r.db.WithContext(ctx).
 		Where("gid = ?", gid).
-		Where("del_flag = ?", 1).
+		Where("enable_status = ?", 1). // 未启用状态(1)表示在回收站中
+		Where("del_flag = ?", 0).      // 未被永久删除(0)
 		Offset(offset).
 		Limit(pageSize).
-		Order("del_time DESC").
+		Order("id DESC").
 		Find(&links).Error
 	if err != nil {
 		return nil, 0, err
@@ -191,13 +198,13 @@ func (r *linkRepo) FindRecycleBin(ctx context.Context, gid string, page, pageSiz
 	return links, count, nil
 }
 
-// CountByGid 统计分组中的短链接数量
+// CountByGid 统计分组中的短链接数量（正常状态的链接，非回收站）
 func (r *linkRepo) CountByGid(ctx context.Context, gid string) (int64, error) {
 	var count int64
 	err := r.db.WithContext(ctx).Model(&model.Link{}).
 		Where("gid = ?", gid).
-		Where("del_flag = ?", 0).
-		Where("enable_status = ?", 0).
+		Where("del_flag = ?", 0).      // 未被永久删除
+		Where("enable_status = ?", 0). // 正常状态，不在回收站中
 		Count(&count).Error
 	return count, err
 }
@@ -232,14 +239,14 @@ func (r *linkRepo) Update(ctx context.Context, link *model.Link) error {
 		}).Error
 }
 
-// Delete 删除短链接（软删除）
+// Delete 删除短链接（永久删除，设置del_flag=1）
 func (r *linkRepo) Delete(ctx context.Context, id int64, gid string) error {
 	// 直接使用提供的id和gid(分片键)执行软删除
 	result := r.db.WithContext(ctx).
 		Model(&model.Link{}).                 // 指定模型以确保使用正确的表名和分片规则
 		Where("id = ? AND gid = ?", id, gid). // 明确提供 id 和分片键 gid
 		Updates(map[string]interface{}{
-			"del_flag": 1,
+			"del_flag": 1, // 设置为已删除
 			"del_time": time.Now().Unix(),
 		})
 
@@ -328,12 +335,13 @@ func (r *linkRepo) CountByGidWithCondition(ctx context.Context, gid string, cond
 	return count, err
 }
 
-// FindRecycleBinByFullShortUrlAndGid 根据完整短链接和分组ID查询回收站中的链接
+// FindRecycleBinByFullShortUrlAndGid 根据完整短链接和分组ID查询回收站中的链接（未启用状态的链接，即enable_status=1且del_flag=0）
 func (r *linkRepo) FindRecycleBinByFullShortUrlAndGid(ctx context.Context, fullShortUrl, gid string) (*model.Link, error) {
 	var link model.Link
 	err := r.db.WithContext(ctx).
 		Where("full_short_url = ? AND gid = ?", fullShortUrl, gid).
-		Where("del_flag = ?", 1). // 查询回收站中的记录 (del_flag = 1)
+		Where("enable_status = ?", 1). // 未启用状态表示在回收站中
+		Where("del_flag = ?", 0).      // 未被永久删除
 		First(&link).Error
 	if err != nil {
 		return nil, err

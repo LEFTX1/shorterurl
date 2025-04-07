@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"shorterurl/link/rpc/internal/svc"
@@ -11,7 +10,6 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"gorm.io/gorm"
 )
 
 // 回收站空值键
@@ -44,35 +42,28 @@ func (l *RecycleBinRecoverLogic) RecycleBinRecover(in *pb.RecoverFromRecycleBinR
 	l.Logger.Infof("从回收站恢复短链接, 短链接: %s, 分组: %s", in.FullShortUrl, in.Gid)
 
 	// 查询短链接
-	link, err := l.svcCtx.RepoManager.Link.FindRecycleBinByFullShortUrlAndGid(l.ctx, in.FullShortUrl, in.Gid)
+	link, err := l.svcCtx.RepoManager.Link.FindByFullShortUrlAndGid(l.ctx, in.FullShortUrl, in.Gid)
 	if err != nil {
-		l.Logger.Errorf("查询回收站短链接失败: %v", err)
-		// 如果未找到，可能是因为链接不在回收站，或已被物理删除，或根本不存在
-		// 需要根据错误类型判断，gorm.ErrRecordNotFound 表示不在回收站 (或已被物理删除)
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// 尝试查询非回收站的链接，看是否是已启用状态
-			activeLink, findErr := l.svcCtx.RepoManager.Link.FindByFullShortUrlAndGid(l.ctx, in.FullShortUrl, in.Gid)
-			if findErr == nil && activeLink.EnableStatus == 0 {
-				// 如果找到了且是启用状态，则恢复成功
-				l.Logger.Infof("短链接已是启用状态(非回收站): %s", in.FullShortUrl)
-				return &pb.RecoverFromRecycleBinResponse{
-					Success: true,
-				}, nil
-			}
-			// 否则，视为短链接不存在于回收站中
-			return nil, status.Error(codes.NotFound, "短链接不在回收站中或不存在")
-		}
-		// 其他查询错误
-		return nil, status.Error(codes.Internal, "查询回收站短链接失败")
+		l.Logger.Errorf("查询短链接失败: %v", err)
+		return nil, status.Error(codes.NotFound, "短链接不存在")
 	}
 
-	// 检查是否 *确实* 在回收站中 (del_flag == 1)
-	// FindRecycleBinByFullShortUrlAndGid 已经保证了这一点，所以无需额外检查 link.DelFlag
+	// 检查是否在回收站中 (EnableStatus == 1表示在回收站中)
+	if link.EnableStatus != 1 {
+		l.Logger.Infof("短链接不在回收站中: %s", in.FullShortUrl)
+		return &pb.RecoverFromRecycleBinResponse{
+			Success: true, // 已经是正常状态，视为成功
+		}, nil
+	}
 
-	// 更新为启用状态 (del_flag = 0, enable_status = 0)
+	// 检查是否已被永久删除 (DelFlag == 1表示已永久删除)
+	if link.DelFlag == 1 {
+		l.Logger.Errorf("短链接已被永久删除，无法恢复: %s", in.FullShortUrl)
+		return nil, status.Error(codes.FailedPrecondition, "短链接已被永久删除，无法恢复")
+	}
+
+	// 将短链接恢复为正常状态 (设置EnableStatus = 0表示启用状态，非回收站)
 	link.EnableStatus = 0
-	link.DelFlag = 0
-	link.DelTime = 0 // 重置删除时间
 	if err := l.svcCtx.RepoManager.Link.Update(l.ctx, link); err != nil {
 		l.Logger.Errorf("更新短链接状态失败: %v", err)
 		return nil, status.Error(codes.Internal, "从回收站恢复失败")

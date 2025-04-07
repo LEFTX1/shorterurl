@@ -65,6 +65,7 @@ export interface BatchCreateShortLinkResp {
 export interface UpdateShortLinkReq {
   fullShortUrl: string;
   originUrl: string;
+  originGid: string;
   gid: string;
   validDateType: number;
   validDate?: string;
@@ -111,21 +112,6 @@ export default {
   // 批量创建短链
   batchCreateShortLink(data: BatchCreateShortLinkReq) {
     return axios.post<BatchCreateShortLinkResp>('/api/short-link/admin/v1/link/batch', data);
-  },
-  
-  // 保存到回收站
-  saveToRecycleBin(data: RecycleBinOperateReq) {
-    return axios.post<SuccessResp>('/api/short-link/admin/v1/recycle-bin/save', data);
-  },
-  
-  // 从回收站恢复
-  recoverFromRecycleBin(data: RecycleBinOperateReq) {
-    return axios.post<SuccessResp>('/api/short-link/admin/v1/recycle-bin/recover', data);
-  },
-  
-  // 从回收站删除
-  removeFromRecycleBin(data: RecycleBinOperateReq) {
-    return axios.post<SuccessResp>('/api/short-link/admin/v1/recycle-bin/remove', data);
   },
   
   // 获取网站标题

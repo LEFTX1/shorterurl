@@ -3,10 +3,14 @@ package logic
 import (
 	"context"
 	"fmt"
+	"io"
 	"time"
 
+	"shorterurl/link/rpc/internal/consumer"
 	"shorterurl/link/rpc/internal/svc"
 	"shorterurl/link/rpc/pb"
+
+	"crypto/md5"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
@@ -134,24 +138,123 @@ func (l *RestoreUrlLogic) RestoreUrl(in *pb.RestoreUrlRequest) (*pb.RestoreUrlRe
 // 异步记录访问统计
 func (l *RestoreUrlLogic) asyncRecordStats(fullShortUrl, shortUri string) {
 	threading.GoSafe(func() {
+		// 创建新的上下文
+		ctx := context.Background()
+
 		// 查询Gid
-		linkGoto, err := l.svcCtx.RepoManager.LinkGoto.FindByFullShortUrl(context.Background(), fullShortUrl)
+		linkGoto, err := l.svcCtx.RepoManager.LinkGoto.FindByFullShortUrl(ctx, fullShortUrl)
 		if err != nil {
 			logx.Errorf("查询短链接Gid失败: %v", err)
 			return
 		}
 
-		// 调用统计方法
-		statsLogic := NewShortLinkStatsLogic(context.Background(), l.svcCtx)
-		_, err = statsLogic.ShortLinkStats(&pb.ShortLinkStatsRequest{
+		// 从上下文中获取请求信息（在实际项目中可能需要通过中间件传递）
+		// 这里模拟获取，实际项目中应从 context 或请求中获取
+		ip := l.getValueFromContext(l.ctx, "ip", "")
+		browser := l.getValueFromContext(l.ctx, "browser", "未知浏览器")
+		os := l.getValueFromContext(l.ctx, "os", "未知系统")
+		device := l.getValueFromContext(l.ctx, "device", "未知设备")
+		network := l.getValueFromContext(l.ctx, "network", "未知网络")
+		userAgent := l.getValueFromContext(l.ctx, "user-agent", "")
+
+		// 获取或生成用户标识（可以是 cookie 中的值或根据 IP+UserAgent 生成的哈希）
+		user := l.getUserIdentifier(ip, userAgent)
+
+		// 检查是否是新的 UV 和 UIP
+		uvFirstFlag := l.checkFirstUv(fullShortUrl, user)
+		uipFirstFlag := l.checkFirstUip(fullShortUrl, ip)
+
+		// 构建统计记录
+		statsRecord := &consumer.StatsRecord{
 			FullShortUrl: fullShortUrl,
 			Gid:          linkGoto.Gid,
-			// 其他统计参数可以从上下文或请求中获取
-			// 在实际项目中，可以通过中间件或context传递这些信息
-		})
-
-		if err != nil {
-			logx.Errorf("记录短链接访问统计失败: %v", err)
+			User:         user,
+			UvFirstFlag:  uvFirstFlag,
+			UipFirstFlag: uipFirstFlag,
+			Ip:           ip,
+			Browser:      browser,
+			Os:           os,
+			Device:       device,
+			Network:      network,
+			CurrentDate:  time.Now(),
 		}
+
+		// 如果请求中有IP信息，获取IP地理位置
+		if ip != "" {
+			logx.Infof("开始获取访问IP的地理位置信息: %s", ip)
+
+			// 创建IP位置查询逻辑
+			ipLocationLogic := NewGetIpLocationLogic(ctx, l.svcCtx)
+			formattedLocation, err := ipLocationLogic.GetFormattedLocation(ip)
+
+			if err == nil && formattedLocation != "" {
+				logx.Infof("IP地理位置解析成功: %s -> %s", ip, formattedLocation)
+				statsRecord.Locale = formattedLocation
+			} else {
+				logx.Errorf("获取IP地理位置信息失败: %v", err)
+			}
+		}
+
+		// 提交统计记录到消费者队列
+		l.svcCtx.StatsConsumer.Submit(statsRecord)
 	})
+}
+
+// 从上下文中获取值，如果不存在则返回默认值
+func (l *RestoreUrlLogic) getValueFromContext(ctx context.Context, key, defaultValue string) string {
+	if value, ok := ctx.Value(key).(string); ok && value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+// 获取用户标识
+func (l *RestoreUrlLogic) getUserIdentifier(ip, userAgent string) string {
+	// 如果上下文中有用户标识，直接使用
+	if user, ok := l.ctx.Value("user").(string); ok && user != "" {
+		return user
+	}
+
+	// 否则根据 IP + UserAgent 生成用户标识
+	if ip == "" {
+		ip = "unknown"
+	}
+	if userAgent == "" {
+		userAgent = "unknown"
+	}
+
+	// 使用 MD5 哈希生成用户标识
+	h := md5.New()
+	io.WriteString(h, ip)
+	io.WriteString(h, userAgent)
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+// 检查是否是新的 UV
+func (l *RestoreUrlLogic) checkFirstUv(fullShortUrl, user string) bool {
+	key := fmt.Sprintf("short-link:stats:uv:%s", fullShortUrl)
+	added, err := l.svcCtx.BizRedis.Sadd(key, user)
+	if err != nil {
+		logx.Errorf("检查UV失败: %v", err)
+		return false
+	}
+	// 设置过期时间 (90天)
+	l.svcCtx.BizRedis.Expire(key, 90*24*60*60)
+	return added > 0
+}
+
+// 检查是否是新的 UIP
+func (l *RestoreUrlLogic) checkFirstUip(fullShortUrl, ip string) bool {
+	if ip == "" {
+		return false
+	}
+	key := fmt.Sprintf("short-link:stats:uip:%s", fullShortUrl)
+	added, err := l.svcCtx.BizRedis.Sadd(key, ip)
+	if err != nil {
+		logx.Errorf("检查UIP失败: %v", err)
+		return false
+	}
+	// 设置过期时间 (90天)
+	l.svcCtx.BizRedis.Expire(key, 90*24*60*60)
+	return added > 0
 }

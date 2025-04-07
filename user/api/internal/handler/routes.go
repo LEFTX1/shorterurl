@@ -9,6 +9,7 @@ import (
 	group "shorterurl/user/api/internal/handler/group"
 	link "shorterurl/user/api/internal/handler/link"
 	recycle "shorterurl/user/api/internal/handler/recycle"
+	redirect "shorterurl/user/api/internal/handler/redirect"
 	stats "shorterurl/user/api/internal/handler/stats"
 	user "shorterurl/user/api/internal/handler/user"
 	utility "shorterurl/user/api/internal/handler/utility"
@@ -118,6 +119,17 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				},
 			}...,
 		),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				// 短链接跳转
+				Method:  http.MethodGet,
+				Path:    "/:short_uri",
+				Handler: redirect.RedirectShortLinkHandler(serverCtx),
+			},
+		},
 	)
 
 	server.AddRoutes(

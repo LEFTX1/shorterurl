@@ -99,6 +99,7 @@ func (l *GroupSortLogic) GroupSort(stream __.UserService_GroupSortServer) error 
 			// 更新排序号
 			_, err = tx.TGroup.WithContext(l.ctx).
 				Where(tx.TGroup.ID.Eq(group.ID)).
+				Where(tx.TGroup.Username.Eq(username)).
 				UpdateSimple(
 					tx.TGroup.SortOrder.Value(req.SortOrder),
 					tx.TGroup.UpdateTime.Value(now),

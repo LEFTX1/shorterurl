@@ -70,8 +70,39 @@
           </div>
         </el-tab-pane>
         <el-tab-pane label="访问记录" name="records">
+          <div class="ip-location-container" v-if="selectedIp">
+            <div class="location-header">
+              <h3>IP详细信息 - {{ selectedIp }}</h3>
+              <el-button type="text" @click="closeIpDetail">关闭</el-button>
+            </div>
+            
+            <el-tabs v-model="ipDetailTab" class="ip-detail-tabs">
+              <el-tab-pane label="基本信息" name="basic">
+                <ip-location-card 
+                  :ip-address="selectedIp" 
+                  :auto-load="true"
+                  @location-loaded="handleLocationLoaded" 
+                />
+              </el-tab-pane>
+              <el-tab-pane label="地图位置" name="map">
+                <div v-if="ipLocationData" class="map-container">
+                  <ip-location-viewer :location-data="ipLocationData" />
+                </div>
+                <div v-else class="map-placeholder">
+                  <el-empty description="暂无地图数据，请先加载IP位置信息" />
+                </div>
+              </el-tab-pane>
+            </el-tabs>
+          </div>
+          
           <el-table :data="accessRecords" border style="width: 100%">
-            <el-table-column prop="ip" label="IP地址" width="140" />
+            <el-table-column prop="ip" label="IP地址" width="140">
+              <template #default="scope">
+                <el-button type="text" @click="showIpDetail(scope.row.ip)">
+                  {{ scope.row.ip }}
+                </el-button>
+              </template>
+            </el-table-column>
             <el-table-column prop="locale" label="地区" width="120" />
             <el-table-column prop="browser" label="浏览器" width="120" />
             <el-table-column prop="os" label="操作系统" width="120" />
@@ -102,6 +133,9 @@ import * as echarts from 'echarts';
 import { stats as statsApi } from '@/api';
 import type { ShortLinkRecord } from '@/api/link';
 import type { ShortLinkStatsRespDTO, AccessRecord } from '@/api/stats';
+import IpLocationCard from './IpLocationCard.vue';
+import IpLocationViewer from './IpLocationViewer.vue';
+import type { IPLocationResponse } from '../api/location';
 
 // 定义必要的类型
 interface ShortLinkRecord {
@@ -241,6 +275,11 @@ let osChart: echarts.ECharts | null = null;
 let deviceChart: echarts.ECharts | null = null;
 let hourChart: echarts.ECharts | null = null;
 let weekdayChart: echarts.ECharts | null = null;
+
+// IP位置相关状态
+const selectedIp = ref('');
+const ipLocationData = ref<IPLocationResponse | null>(null);
+const ipDetailTab = ref('basic');
 
 // 关闭对话框
 const handleClose = () => {
@@ -706,6 +745,29 @@ onMounted(() => {
     weekdayChart?.resize();
   });
 });
+
+// 显示IP详情
+const showIpDetail = (ip: string) => {
+  selectedIp.value = ip;
+};
+
+// 关闭IP详情
+const closeIpDetail = () => {
+  selectedIp.value = '';
+  ipLocationData.value = null;
+  ipDetailTab.value = 'basic';
+};
+
+// 处理位置信息加载完成
+const handleLocationLoaded = (data: IPLocationResponse) => {
+  ipLocationData.value = data;
+  console.log('IP位置信息加载完成:', data);
+  
+  // 如果数据加载成功，自动切换到地图选项卡
+  if (data && data.status === '1') {
+    ipDetailTab.value = 'map';
+  }
+};
 </script>
 
 <style scoped>
@@ -795,5 +857,44 @@ onMounted(() => {
   margin-top: 20px;
   display: flex;
   justify-content: center;
+}
+
+.ip-location-container {
+  margin-bottom: 20px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  padding: 15px;
+  background-color: #fff;
+}
+
+.location-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.location-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #303133;
+}
+
+.ip-detail-tabs {
+  width: 100%;
+}
+
+.map-container {
+  width: 100%;
+  height: 400px;
+}
+
+.map-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
 }
 </style> 

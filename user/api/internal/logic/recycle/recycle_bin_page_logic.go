@@ -26,9 +26,13 @@ func NewRecycleBinPageLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Re
 }
 
 func (l *RecycleBinPageLogic) RecycleBinPage(req *types.RecycleBinPageReq) (resp *types.RecycleBinPageResp, err error) {
+	// 获取请求中的分组参数
+	gid := req.Gid
+	l.Logger.Infof("查询回收站短链接，分组标识: %s", gid)
+
 	// 调用link RPC服务获取回收站短链接列表
 	result, err := l.svcCtx.LinkRpc.RecycleBinPage(l.ctx, &shortlinkservice.PageRecycleBinShortLinkRequest{
-		Gids:    req.GidList,
+		Gid:     gid,
 		Current: int32(req.Current),
 		Size:    int32(req.Size),
 	})
@@ -73,7 +77,7 @@ func (l *RecycleBinPageLogic) RecycleBinPage(req *types.RecycleBinPageReq) (resp
 			// 设置默认值
 			Id:           0,
 			Favicon:      "https://cdn-icons-png.flaticon.com/512/8763/8763935.png", // 默认图标
-			EnableStatus: 0,                                                         // 默认启用
+			EnableStatus: 1,                                                         // 回收站中的链接EnableStatus=1
 			TodayPv:      0,                                                         // 今日数据默认为0
 			TodayUv:      0,
 			TodayUip:     0,

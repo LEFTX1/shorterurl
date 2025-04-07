@@ -1,8 +1,10 @@
 package svc
 
 import (
+	"encoding/json"
 	"fmt"
 	"hash/crc32"
+	"net/http"
 	"shorterurl/link/rpc/internal/config"
 	"strconv"
 	"time"
@@ -12,14 +14,70 @@ import (
 	"gorm.io/sharding"
 )
 
-// DBs 包含所有数据库连接
+// IPLocationClient IP地理位置查询客户端
+type IPLocationClient struct {
+	apiKey string
+	client *http.Client
+}
+
+// NewIPLocationClient 创建IP地理位置查询客户端
+func NewIPLocationClient(apiKey string) *IPLocationClient {
+	return &IPLocationClient{
+		apiKey: apiKey,
+		client: &http.Client{
+			Timeout: 5 * time.Second,
+		},
+	}
+}
+
+// GetLocation 获取IP地理位置
+func (c *IPLocationClient) GetLocation(ip string) (*IPLocationResponse, error) {
+	url := fmt.Sprintf("https://restapi.amap.com/v3/ip?key=%s&ip=%s", c.apiKey, ip)
+
+	resp, err := c.client.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("请求高德地图API失败: %v", err)
+	}
+	defer resp.Body.Close()
+
+	var result IPLocationResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("解析高德地图API响应失败: %v", err)
+	}
+
+	return &result, nil
+}
+
+// IPLocationResponse 高德地图IP定位响应
+type IPLocationResponse struct {
+	Status    string `json:"status"`
+	Info      string `json:"info"`
+	Province  string `json:"province"`
+	City      string `json:"city"`
+	Adcode    string `json:"adcode"`
+	Rectangle string `json:"rectangle"`
+	Infocode  string `json:"infocode"`
+}
+
+// DBs 数据库连接
 type DBs struct {
-	Common     *gorm.DB                      // 用于没有分片的表
-	LinkDB     *gorm.DB                      // t_link表的分片DB
-	GotoLinkDB *gorm.DB                      // t_link_goto表的分片DB
-	GroupDB    *gorm.DB                      // t_group表的分片DB
-	UserDB     *gorm.DB                      // t_user表的分片DB
-	Shardings  map[string]*sharding.Sharding // 保存所有分片中间件
+	Common     *gorm.DB
+	LinkDB     *gorm.DB
+	GotoLinkDB *gorm.DB
+	GroupDB    *gorm.DB
+	UserDB     *gorm.DB
+	Shardings  map[string]*sharding.Sharding
+	IPLocation *IPLocationClient
+}
+
+// GetCommon 获取通用数据库连接
+func (d *DBs) GetCommon() *gorm.DB {
+	return d.Common
+}
+
+// GetLinkDB 获取链接数据库连接
+func (d *DBs) GetLinkDB() *gorm.DB {
+	return d.LinkDB
 }
 
 // InitDBs 初始化所有数据库连接
@@ -66,14 +124,21 @@ func InitDBs(c config.Config, idGen func() int64) (*DBs, error) {
 		"t_user":      userSharding,
 	}
 
-	return &DBs{
+	// 初始化IP地理位置查询客户端
+	ipLocation := NewIPLocationClient("9891e494403818e3fc79fb61fcf06b84")
+
+	// 创建DBs实例
+	dbs := &DBs{
 		Common:     commonDB,
 		LinkDB:     linkDB,
 		GotoLinkDB: gotoLinkDB,
 		GroupDB:    groupDB,
 		UserDB:     userDB,
 		Shardings:  shardings,
-	}, nil
+		IPLocation: ipLocation,
+	}
+
+	return dbs, nil
 }
 
 // 初始化通用数据库连接

@@ -238,9 +238,9 @@ type (
 type (
 	// 回收站分页查询请求
 	RecycleBinPageReq {
-		GidList []string `json:"gidList,optional"` // 分组标识列表，可选
-		Current int      `form:"current,default=1"` // 当前页码，从1开始
-		Size    int      `form:"size,default=10"` // 每页记录数
+		Gid     string `form:"gid" validate:"required"` // 分组标识，必选项
+		Current int    `form:"current,default=1"` // 当前页码，从1开始
+		Size    int    `form:"size,default=10"` // 每页记录数
 	}
 	// 回收站分页查询响应
 	RecycleBinPageResp {
@@ -289,6 +289,14 @@ type (
 	}
 )
 
+// =================短链接跳转相关类型定义=================
+type (
+	// 短链接跳转请求
+	ShortLinkRedirectReq {
+		ShortUri string `path:"short_uri"` // 短链接URI
+	}
+)
+
 // =================无需中间件验证的公共接口=================
 @server (
 	group: user
@@ -305,6 +313,16 @@ service gateway {
 	@doc "检查用户名是否存在"
 	@handler ApiCheckUsername
 	get /api/short-link/admin/v1/user/has-username (UserCheckUsernameReq) returns (UserCheckUsernameResp)
+}
+
+// =================短链接跳转接口=================
+@server (
+	group: redirect
+)
+service gateway {
+	@doc "短链接跳转"
+	@handler RedirectShortLink
+	get /:short_uri (ShortLinkRedirectReq)
 }
 
 // =================需要中间件验证的接口=================

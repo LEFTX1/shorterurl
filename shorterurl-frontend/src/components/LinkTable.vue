@@ -51,19 +51,28 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="180" fixed="right">
         <template #default="scope">
           <div class="operate-buttons">
-            <el-tooltip content="编辑" placement="top">
-              <el-button type="primary" :icon="Edit" circle size="small" @click="handleEdit(scope.row)" />
-            </el-tooltip>
-            <el-tooltip content="统计数据" placement="top">
-              <el-button type="success" :icon="DataLine" circle size="small" @click="handleStats(scope.row)" />
-            </el-tooltip>
-            <el-tooltip :content="isRecycleBin ? '恢复' : '删除'" placement="top">
-              <el-button :type="isRecycleBin ? 'success' : 'danger'" :icon="isRecycleBin ? 'Refresh' : 'Delete'" 
-                circle size="small" @click="handleRecycleBin(scope.row)" />
-            </el-tooltip>
+            <template v-if="!isRecycleBin">
+              <el-tooltip content="编辑" placement="top">
+                <el-button type="primary" :icon="Edit" circle size="small" @click="handleEdit(scope.row)" />
+              </el-tooltip>
+              <el-tooltip content="统计数据" placement="top">
+                <el-button type="success" :icon="DataLine" circle size="small" @click="handleStats(scope.row)" />
+              </el-tooltip>
+              <el-tooltip content="删除" placement="top">
+                <el-button type="danger" :icon="Delete" circle size="small" @click="handleRecycleBin(scope.row)" />
+              </el-tooltip>
+            </template>
+            <template v-else>
+              <el-tooltip content="恢复" placement="top">
+                <el-button type="success" :icon="Refresh" circle size="small" @click="handleRecover(scope.row)" />
+              </el-tooltip>
+              <el-tooltip content="永久删除" placement="top">
+                <el-button type="danger" :icon="Delete" circle size="small" @click="handleRemove(scope.row)" />
+              </el-tooltip>
+            </template>
           </div>
         </template>
       </el-table-column>
@@ -144,6 +153,8 @@ const emit = defineEmits([
   'edit', 
   'stats', 
   'recycleBin',
+  'recover',
+  'remove',
   'update:currentPage',
   'update:pageSize',
   'refresh'
@@ -171,6 +182,16 @@ const handleStats = (row: ShortLinkRecord) => {
 // 回收站操作
 const handleRecycleBin = (row: ShortLinkRecord) => {
   emit('recycleBin', row);
+};
+
+// 从回收站恢复
+const handleRecover = (row: ShortLinkRecord) => {
+  emit('recover', row);
+};
+
+// 从回收站永久删除
+const handleRemove = (row: ShortLinkRecord) => {
+  emit('remove', row);
 };
 
 // 分页大小变化

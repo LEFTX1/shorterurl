@@ -57,6 +57,9 @@
             <el-button type="primary" size="small" circle @click="showCreateGroupDialog">
               <el-icon><plus /></el-icon>
             </el-button>
+            <el-button type="info" size="small" @click="showSortGroupsDialog">
+              <el-icon><sort /></el-icon>
+            </el-button>
           </div>
           
           <div class="group-list">
@@ -73,7 +76,11 @@
           </div>
         </div>
         
-        <div class="recycle-bin" @click="toggleRecycleBin">
+        <div 
+          class="recycle-bin" 
+          :class="{ active: isRecycleBin }" 
+          @click="toggleRecycleBin"
+        >
           <el-icon><delete /></el-icon>
           <span>回收站</span>
         </div>
@@ -84,6 +91,7 @@
           <div class="breadcrumb">
             <el-breadcrumb separator="/">
               <el-breadcrumb-item :to="{ path: '/link' }">项目首页</el-breadcrumb-item>
+              <el-breadcrumb-item>{{ getCurrentGroupName() }}</el-breadcrumb-item>
               <el-breadcrumb-item>{{ isRecycleBin ? '回收站' : '短链管理' }}</el-breadcrumb-item>
             </el-breadcrumb>
           </div>
@@ -96,7 +104,13 @@
         <div class="table-container">
           <div class="table-header">
             <div class="left">
-              <span class="header-title">{{ isRecycleBin ? '回收站' : '短链列表' }}</span>
+              <span class="header-title">{{ getCurrentGroupName() }}</span>
+              <div class="mode-tag-container">
+                <transition name="mode-fade" mode="out-in">
+                  <el-tag v-if="isRecycleBin" key="recycle" type="danger" effect="dark" class="mode-tag">回收站模式</el-tag>
+                  <el-tag v-else key="normal" type="success" effect="plain" class="mode-tag">常规模式</el-tag>
+                </transition>
+              </div>
             </div>
             <div class="right">
               <el-input
@@ -113,6 +127,18 @@
             </div>
           </div>
           
+          <!-- 回收站状态说明 -->
+          <div v-if="isRecycleBin" class="recycle-bin-tip">
+            <el-alert
+              :title="`回收站模式 - 分组: ${getCurrentGroupName()}`"
+              type="info"
+              description="此视图显示状态为 enable_status=1(未启用/回收站) 且 del_flag=0(未永久删除) 的短链接，可以选择恢复或永久删除"
+              show-icon
+              :closable="false"
+              style="margin-bottom: 15px;"
+            />
+          </div>
+          
           <link-table
             :links="linkList"
             :loading="loading"
@@ -122,14 +148,18 @@
             v-model:page-size="pageSize"
             @edit="handleEdit"
             @stats="handleStats"
-            @recycle-bin="handleRecycleBin"
+            @recycle-bin="handleDelete"
+            @recover="handleRecover"
+            @remove="handleRemove"
             @refresh="fetchData"
             date-format="YYYY-MM-DD HH:mm"
             :col-widths="{ shortUrl: '200px' }"
           />
           
           <div class="empty-data" v-if="linkList.length === 0 && !loading">
-            <el-empty description="暂无数据" />
+            <el-empty :description="isRecycleBin ? 
+              `分组 '${getCurrentGroupName()}' 的回收站中暂无短链接` : 
+              `分组 '${getCurrentGroupName()}' 中暂无短链接`" />
           </div>
         </div>
       </div>
@@ -199,11 +229,8 @@
         :rules="createRules"
         label-width="100px"
       >
-        <el-form-item label="短链接">
-          <el-input v-model="editForm.fullShortUrl" disabled />
-        </el-form-item>
         <el-form-item label="原始链接" prop="originUrl">
-          <el-input v-model="editForm.originUrl" placeholder="请输入原始链接" @blur="getEditUrlTitle" />
+          <el-input v-model="editForm.originUrl" placeholder="请输入原始链接" disabled />
         </el-form-item>
         <el-form-item label="分组" prop="gid">
           <el-select v-model="editForm.gid" placeholder="请选择分组">
@@ -231,13 +258,13 @@
           />
         </el-form-item>
         <el-form-item label="短链接标题" prop="describe">
-          <el-input v-model="editForm.describe" placeholder="短链接标题将自动获取，也可手动修改" />
+          <el-input v-model="editForm.describe" placeholder="短链接标题" />
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="editDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="updateShortLink" :loading="submitting">保存</el-button>
+          <el-button type="primary" @click="submitEdit" :loading="submitting">保存</el-button>
         </span>
       </template>
     </el-dialog>
@@ -331,6 +358,45 @@
       v-model:visible="statsDialogVisible"
       :link-info="currentLinkInfo"
     />
+    
+    <!-- 新增：分组排序对话框 -->
+    <el-dialog
+      v-model="sortGroupsDialogVisible"
+      title="分组排序"
+      width="500px"
+    >
+      <el-alert
+        type="info"
+        title="提示"
+        description="拖拽分组调整排序位置，点击保存按钮提交更改"
+        :closable="false"
+        show-icon
+        style="margin-bottom: 20px;"
+      />
+      
+      <draggable
+        v-model="sortableGroups"
+        ghost-class="ghost"
+        handle=".drag-handle"
+        item-key="gid"
+        :animation="150"
+      >
+        <template #item="{element}">
+          <div class="sort-group-item">
+            <el-icon class="drag-handle"><operation /></el-icon>
+            <span>{{ element.name }}</span>
+            <span class="sort-order">#{{ element.sortOrder }}</span>
+          </div>
+        </template>
+      </draggable>
+      
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="sortGroupsDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveGroupsSort" :loading="submitting">保存</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -346,10 +412,13 @@ import {
   Document, 
   Edit, 
   DataLine,
+  Operation,
+  Sort
 } from '@element-plus/icons-vue';
 import { useUserStore } from '../../store/user';
 import LinkTable from '@/components/LinkTable.vue';
 import StatsDialog from '@/components/StatsDialog.vue';
+import draggable from 'vuedraggable';
 
 // 引入真实的API
 import groupApi from '../../api/group';
@@ -358,6 +427,7 @@ import recycleApi from '../../api/recycle';
 
 // 添加接口类型导入
 import type { RecycleBinPageReq } from '../../api/recycle';
+import type { ShortLinkGroupResp, SortGroup } from '../../api/group';
 
 // 定义必要的类型接口
 interface ShortLinkRecord {
@@ -373,13 +443,6 @@ interface ShortLinkRecord {
   totalPv: number;
   totalUv: number;
   totalUip: number;
-}
-
-interface ShortLinkGroupResp {
-  gid: string;
-  name: string;
-  sortOrder: number;
-  shortLinkCount: number;
 }
 
 // 路由实例
@@ -404,6 +467,8 @@ const currentProject = ref('我的项目');
 // 分组管理
 const groups = ref<ShortLinkGroupResp[]>([]);
 const currentGroup = ref('');
+const sortGroupsDialogVisible = ref(false);
+const sortableGroups = ref<ShortLinkGroupResp[]>([]);
 
 // 短链列表
 const linkList = ref<ShortLinkRecord[]>([]);
@@ -412,7 +477,12 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 const searchKeyword = ref('');
 const originUrl = ref('');
-const isRecycleBin = ref(false);
+
+// 使用计算属性从userStore获取isRecycleBin状态
+const isRecycleBin = computed({
+  get: () => userStore.isRecycleBinMode,
+  set: (value) => userStore.setViewMode(value ? 'recycle' : 'normal')
+});
 
 // 分组表单
 const createGroupDialogVisible = ref(false);
@@ -451,6 +521,7 @@ const editDialogVisible = ref(false);
 const editForm = ref({
   fullShortUrl: '',
   originUrl: '',
+  originGid: '',
   gid: '',
   validDateType: 0,
   validDate: '',
@@ -486,7 +557,8 @@ const fetchGroups = async () => {
   try {
     loading.value = true;
     const res = await groupApi.listGroups();
-    groups.value = res.data || [];
+    // 按照 sortOrder 升序排列分组
+    groups.value = (res.data || []).sort((a, b) => a.sortOrder - b.sortOrder);
     
     // 如果没有选择分组但有分组数据，默认选择第一个（通常是默认分组）
     if (groups.value.length > 0 && !currentGroup.value) {
@@ -499,7 +571,7 @@ const fetchGroups = async () => {
         await groupApi.createGroup({ name: '默认分组' });
         // 创建成功后重新获取分组列表
         const newRes = await groupApi.listGroups();
-        groups.value = newRes.data || [];
+        groups.value = (newRes.data || []).sort((a, b) => a.sortOrder - b.sortOrder);
         
         if (groups.value.length > 0) {
           currentGroup.value = groups.value[0].gid;
@@ -519,37 +591,72 @@ const fetchGroups = async () => {
 
 // 获取短链列表
 const fetchData = async () => {
-  if (!currentGroup.value && !isRecycleBin.value) return;
-  
   loading.value = true;
+  linkList.value = []; // 先清空当前列表
+  total.value = 0;
+  
   try {
     if (isRecycleBin.value) {
-      // 查询回收站
+      // 查询回收站 - 获取enable_status=1且del_flag=0的链接
       const params: RecycleBinPageReq = {
         current: currentPage.value,
         size: pageSize.value
       };
       
-      // 仅当选择了分组时才添加gidList参数
+      // 必须提供gid参数，即使未选择分组也要使用默认分组ID
       if (currentGroup.value) {
-        params.gidList = [currentGroup.value];
+        params.gid = currentGroup.value;
+      } else if (groups.value.length > 0) {
+        // 如果没有选中的分组但有分组数据，使用第一个分组的ID
+        params.gid = groups.value[0].gid;
+        currentGroup.value = params.gid; // 更新当前选中的分组
+        console.log('未选择分组，自动使用默认分组:', params.gid);
+      } else {
+        console.error('没有可用的分组，无法查询回收站数据');
+        ElMessage.error('没有可用的分组，请先创建分组');
+        loading.value = false;
+        return;
       }
       
-      const res = await recycleApi.pageRecycleBin(params);
-      linkList.value = res.data.records || [];
-      total.value = res.data.total;
+      console.log(`查询分组 "${getCurrentGroupName()}" 的回收站数据 (enable_status=1/未启用/回收站, del_flag=0/未永久删除)，参数:`, params);
+      try {
+        const res = await recycleApi.pageRecycleBin(params);
+        console.log('回收站查询结果:', res.data);
+        
+        if (res.data) {
+          linkList.value = res.data.records || [];
+          total.value = res.data.total || 0;
+        } else {
+          ElMessage.warning('获取回收站数据失败');
+        }
+      } catch (recycleError) {
+        console.error('回收站查询失败:', recycleError);
+        ElMessage.error('回收站查询失败，请检查网络连接或联系管理员');
+        linkList.value = [];
+        total.value = 0;
+      }
     } else {
-      // 查询短链
-      const res = await linkApi.pageShortLink({
+      // 查询正常短链 - 获取enable_status=0且del_flag=0的链接
+      const params = {
         gid: currentGroup.value,
         current: currentPage.value,
         size: pageSize.value
-      });
-      linkList.value = res.data.records || [];
-      total.value = res.data.total;
+      };
+      
+      console.log(`查询分组 "${getCurrentGroupName()}" 的正常短链数据 (enable_status=0/启用/正常, del_flag=0/未永久删除)，参数:`, params);
+      const res = await linkApi.pageShortLink(params);
+      console.log('正常短链查询结果:', res.data);
+      
+      if (res.data) {
+        linkList.value = res.data.records || [];
+        total.value = res.data.total || 0;
+      } else {
+        ElMessage.warning('获取短链列表失败');
+      }
     }
   } catch (error) {
-    console.error('获取短链列表失败', error);
+    console.error('获取数据失败', error);
+    ElMessage.error('获取数据失败，请稍后重试');
   } finally {
     loading.value = false;
   }
@@ -557,17 +664,96 @@ const fetchData = async () => {
 
 // 选择分组
 const selectGroup = (gid: string) => {
+  if (gid === currentGroup.value) {
+    return; // 如果点击的是当前已选中的分组，不做任何操作
+  }
+  
   currentGroup.value = gid;
-  isRecycleBin.value = false;
-  currentPage.value = 1;
+  currentPage.value = 1; // 切换分组时重置页码
+  
+  // 在当前模式下切换分组（回收站或常规模式）
+  const modeText = isRecycleBin.value ? '回收站' : '常规';
+  ElMessage.info({
+    message: `已切换到分组 "${getCurrentGroupName()}" 的${modeText}视图`,
+    duration: 2000
+  });
+  
   fetchData();
 };
 
-// 切换回收站
+// 切换到回收站
 const toggleRecycleBin = () => {
-  isRecycleBin.value = true;
-  currentPage.value = 1;
-  fetchData();
+  // 更新store中的状态，通过计算属性自动同步到本地
+  isRecycleBin.value = !isRecycleBin.value;
+  userStore.setViewMode(isRecycleBin.value ? 'recycle' : 'normal');
+  
+  currentPage.value = 1; // 重置页码
+  
+  // 确保有选中的分组
+  if (!currentGroup.value && groups.value.length > 0) {
+    currentGroup.value = groups.value[0].gid;
+    console.log('切换回收站模式时自动选择默认分组:', currentGroup.value);
+  }
+  
+  if (isRecycleBin.value) {
+    ElMessage.info({
+      message: `已切换到回收站模式，显示分组 "${getCurrentGroupName()}" 中enable_status=1(未启用/回收站)且del_flag=0(未永久删除)的链接`,
+      duration: 3000
+    });
+  } else {
+    ElMessage.info({
+      message: `已退出回收站模式，显示分组 "${getCurrentGroupName()}" 中enable_status=0(启用/正常)且del_flag=0(未永久删除)的链接`,
+      duration: 3000
+    });
+  }
+  
+  // 延迟一点执行，给用户视觉反馈
+  setTimeout(() => {
+    fetchData();
+  }, 300);
+};
+
+// 显示分组排序对话框
+const showSortGroupsDialog = () => {
+  // 直接使用当前排序好的分组数据，不需要再次排序
+  sortableGroups.value = [...groups.value];
+  sortGroupsDialogVisible.value = true;
+};
+
+// 保存分组排序
+const saveGroupsSort = async () => {
+  submitting.value = true;
+  try {
+    // 根据新的顺序更新sortOrder
+    const sortGroups: SortGroup[] = sortableGroups.value.map((group, index) => ({
+      gid: group.gid,
+      sortOrder: index + 1 // 顺序从1开始
+    }));
+    
+    const response = await groupApi.sortGroups({ groups: sortGroups });
+    
+    if (response.data && response.data.success) {
+      ElMessage.success('分组排序保存成功');
+      sortGroupsDialogVisible.value = false;
+      
+      // 重新获取分组列表以更新顺序
+      await fetchGroups();
+    } else {
+      ElMessage.error('分组排序保存失败');
+    }
+  } catch (error) {
+    console.error('保存分组排序失败', error);
+    ElMessage.error('保存分组排序失败，请稍后重试');
+  } finally {
+    submitting.value = false;
+  }
+};
+
+// 获取当前选中分组的名称
+const getCurrentGroupName = () => {
+  if (!currentGroup.value) return '所有分组';
+  const group = groups.value.find(g => g.gid === currentGroup.value);
+  return group ? group.name : '未知分组';
 };
 
 // 搜索处理
@@ -649,15 +835,19 @@ const showUserInfoDialog = () => {
 };
 
 // 处理编辑短链
-const handleEdit = (row: ShortLinkRecord) => {
+const handleEdit = (link: ShortLinkRecord) => {
+  // 设置编辑表单数据
   editForm.value = {
-    fullShortUrl: row.fullShortUrl,
-    originUrl: row.originUrl,
-    gid: row.gid,
-    validDateType: row.validDate ? 1 : 0,
-    validDate: row.validDate,
-    describe: row.describe
+    fullShortUrl: link.fullShortUrl,
+    originUrl: link.originUrl,
+    originGid: link.gid,
+    gid: link.gid,
+    validDateType: link.validDateType || 0,
+    validDate: link.validDate,
+    describe: link.describe
   };
+  
+  // 显示编辑对话框
   editDialogVisible.value = true;
 };
 
@@ -667,44 +857,172 @@ const handleStats = (row: ShortLinkRecord) => {
   statsDialogVisible.value = true;
 };
 
-// 处理回收站操作
-const handleRecycleBin = (row: ShortLinkRecord) => {
-  if (isRecycleBin.value) {
-    // 从回收站恢复
-    ElMessageBox.confirm('确定要恢复该短链接吗?', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }).then(async () => {
-      try {
-        await recycleApi.recoverFromRecycleBin({
-          gid: row.gid,
-          fullShortUrl: row.fullShortUrl
-        });
-        ElMessage.success('恢复成功');
-        fetchData();
-      } catch (error) {
-        console.error('恢复失败', error);
+// 删除短链（保存到回收站）
+const handleDelete = (link: ShortLinkRecord) => {
+  ElMessageBox.confirm(`确定要将短链接 ${link.fullShortUrl} 移动到回收站吗?`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    try {
+      const data = {
+        gid: link.gid,
+        fullShortUrl: link.fullShortUrl
+      };
+      
+      console.log('正在将短链接移动到回收站 (设置enable_status=1/未启用/回收站):', data);
+      
+      // 调用保存到回收站API
+      const res = await recycleApi.saveToRecycleBin(data);
+      
+      console.log('移动到回收站响应:', res.data);
+      
+      if (res.data && res.data.success) {
+        ElMessage.success('已成功移动到回收站');
+        // 手动延迟一下再刷新数据，确保后端数据已更新
+        setTimeout(() => {
+          fetchData(); // 刷新数据
+        }, 300);
+      } else if (res.data && res.data.code === "0") {
+        // 如果返回了特定code，可能表示短链接已在回收站
+        ElMessage.info('该短链接已在回收站中');
+        fetchData(); // 刷新数据
+      } else {
+        ElMessage.error('移动到回收站失败: ' + (res.data?.message || '未知错误'));
       }
-    }).catch(() => {});
-  } else {
-    // 移动到回收站
-    ElMessageBox.confirm('确定要删除该短链接吗?', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }).then(async () => {
-      try {
-        await recycleApi.saveToRecycleBin({
-          gid: row.gid,
-          fullShortUrl: row.fullShortUrl
-        });
-        ElMessage.success('删除成功');
-        fetchData();
-      } catch (error) {
-        console.error('删除失败', error);
+    } catch (error: any) {
+      console.error('移动到回收站失败', error);
+      // 显示详细错误信息
+      const errorMsg = error.response?.data?.message || error.message || '请稍后重试';
+      ElMessage.error('移动到回收站失败: ' + errorMsg);
+    }
+  }).catch(() => {
+    // 用户取消操作
+  });
+};
+
+// 从回收站恢复短链
+const handleRecover = (link: ShortLinkRecord) => {
+  ElMessageBox.confirm(`确定要将短链接 ${link.fullShortUrl} 从回收站恢复吗?`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info'
+  }).then(async () => {
+    try {
+      const data = {
+        gid: link.gid,
+        fullShortUrl: link.fullShortUrl
+      };
+      
+      console.log('正在恢复短链接 (设置enable_status=0/启用/正常):', data);
+      
+      // 调用从回收站恢复API
+      const res = await recycleApi.recoverFromRecycleBin(data);
+      
+      console.log('从回收站恢复响应:', res.data);
+      
+      if (res.data && res.data.success) {
+        ElMessage.success('短链接已恢复');
+        // 手动延迟一下再刷新数据，确保后端数据已更新
+        setTimeout(() => {
+          fetchData(); // 刷新数据
+        }, 300);
+      } else {
+        ElMessage.error('恢复失败: ' + (res.data?.message || '未知错误'));
       }
-    }).catch(() => {});
+    } catch (error: any) {
+      console.error('恢复短链接失败', error);
+      // 显示详细错误信息
+      const errorMsg = error.response?.data?.message || error.message || '请稍后重试';
+      ElMessage.error('恢复短链接失败: ' + errorMsg);
+    }
+  }).catch(() => {
+    // 用户取消操作
+  });
+};
+
+// 永久删除短链
+const handleRemove = (link: ShortLinkRecord) => {
+  ElMessageBox.confirm(`确定要永久删除短链接 ${link.fullShortUrl} 吗? 此操作将设置del_flag=1(永久删除)，删除后将无法恢复!`, '警告', {
+    confirmButtonText: '确定删除',
+    cancelButtonText: '取消',
+    type: 'error'
+  }).then(async () => {
+    try {
+      const data = {
+        gid: link.gid,
+        fullShortUrl: link.fullShortUrl
+      };
+      
+      console.log('正在永久删除短链接 (设置del_flag=1/永久删除):', data);
+      
+      // 调用从回收站删除API
+      const res = await recycleApi.removeFromRecycleBin(data);
+      
+      console.log('永久删除短链接响应:', res.data);
+      
+      if (res.data && res.data.success) {
+        ElMessage.success('短链接已永久删除');
+        // 手动延迟一下再刷新数据，确保后端数据已更新
+        setTimeout(() => {
+          fetchData(); // 刷新数据
+        }, 300);
+      } else {
+        ElMessage.error('删除失败: ' + (res.data?.message || '未知错误'));
+      }
+    } catch (error: any) {
+      console.error('删除短链接失败', error);
+      // 显示详细错误信息
+      const errorMsg = error.response?.data?.message || error.message || '请稍后重试';
+      ElMessage.error('删除短链接失败: ' + errorMsg);
+    }
+  }).catch(() => {
+    // 用户取消操作
+  });
+};
+
+// 提交编辑
+const submitEdit = async () => {
+  if (!editForm.value.fullShortUrl || !editForm.value.originUrl || !editForm.value.gid) {
+    ElMessage.error('请填写完整信息');
+    return;
+  }
+  
+  submitting.value = true;
+  
+  try {
+    const data = {
+      fullShortUrl: editForm.value.fullShortUrl,
+      originUrl: editForm.value.originUrl,
+      originGid: editForm.value.originGid,
+      gid: editForm.value.gid,
+      validDateType: editForm.value.validDateType,
+      validDate: editForm.value.validDateType === 1 ? editForm.value.validDate : undefined,
+      describe: editForm.value.describe
+    };
+    
+    console.log('提交编辑短链接数据:', data);
+    
+    // 调用更新短链API
+    const res = await linkApi.updateShortLink(data);
+    
+    console.log('编辑短链接响应:', res.data);
+    
+    if (res.data && res.data.success) {
+      ElMessage.success('短链接已更新');
+      editDialogVisible.value = false;
+      // 手动延迟一下再刷新数据，确保后端数据已更新
+      setTimeout(() => {
+        fetchData(); // 刷新数据
+      }, 300);
+    } else {
+      ElMessage.error('更新失败');
+    }
+  } catch (error) {
+    console.error('更新短链接失败', error);
+    ElMessage.error('更新短链接失败，请稍后重试');
+  } finally {
+    submitting.value = false;
   }
 };
 
@@ -762,21 +1080,6 @@ const batchCreateShortLink = async () => {
   } catch (error) {
     console.error('批量创建短链接失败', error);
     ElMessage.error('批量创建短链接失败');
-  } finally {
-    submitting.value = false;
-  }
-};
-
-// 更新短链
-const updateShortLink = async () => {
-  try {
-    submitting.value = true;
-    await linkApi.updateShortLink(editForm.value);
-    ElMessage.success('更新成功');
-    editDialogVisible.value = false;
-    fetchData();
-  } catch (error) {
-    console.error('更新短链失败', error);
   } finally {
     submitting.value = false;
   }
@@ -948,6 +1251,8 @@ watch(currentGroup, () => {
 .group-item.active {
   background-color: #ecf5ff;
   color: #409eff;
+  font-weight: bold;
+  border-left: 3px solid #409eff;
 }
 
 .link-count {
@@ -970,6 +1275,13 @@ watch(currentGroup, () => {
 
 .recycle-bin:hover {
   background-color: #f5f7fa;
+}
+
+.recycle-bin.active {
+  background-color: #fef0f0;
+  color: #f56c6c;
+  font-weight: bold;
+  border-left: 3px solid #f56c6c;
 }
 
 .content {
@@ -1002,6 +1314,19 @@ watch(currentGroup, () => {
 .header-title {
   font-size: 16px;
   font-weight: bold;
+  margin-right: 10px;
+}
+
+.mode-tag-container {
+  display: inline-block;
+  min-width: 90px;
+  height: 22px;
+  margin-left: 10px;
+}
+
+.table-header .left {
+  display: flex;
+  align-items: center;
 }
 
 .table-header .search-input {
@@ -1018,5 +1343,48 @@ watch(currentGroup, () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 模式标签切换动画 */
+.mode-fade-enter-active,
+.mode-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.mode-fade-enter-from,
+.mode-fade-leave-to {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.sort-group-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 8px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  cursor: move;
+}
+
+.sort-group-item .drag-handle {
+  cursor: move;
+  margin-right: 10px;
+  color: #909399;
+}
+
+.sort-group-item .sort-order {
+  margin-left: auto;
+  color: #909399;
+}
+
+.ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
+
+/* 修复drag-handle样式 */
+.drag-handle {
+  cursor: move;
 }
 </style> 

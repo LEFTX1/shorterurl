@@ -109,3 +109,9 @@ func (s *ShortLinkServiceServer) UrlTitleGet(ctx context.Context, in *pb.GetUrlT
 	l := logic.NewUrlTitleGetLogic(ctx, s.svcCtx)
 	return l.UrlTitleGet(in)
 }
+
+// --------------------- IP位置查询接口 ---------------------
+func (s *ShortLinkServiceServer) GetIpLocation(ctx context.Context, in *pb.GetIPLocationRequest) (*pb.GetIPLocationResponse, error) {
+	l := logic.NewGetIpLocationLogic(ctx, s.svcCtx)
+	return l.GetIpLocation(in)
+}

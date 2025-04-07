@@ -3,20 +3,33 @@ package svc
 import (
 	"fmt"
 	"shorterurl/link/rpc/internal/config"
+	"shorterurl/link/rpc/internal/consumer"
 	"shorterurl/link/rpc/internal/repo"
 	"shorterurl/link/rpc/pkg/snowflake"
 
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
+// ServiceContext 服务上下文
 type ServiceContext struct {
 	Config         config.Config
 	DBs            *DBs
 	BizRedis       *redis.Redis
 	BloomFilterMgr *BloomFilterManager
 	RepoManager    *repo.RepoManager
+	StatsConsumer  *consumer.ShortLinkStatsConsumer
 }
 
+// 实现消费者所需的接口
+func (s *ServiceContext) GetRedis() *redis.Redis {
+	return s.BizRedis
+}
+
+func (s *ServiceContext) GetDBs() consumer.DBInterface {
+	return s.DBs
+}
+
+// NewServiceContext 创建服务上下文
 func NewServiceContext(c config.Config) *ServiceContext {
 	// 初始化雪花算法
 	if err := snowflake.InitSnowflake(); err != nil {
@@ -53,11 +66,18 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		dbs.UserDB,
 	)
 
-	return &ServiceContext{
+	svcCtx := &ServiceContext{
 		Config:         c,
 		DBs:            dbs,
 		BizRedis:       bizRedis,
 		BloomFilterMgr: bloomFilterMgr,
 		RepoManager:    repoManager,
 	}
+
+	// 创建并启动统计消费者
+	statsConsumer := consumer.NewShortLinkStatsConsumer(svcCtx)
+	statsConsumer.Start()
+	svcCtx.StatsConsumer = statsConsumer
+
+	return svcCtx
 }
