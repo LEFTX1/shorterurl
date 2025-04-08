@@ -1,90 +1,88 @@
 import axios from 'axios';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { ElMessage } from 'element-plus';
+import { useUserStore } from '@/store/user';
+import router from '@/router';
 
-// axios实例
-const service: AxiosInstance = axios.create({
-  baseURL: '',
-  timeout: 15000
-});
+// 创建带认证头的 axios 实例
+const createAuthInstance = () => {
+  const instance = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL,
+    timeout: 10000,
+  });
 
-// 请求拦截器
-service.interceptors.request.use(
-  (config) => {
-    // 从本地存储获取token
-    const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
-    
-    // 如果有token，添加到请求头
-    if (token && username) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-      config.headers['Username'] = username;
-    }
-    
-    return config;
-  },
-  (error) => {
-    console.error('请求错误:', error);
-    return Promise.reject(error);
-  }
-);
+  // 请求拦截器
+  instance.interceptors.request.use(
+    (config) => {
+      const userStore = useUserStore();
+      const { token, username } = userStore;
 
-// 响应拦截器
-service.interceptors.response.use(
-  (response: AxiosResponse) => {
-    const data = response.data;
-    
-    // 如果响应码不是200，则认为有错误
-    if (response.status !== 200) {
-      ElMessage.error('网络错误，请稍后重试');
-      return Promise.reject(new Error('网络错误'));
-    }
-    
-    // 处理业务错误码
-    if (data.code && data.code !== '0000' && data.code !== 'SUCCESS') {
-      ElMessage.error(data.message || '操作失败');
-      return Promise.reject(new Error(data.message || '未知错误'));
-    }
-    
-    return data;
-  },
-  (error) => {
-    console.error('响应错误:', error);
-    
-    // 处理401未授权错误
-    if (error.response && error.response.status === 401) {
-      ElMessage.error('登录已过期，请重新登录');
-      // 清除本地存储
-      localStorage.removeItem('token');
-      localStorage.removeItem('username');
-      
-      // 跳转到登录页面
-      window.location.href = '/login';
+      if (token && username) {
+        config.headers = config.headers || {};
+        config.headers['token'] = token;
+        config.headers['username'] = username;
+      }
+
+      // 调试日志
+      console.log('请求配置:', {
+        url: config.url,
+        method: config.method,
+        params: config.params,
+        data: config.data,
+        headers: {
+          token: config.headers?.['token'],
+          username: config.headers?.['username'],
+        },
+      });
+
+      return config;
+    },
+    (error) => {
+      console.error('请求错误:', error);
       return Promise.reject(error);
     }
-    
-    ElMessage.error(error.message || '网络错误，请稍后重试');
-    return Promise.reject(error);
-  }
-);
+  );
 
-// 封装请求方法
-export const request = {
-  get<T>(url: string, params?: any): Promise<T> {
-    return service.get(url, { params });
-  },
-  
-  post<T>(url: string, data?: any): Promise<T> {
-    return service.post(url, data);
-  },
-  
-  put<T>(url: string, data?: any): Promise<T> {
-    return service.put(url, data);
-  },
-  
-  delete<T>(url: string, params?: any): Promise<T> {
-    return service.delete(url, { params });
-  }
+  // 响应拦截器
+  instance.interceptors.response.use(
+    (response: AxiosResponse) => {
+      const { data } = response;
+      if (data.code === 0) {
+        return data.data;
+      }
+      ElMessage.error(data.msg || '请求失败');
+      return Promise.reject(new Error(data.msg || '请求失败'));
+    },
+    (error: AxiosError) => {
+      console.error('响应错误:', {
+        config: error.config,
+        response: error.response,
+        message: error.message,
+      });
+
+      if (error.response?.status === 401) {
+        const userStore = useUserStore();
+        userStore.logout();
+        router.push('/login');
+        ElMessage.error('登录已过期，请重新登录');
+      } else {
+        ElMessage.error(error.message || '请求失败');
+      }
+      return Promise.reject(error);
+    }
+  );
+
+  return instance;
 };
 
-export default service; 
+// 导出带认证头的实例
+export const authRequest = createAuthInstance();
+
+// 导出普通实例
+export const request = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  timeout: 10000,
+});
+
+// 默认导出带认证头的实例
+export default authRequest; 

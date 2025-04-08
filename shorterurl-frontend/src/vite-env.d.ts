@@ -10,3 +10,8 @@ declare module '@amap/amap-jsapi-loader' {
   const AMapLoader: any
   export default AMapLoader
 }
+
+declare module '@/api/*' {
+  const api: any
+  export default api
+}

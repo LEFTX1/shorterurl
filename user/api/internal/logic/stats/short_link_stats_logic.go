@@ -7,6 +7,7 @@ import (
 	"shorterurl/user/api/internal/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/metadata"
 )
 
 type ShortLinkStatsLogic struct {
@@ -25,8 +26,16 @@ func NewShortLinkStatsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Sh
 }
 
 func (l *ShortLinkStatsLogic) ShortLinkStats(req *types.ShortLinkStatsReq) (resp *types.ShortLinkStatsRespDTO, err error) {
+	// 获取当前用户信息
+	userInfo := l.ctx.Value(types.UserContextKey).(*types.UserInfo)
+
+	// 创建新的上下文并添加用户信息
+	ctx := metadata.NewOutgoingContext(l.ctx, metadata.Pairs(
+		"username", userInfo.Username,
+	))
+
 	// 调用link RPC服务获取短链接统计数据
-	result, err := l.svcCtx.LinkRpc.StatsGetSingle(l.ctx, &shortlinkservice.GetSingleStatsRequest{
+	result, err := l.svcCtx.LinkRpc.StatsGetSingle(ctx, &shortlinkservice.GetSingleStatsRequest{
 		FullShortUrl: req.FullShortUrl,
 		Gid:          req.Gid,
 		StartDate:    req.StartDate,

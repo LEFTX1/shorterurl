@@ -139,6 +139,10 @@
             />
           </div>
           
+          <div class="action-bar">
+            <!-- 移除获取分组统计按钮 -->
+          </div>
+          
           <link-table
             :links="linkList"
             :loading="loading"
@@ -155,6 +159,13 @@
             date-format="YYYY-MM-DD HH:mm"
             :col-widths="{ shortUrl: '200px' }"
           />
+
+          <div class="stats-section">
+            <el-button type="primary" @click="showGroupStats" class="stats-button">
+              <el-icon><data-analysis /></el-icon>
+              获取分组统计
+            </el-button>
+          </div>
           
           <div class="empty-data" v-if="linkList.length === 0 && !loading">
             <el-empty :description="isRecycleBin ? 
@@ -357,6 +368,13 @@
     <stats-dialog
       v-model:visible="statsDialogVisible"
       :link-info="currentLinkInfo"
+      :stats-data="statsData"
+    />
+
+    <!-- 分组统计数据对话框 -->
+    <group-stats-dialog
+      v-model:visible="groupStatsDialogVisible"
+      :gid="currentGroup"
     />
     
     <!-- 新增：分组排序对话框 -->
@@ -413,12 +431,17 @@ import {
   Edit, 
   DataLine,
   Operation,
-  Sort
+  Sort,
+  DataAnalysis
 } from '@element-plus/icons-vue';
 import { useUserStore } from '../../store/user';
 import LinkTable from '@/components/LinkTable.vue';
 import StatsDialog from '@/components/StatsDialog.vue';
+import GroupStatsDialog from '@/components/GroupStatsDialog.vue';
 import draggable from 'vuedraggable';
+import dayjs from 'dayjs';
+import statsApi from '@/api/stats'
+import type { ShortLinkStatsRespDTO } from '@/api/stats'
 
 // 引入真实的API
 import groupApi from '../../api/group';
@@ -530,7 +553,9 @@ const editForm = ref({
 
 // 统计数据对话框
 const statsDialogVisible = ref(false);
+const groupStatsDialogVisible = ref(false);
 const currentLinkInfo = ref<ShortLinkRecord>({} as ShortLinkRecord);
+const statsData = ref<ShortLinkStatsRespDTO | null>(null)
 
 // 表单验证规则
 const createRules = {
@@ -1126,6 +1151,16 @@ watch(currentGroup, () => {
     fetchData();
   }
 });
+
+// 新增：获取分组统计
+const showGroupStats = async () => {
+  if (!currentGroup.value) {
+    ElMessage.warning('请先选择一个分组')
+    return
+  }
+
+  groupStatsDialogVisible.value = true
+}
 </script>
 
 <style scoped>
@@ -1203,17 +1238,14 @@ watch(currentGroup, () => {
 
 .main-content {
   display: flex;
-  flex: 1;
-  overflow: hidden;
+  height: calc(100vh - 60px);
 }
 
 .sidebar {
-  width: 240px;
-  background-color: #fff;
-  border-right: 1px solid #ebeef5;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
+  width: 250px;
+  background-color: #f5f7fa;
+  padding: 20px;
+  border-right: 1px solid #e4e7ed;
 }
 
 .group-section {
@@ -1386,5 +1418,21 @@ watch(currentGroup, () => {
 /* 修复drag-handle样式 */
 .drag-handle {
   cursor: move;
+}
+
+.action-bar {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.stats-section {
+  margin-top: 15px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.stats-button {
+  margin-left: 10px;
 }
 </style> 

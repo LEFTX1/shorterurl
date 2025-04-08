@@ -317,7 +317,8 @@ service gateway {
 
 // =================短链接跳转接口=================
 @server (
-	group: redirect
+	group:      redirect
+	middleware: RedirectStatMiddleware
 )
 service gateway {
 	@doc "短链接跳转"

@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"shorterurl/link/rpc/internal/svc"
@@ -64,8 +65,25 @@ func (l *GetIpLocationLogic) GetIpLocation(in *pb.GetIPLocationRequest) (*pb.Get
 		return nil, status.Error(codes.InvalidArgument, "IP不能为空")
 	}
 
+	// 处理IP地址格式
+	ip := in.Ip
+
+	// 1. 去除IPv6地址的方括号
+	ip = strings.TrimPrefix(ip, "[")
+	ip = strings.Split(ip, "]")[0]
+
+	// 2. 去除可能存在的端口号
+	ip = strings.Split(ip, ":")[0]
+
+	// 3. 如果是IPv6回环地址或本地地址，转换为IPv4等效地址
+	if ip == "::1" || ip == "" {
+		ip = "127.0.0.1"
+	}
+
+	l.Logger.Infof("格式化后的IP地址: %s", ip)
+
 	// 检查缓存
-	cacheKey := fmt.Sprintf(IPLocationCacheKey, in.Ip)
+	cacheKey := fmt.Sprintf(IPLocationCacheKey, ip)
 	cachedResult, err := l.svcCtx.BizRedis.Get(cacheKey)
 	if err == nil && cachedResult != "" {
 		// 从缓存中获取成功
@@ -76,7 +94,7 @@ func (l *GetIpLocationLogic) GetIpLocation(in *pb.GetIPLocationRequest) (*pb.Get
 	}
 
 	// 调用高德地图 API 获取 IP 地理位置
-	response, err := l.fetchIPLocationFromAmap(in.Ip)
+	response, err := l.fetchIPLocationFromAmap(ip)
 	if err != nil {
 		l.Logger.Errorf("调用高德地图 API 获取 IP 地理位置失败: %v", err)
 		return nil, status.Error(codes.Internal, "获取 IP 地理位置失败")
@@ -183,6 +201,25 @@ func (l *GetIpLocationLogic) fetchIPLocationFromAmap(ip string) (*pb.GetIPLocati
 		return nil, fmt.Errorf("读取响应内容失败: %v", err)
 	}
 
+	l.Logger.Infof("高德地图API响应: %s", string(body))
+
+	// 首先检查响应是否为错误信息
+	var errorResp struct {
+		Status   string `json:"status"`
+		Info     string `json:"info"`
+		Infocode string `json:"infocode"`
+	}
+
+	if err := json.Unmarshal(body, &errorResp); err == nil {
+		if errorResp.Status == "0" {
+			return &pb.GetIPLocationResponse{
+				Status:   errorResp.Status,
+				Info:     errorResp.Info,
+				Infocode: errorResp.Infocode,
+			}, nil
+		}
+	}
+
 	// 解析 JSON 响应
 	var amapResponse struct {
 		Status    string `json:"status"`
@@ -195,6 +232,16 @@ func (l *GetIpLocationLogic) fetchIPLocationFromAmap(ip string) (*pb.GetIPLocati
 	}
 
 	if err := json.Unmarshal(body, &amapResponse); err != nil {
+		// 本地/内网IP地址，返回默认值
+		if ip == "127.0.0.1" || strings.HasPrefix(ip, "192.168.") || strings.HasPrefix(ip, "10.") {
+			return &pb.GetIPLocationResponse{
+				Status:   "1",
+				Info:     "OK",
+				Infocode: "10000",
+				Province: "本地网络",
+				City:     "内网IP",
+			}, nil
+		}
 		return nil, fmt.Errorf("解析响应内容失败: %v", err)
 	}
 

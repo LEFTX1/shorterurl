@@ -166,6 +166,19 @@ func (m *TokenValidateMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc
 			return
 		}
 
+		// ========= 添加 token 续签逻辑 =========
+		// token 验证成功后，自动延长 token 的过期时间
+		tokenExpireSeconds := 24 * 60 * 60 // 一天 (原为30分钟: 30 * 60)
+		err = m.RedisCache.ExpireCtx(r.Context(), redisKey, tokenExpireSeconds)
+		if err != nil {
+			// 仅记录错误，不中断请求
+			logx.WithContext(r.Context()).Errorf("[TokenValidate] 续签 token 失败 - 用户: '%s', 键: '%s', 错误: %v",
+				username, redisKey, err)
+		} else {
+			logx.Infof("[TokenValidate] 续签 token 成功 - 用户: '%s', 过期时间: %d 秒", username, tokenExpireSeconds)
+		}
+		// =========================================
+
 		// 创建用户上下文信息对象
 		ctxUserInfo := &types.UserInfo{
 			ID:       idStr,

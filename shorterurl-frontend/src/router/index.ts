@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { useUserStore } from '@/store/user'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -13,7 +14,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/login/index.vue'),
+    component: () => import('@/views/login/index.vue'),
     // 已登录用户访问登录页时重定向到短链接页面
     beforeEnter: (to, from, next) => {
       const token = localStorage.getItem('token')
@@ -27,12 +28,12 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/register',
     name: 'Register',
-    component: () => import('../views/register/index.vue')
+    component: () => import('@/views/register/index.vue')
   },
   {
     path: '/link',
     name: 'ShortLink',
-    component: () => import('../views/link/index.vue'),
+    component: () => import('@/views/link/index.vue'),
     meta: {
       requiresAuth: true
     }
@@ -40,7 +41,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/404',
     name: '404',
-    component: () => import('../views/error/404.vue')
+    component: () => import('@/views/error/404.vue')
   },
   {
     path: '/:catchAll(.*)',

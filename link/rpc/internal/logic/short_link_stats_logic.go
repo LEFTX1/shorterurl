@@ -2,9 +2,7 @@ package logic
 
 import (
 	"context"
-	"crypto/md5"
 	"fmt"
-	"io"
 	"shorterurl/link/rpc/internal/consumer"
 	"shorterurl/link/rpc/internal/svc"
 	"shorterurl/link/rpc/pb"
@@ -30,28 +28,18 @@ func NewShortLinkStatsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Sh
 // 短链接统计 - 接收外部统计请求
 func (l *ShortLinkStatsLogic) ShortLinkStats(in *pb.ShortLinkStatsRequest) (*pb.EmptyResponse, error) {
 	// 记录请求信息
-	l.Logger.Infof("接收到短链接统计请求: %s, IP: %s", in.FullShortUrl, in.Ip)
-
-	// 构建用户标识 - 如果请求中没有用户标识，根据IP和浏览器信息生成
-	user := in.User
-	if user == "" {
-		// 生成临时用户标识
-		h := md5.New()
-		io.WriteString(h, in.Ip)
-		io.WriteString(h, in.Browser)
-		io.WriteString(h, in.Os)
-		user = fmt.Sprintf("%x", h.Sum(nil))
-	}
+	l.Logger.Infof("接收到短链接统计请求: %s, IP: %s, Browser: %s, OS: %s, Device: %s",
+		in.FullShortUrl, in.Ip, in.Browser, in.Os, in.Device)
 
 	// 检查是否是新的 UV 和 UIP
-	uvFirstFlag := l.checkFirstUv(in.FullShortUrl, user)
+	uvFirstFlag := l.checkFirstUv(in.FullShortUrl, in.User)
 	uipFirstFlag := l.checkFirstUip(in.FullShortUrl, in.Ip)
 
 	// 提交统计记录到消费者队列
 	statsRecord := &consumer.StatsRecord{
 		FullShortUrl: in.FullShortUrl,
 		Gid:          in.Gid,
-		User:         user,
+		User:         in.User,
 		UvFirstFlag:  uvFirstFlag,
 		UipFirstFlag: uipFirstFlag,
 		Ip:           in.Ip,
@@ -61,18 +49,6 @@ func (l *ShortLinkStatsLogic) ShortLinkStats(in *pb.ShortLinkStatsRequest) (*pb.
 		Network:      in.Network,
 		Locale:       in.Locale,
 		CurrentDate:  time.Now(),
-	}
-
-	// 如果没有地理位置信息但有IP，尝试获取地理位置
-	if statsRecord.Locale == "" && statsRecord.Ip != "" {
-		// 创建IP位置查询逻辑
-		ipLocationLogic := NewGetIpLocationLogic(l.ctx, l.svcCtx)
-		formattedLocation, err := ipLocationLogic.GetFormattedLocation(statsRecord.Ip)
-
-		if err == nil && formattedLocation != "" {
-			l.Logger.Infof("IP地理位置解析成功: %s -> %s", statsRecord.Ip, formattedLocation)
-			statsRecord.Locale = formattedLocation
-		}
 	}
 
 	// 提交到统计消费者队列

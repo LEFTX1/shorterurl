@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"shorterurl/link/rpc/internal/consumer"
@@ -15,6 +16,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -148,14 +150,30 @@ func (l *RestoreUrlLogic) asyncRecordStats(fullShortUrl, shortUri string) {
 			return
 		}
 
-		// 从上下文中获取请求信息（在实际项目中可能需要通过中间件传递）
-		// 这里模拟获取，实际项目中应从 context 或请求中获取
+		// 从上下文中获取请求信息
 		ip := l.getValueFromContext(l.ctx, "ip", "")
-		browser := l.getValueFromContext(l.ctx, "browser", "未知浏览器")
-		os := l.getValueFromContext(l.ctx, "os", "未知系统")
-		device := l.getValueFromContext(l.ctx, "device", "未知设备")
-		network := l.getValueFromContext(l.ctx, "network", "未知网络")
 		userAgent := l.getValueFromContext(l.ctx, "user-agent", "")
+
+		// 设备信息默认值
+		browser := "未知浏览器"
+		os := "未知系统"
+		device := "未知设备"
+		network := "未知网络"
+
+		// 从 User-Agent 中提取设备信息
+		if userAgent != "" {
+			parsedBrowser, parsedOS, parsedDevice := parseUserAgent(userAgent)
+			if parsedBrowser != "" {
+				browser = parsedBrowser
+			}
+			if parsedOS != "" {
+				os = parsedOS
+			}
+			if parsedDevice != "" {
+				device = parsedDevice
+			}
+			logx.Infof("[访问统计] 从 User-Agent 解析设备信息: %s", userAgent)
+		}
 
 		// 获取或生成用户标识（可以是 cookie 中的值或根据 IP+UserAgent 生成的哈希）
 		user := l.getUserIdentifier(ip, userAgent)
@@ -163,6 +181,13 @@ func (l *RestoreUrlLogic) asyncRecordStats(fullShortUrl, shortUri string) {
 		// 检查是否是新的 UV 和 UIP
 		uvFirstFlag := l.checkFirstUv(fullShortUrl, user)
 		uipFirstFlag := l.checkFirstUip(fullShortUrl, ip)
+
+		logx.Infof("[访问统计] 短链接=%s, GID=%s, IP=%s, 用户=%s",
+			fullShortUrl, linkGoto.Gid, ip, user)
+		logx.Infof("[访问统计] 设备信息: 浏览器=%s, 系统=%s, 设备=%s, 网络=%s",
+			browser, os, device, network)
+		logx.Infof("[访问统计] 统计标记: 首次UV=%v, 首次UIP=%v",
+			uvFirstFlag, uipFirstFlag)
 
 		// 构建统计记录
 		statsRecord := &consumer.StatsRecord{
@@ -181,14 +206,14 @@ func (l *RestoreUrlLogic) asyncRecordStats(fullShortUrl, shortUri string) {
 
 		// 如果请求中有IP信息，获取IP地理位置
 		if ip != "" {
-			logx.Infof("开始获取访问IP的地理位置信息: %s", ip)
+			logx.Infof("[访问统计] 开始获取访问IP的地理位置信息: %s", ip)
 
 			// 创建IP位置查询逻辑
 			ipLocationLogic := NewGetIpLocationLogic(ctx, l.svcCtx)
 			formattedLocation, err := ipLocationLogic.GetFormattedLocation(ip)
 
 			if err == nil && formattedLocation != "" {
-				logx.Infof("IP地理位置解析成功: %s -> %s", ip, formattedLocation)
+				logx.Infof("[访问统计] IP地理位置解析成功: %s -> %s", ip, formattedLocation)
 				statsRecord.Locale = formattedLocation
 			} else {
 				logx.Errorf("获取IP地理位置信息失败: %v", err)
@@ -196,15 +221,120 @@ func (l *RestoreUrlLogic) asyncRecordStats(fullShortUrl, shortUri string) {
 		}
 
 		// 提交统计记录到消费者队列
+		logx.Infof("[访问统计] 提交统计记录到消费队列")
 		l.svcCtx.StatsConsumer.Submit(statsRecord)
 	})
 }
 
-// 从上下文中获取值，如果不存在则返回默认值
+// parseUserAgent 从 User-Agent 字符串解析设备信息
+func parseUserAgent(userAgent string) (browser, os, device string) {
+	// 默认值
+	browser = "未知浏览器"
+	os = "未知系统"
+	device = "未知设备"
+
+	// 如果User-Agent为空，直接返回默认值
+	if userAgent == "" {
+		return
+	}
+
+	// 转换为小写以便于匹配
+	ua := strings.ToLower(userAgent)
+
+	// 检测浏览器
+	switch {
+	case strings.Contains(ua, "chrome"):
+		browser = "Chrome"
+	case strings.Contains(ua, "firefox"):
+		browser = "Firefox"
+	case strings.Contains(ua, "safari"):
+		browser = "Safari"
+	case strings.Contains(ua, "edge"):
+		browser = "Edge"
+	case strings.Contains(ua, "opera"):
+		browser = "Opera"
+	case strings.Contains(ua, "msie") || strings.Contains(ua, "trident"):
+		browser = "Internet Explorer"
+	}
+
+	// 检测操作系统
+	switch {
+	case strings.Contains(ua, "windows"):
+		os = "Windows"
+	case strings.Contains(ua, "macintosh") || strings.Contains(ua, "mac os x"):
+		os = "macOS"
+	case strings.Contains(ua, "linux"):
+		os = "Linux"
+	case strings.Contains(ua, "android"):
+		os = "Android"
+	case strings.Contains(ua, "iphone") || strings.Contains(ua, "ipad") || strings.Contains(ua, "ipod"):
+		os = "iOS"
+	}
+
+	// 检测设备类型
+	switch {
+	case strings.Contains(ua, "mobile"):
+		device = "手机"
+	case strings.Contains(ua, "tablet") || strings.Contains(ua, "ipad"):
+		device = "平板"
+	case strings.Contains(ua, "bot") || strings.Contains(ua, "crawler") || strings.Contains(ua, "spider"):
+		device = "爬虫"
+	default:
+		device = "电脑"
+	}
+
+	return
+}
+
+// 从上下文中获取值
 func (l *RestoreUrlLogic) getValueFromContext(ctx context.Context, key, defaultValue string) string {
+	// 首先尝试从普通上下文获取
 	if value, ok := ctx.Value(key).(string); ok && value != "" {
 		return value
 	}
+
+	// 尝试从 gRPC 元数据中获取
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		// 对于 User-Agent，优先使用原始User-Agent
+		if key == "user-agent" {
+			// 首先尝试获取原始User-Agent
+			values := md.Get("original-user-agent")
+			if len(values) > 0 && values[0] != "" {
+				l.Logger.Infof("使用原始User-Agent: %s", values[0])
+				return values[0]
+			}
+
+			// 尝试其他可能的 User-Agent 键名
+			for _, k := range []string{"User-Agent", "user_agent", "User_Agent"} {
+				values := md.Get(k)
+				if len(values) > 0 && values[0] != "" {
+					return values[0]
+				}
+			}
+		}
+
+		// 检查元数据中是否存在该键
+		values := md.Get(key)
+		if len(values) > 0 && values[0] != "" {
+			return values[0]
+		}
+	}
+
+	// 尝试从 HTTP 请求 gateway 中获取
+	// 在很多 gRPC-Gateway 实现中，原始 HTTP 请求信息被保存在特定的键中
+	if reqInfo, ok := ctx.Value("http-request").(map[string]interface{}); ok {
+		if headerInfo, ok := reqInfo["headers"].(map[string]interface{}); ok {
+			if val, ok := headerInfo[key].(string); ok && val != "" {
+				return val
+			}
+		}
+	}
+
+	// 记录日志，帮助调试
+	l.Logger.Infof("无法从上下文中获取 %s，使用默认值: %s", key, defaultValue)
+
+	// 最后，返回默认值
 	return defaultValue
 }
 

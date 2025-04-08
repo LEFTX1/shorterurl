@@ -1,18 +1,15 @@
 <template>
   <el-dialog
-    :model-value="visible"
-    @update:model-value="$emit('update:visible', $event)"
-    title="数据统计"
-    width="80%"
-    :before-close="handleClose"
+    v-model="dialogVisible"
+    :title="'访问统计 - ' + (isGroupMode ? '分组统计' : linkInfo.fullShortUrl)"
+    width="90%"
     class="stats-dialog"
   >
-    <div class="stats-header">
-      <div class="link-info">
-        <div class="url">{{ linkInfo.fullShortUrl }}</div>
-        <div class="origin-url">{{ linkInfo.originUrl }}</div>
-      </div>
-      <div class="date-picker">
+    <div class="stats-container">
+      <!-- 查询参数设置 -->
+      <el-card shadow="hover" class="query-card">
+        <el-row :gutter="20" align="middle">
+          <el-col :span="12">
         <el-date-picker
           v-model="dateRange"
           type="daterange"
@@ -21,371 +18,519 @@
           end-placeholder="结束日期"
           format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
-          @change="handleDateChange"
-        />
-      </div>
-    </div>
+              :shortcuts="dateShortcuts"
+              size="default"
+            />
+          </el-col>
+          <el-col :span="4">
+            <el-button type="primary" @click="fetchStatsData">查询统计</el-button>
+            <el-button 
+              v-if="!showLogsTable" 
+              type="info" 
+              @click="showLogsTable = true">
+              查看访问日志
+            </el-button>
+            <el-button 
+              v-else 
+              type="info" 
+              @click="showLogsTable = false">
+              隐藏访问日志
+            </el-button>
+          </el-col>
+        </el-row>
+      </el-card>
 
-    <div v-loading="loading" class="stats-content">
-      <div class="stats-summary">
-        <div class="stats-card">
-          <div class="label">总访问量(PV)</div>
-          <div class="value">{{ statsData.overallPvUvUipStats?.pv || 0 }}</div>
+      <!-- 基础统计信息 -->
+      <el-row :gutter="20" class="stats-cards">
+        <el-col :span="8">
+          <el-card shadow="hover">
+            <template #header>
+              <div class="card-header">
+                <span>总访问量(PV)</span>
         </div>
-        <div class="stats-card">
-          <div class="label">独立访客(UV)</div>
-          <div class="value">{{ statsData.overallPvUvUipStats?.uv || 0 }}</div>
+            </template>
+            <div class="card-value">{{ linkInfo.totalPv || 0 }}</div>
+          </el-card>
+        </el-col>
+        <el-col :span="8">
+          <el-card shadow="hover">
+            <template #header>
+              <div class="card-header">
+                <span>独立访客数(UV)</span>
         </div>
-        <div class="stats-card">
-          <div class="label">IP数量(UIP)</div>
-          <div class="value">{{ statsData.overallPvUvUipStats?.uip || 0 }}</div>
+            </template>
+            <div class="card-value">{{ linkInfo.totalUv || 0 }}</div>
+          </el-card>
+        </el-col>
+        <el-col :span="8">
+          <el-card shadow="hover">
+            <template #header>
+              <div class="card-header">
+                <span>独立IP数(UIP)</span>
         </div>
-      </div>
+            </template>
+            <div class="card-value">{{ linkInfo.totalUip || 0 }}</div>
+          </el-card>
+        </el-col>
+      </el-row>
 
-      <el-divider />
-
-      <el-tabs v-model="activeTab" class="stats-tabs">
-        <el-tab-pane label="访问趋势" name="trend">
-          <div class="chart-container">
-            <div id="trend-chart" class="chart"></div>
+      <!-- 访问日志表格 (条件显示) -->
+      <el-card v-if="showLogsTable" shadow="hover" class="logs-card">
+        <template #header>
+          <div class="card-header">
+            <span>访问日志</span>
+            <div>
+              <el-pagination
+                v-model:current-page="currentPage"
+                v-model:page-size="pageSize"
+                :total="totalLogs"
+                :page-sizes="[10, 20, 50, 100]"
+                layout="total, sizes, prev, pager, next, jumper"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+              />
           </div>
-        </el-tab-pane>
-        <el-tab-pane label="地域分布" name="area">
-          <div class="chart-container">
-            <div id="area-chart" class="chart"></div>
-            <div id="map-chart" class="chart"></div>
           </div>
-        </el-tab-pane>
-        <el-tab-pane label="设备分析" name="device">
-          <div class="chart-container multiple-charts">
-            <div id="browser-chart" class="chart"></div>
-            <div id="os-chart" class="chart"></div>
-            <div id="device-chart" class="chart"></div>
-          </div>
-        </el-tab-pane>
-        <el-tab-pane label="访问详情" name="details">
-          <div class="chart-container multiple-charts">
-            <div id="hour-chart" class="chart"></div>
-            <div id="weekday-chart" class="chart"></div>
-          </div>
-        </el-tab-pane>
-        <el-tab-pane label="访问记录" name="records">
-          <div class="ip-location-container" v-if="selectedIp">
-            <div class="location-header">
-              <h3>IP详细信息 - {{ selectedIp }}</h3>
-              <el-button type="text" @click="closeIpDetail">关闭</el-button>
-            </div>
-            
-            <el-tabs v-model="ipDetailTab" class="ip-detail-tabs">
-              <el-tab-pane label="基本信息" name="basic">
-                <ip-location-card 
-                  :ip-address="selectedIp" 
-                  :auto-load="true"
-                  @location-loaded="handleLocationLoaded" 
-                />
-              </el-tab-pane>
-              <el-tab-pane label="地图位置" name="map">
-                <div v-if="ipLocationData" class="map-container">
-                  <ip-location-viewer :location-data="ipLocationData" />
-                </div>
-                <div v-else class="map-placeholder">
-                  <el-empty description="暂无地图数据，请先加载IP位置信息" />
-                </div>
-              </el-tab-pane>
-            </el-tabs>
-          </div>
-          
-          <el-table :data="accessRecords" border style="width: 100%">
-            <el-table-column prop="ip" label="IP地址" width="140">
+        </template>
+        <el-table :data="accessLogs" border stripe height="300" v-loading="logsLoading">
+          <el-table-column prop="ip" label="IP" width="140" />
+          <el-table-column prop="browser" label="浏览器" width="100">
+            <template #default="scope">
+              <el-tag size="small">{{ scope.row.browser }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="os" label="系统" width="100">
+            <template #default="scope">
+              <el-tag size="small" type="success">{{ scope.row.os }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="device" label="设备" width="100">
+            <template #default="scope">
+              <el-tag size="small" type="warning">{{ scope.row.device }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="network" label="网络" width="100">
               <template #default="scope">
-                <el-button type="text" @click="showIpDetail(scope.row.ip)">
-                  {{ scope.row.ip }}
-                </el-button>
+              <el-tag size="small" type="info">{{ scope.row.network }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="locale" label="地区" width="120" />
-            <el-table-column prop="browser" label="浏览器" width="120" />
-            <el-table-column prop="os" label="操作系统" width="120" />
-            <el-table-column prop="device" label="设备" width="100" />
-            <el-table-column prop="network" label="网络" width="100" />
-            <el-table-column prop="accessTime" label="访问时间" min-width="180" />
+          <el-table-column prop="locale" label="地区" />
+          <el-table-column prop="accessTime" label="访问时间" width="180" />
           </el-table>
-          <div class="records-pagination">
-            <el-pagination
-              v-model:current-page="recordsCurrentPage"
-              v-model:page-size="recordsPageSize"
-              :page-sizes="[10, 20, 50, 100]"
-              layout="total, sizes, prev, pager, next, jumper"
-              :total="recordsTotal"
-              @size-change="handleRecordsSizeChange"
-              @current-change="handleRecordsCurrentChange"
-            />
+      </el-card>
+
+      <!-- 详细统计数据 - 两列布局 -->
+      <el-row :gutter="20" class="stats-detail">
+        <!-- 左侧列 -->
+        <el-col :span="12">
+          <el-card shadow="hover" class="stats-card">
+            <template #header>
+              <div class="card-header">
+                <span>访问设备分布</span>
           </div>
-        </el-tab-pane>
-      </el-tabs>
+            </template>
+            <div ref="deviceChartRef" class="chart"></div>
+          </el-card>
+
+          <el-card shadow="hover" class="stats-card">
+            <template #header>
+              <div class="card-header">
+                <span>浏览器分布</span>
+          </div>
+            </template>
+            <div ref="browserChartRef" class="chart"></div>
+          </el-card>
+
+          <el-card shadow="hover" class="stats-card">
+            <template #header>
+              <div class="card-header">
+                <span>操作系统分布</span>
+            </div>
+            </template>
+            <div ref="osChartRef" class="chart"></div>
+          </el-card>
+        </el-col>
+
+        <!-- 右侧列 -->
+        <el-col :span="12">
+          <el-card shadow="hover" class="stats-card">
+            <template #header>
+              <div class="card-header">
+                <span>网络类型分布</span>
+                </div>
+            </template>
+            <div ref="networkChartRef" class="chart"></div>
+          </el-card>
+
+          <el-card shadow="hover" class="stats-card">
+            <template #header>
+              <div class="card-header">
+                <span>地区分布</span>
+          </div>
+              </template>
+            <div ref="localeChartRef" class="chart"></div>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, nextTick } from 'vue';
-import * as echarts from 'echarts';
-import { stats as statsApi } from '@/api';
-import type { ShortLinkRecord } from '@/api/link';
-import type { ShortLinkStatsRespDTO, AccessRecord } from '@/api/stats';
-import IpLocationCard from './IpLocationCard.vue';
-import IpLocationViewer from './IpLocationViewer.vue';
-import type { IPLocationResponse } from '../api/location';
+import { ref, defineProps, defineEmits, watch, onMounted, onUnmounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+import * as echarts from 'echarts'
+import statsApi from '../api/stats'
+import { useUserStore } from '../store/user'
+import type { 
+  DeviceStats, 
+  BrowserStats, 
+  OsStats, 
+  NetworkStats, 
+  LocaleStats, 
+  AccessLog,
+  ShortLinkStatsRespDTO
+} from '../api/stats'
+import type { PropType } from 'vue'
 
-// 定义必要的类型
-interface ShortLinkRecord {
-  fullShortUrl: string;
-  originUrl: string;
-  domain: string;
-  gid: string;
-  createTime: string;
-  validDate: string;
-  describe: string;
-  validDateType?: number;
-  totalPv: number;
-  totalUv: number;
-  totalUip: number;
-}
-
-// PV/UV/UIP统计
-interface PvUvUipStats {
-  date: string;
-  pv: number;
-  uv: number;
-  uip: number;
-}
-
-// 地域统计
-interface LocaleCnStat {
-  locale: string;
-  cnt: number;
-  ratio: number;
-}
-
-// 浏览器统计
-interface BrowserStat {
-  browser: string;
-  cnt: number;
-  ratio: number;
-}
-
-// 操作系统统计
-interface OsStat {
-  os: string;
-  cnt: number;
-  ratio: number;
-}
-
-// 设备统计
-interface DeviceStat {
-  device: string;
-  cnt: number;
-  ratio: number;
-}
-
-// 访问记录
-interface AccessRecord {
-  ip: string;
-  browser: string;
-  os: string;
-  network: string;
-  device: string;
-  locale: string;
-  accessTime: string;
-}
-
-// 统计响应
-interface ShortLinkStatsRespDTO {
-  pvUvUipStatsList: PvUvUipStats[];
-  overallPvUvUipStats: PvUvUipStats;
-  localeCnStats: LocaleCnStat[];
-  hourStats: number[];
-  topIpStats: any[];
-  weekdayStats: number[];
-  browserStats: BrowserStat[];
-  osStats: OsStat[];
-  uvTypeStats: any[];
-  deviceStats: DeviceStat[];
-  networkStats: any[];
-}
-
-// Mock API for demo purposes
-const statsApi = {
-  getShortLinkStats: async (params: any) => {
-    // In a real app, this would be an actual API call
-    console.log('Fetching stats for:', params);
-    return {
-      data: {
-        pvUvUipStatsList: [],
-        overallPvUvUipStats: { pv: 0, uv: 0, uip: 0, date: '' },
-        localeCnStats: [],
-        hourStats: Array(24).fill(0),
-        weekdayStats: Array(7).fill(0),
-        browserStats: [],
-        osStats: [],
-        deviceStats: [],
-        topIpStats: [],
-        uvTypeStats: [],
-        networkStats: []
-      } as ShortLinkStatsRespDTO
-    };
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    required: true
   },
-  getShortLinkAccessRecord: async (params: any) => {
-    // In a real app, this would be an actual API call
-    console.log('Fetching access records for:', params);
-    return {
-      data: {
-        records: [],
-        total: 0,
-        size: 10,
-        current: 1
-      }
-    };
+  linkInfo: {
+    type: Object,
+    required: true
+  },
+  statsData: {
+    type: Object as PropType<ShortLinkStatsRespDTO | null>,
+    default: null
   }
-};
+})
 
-const props = defineProps<{
-  visible: boolean;
-  linkInfo: ShortLinkRecord;
-}>();
+const emit = defineEmits(['update:visible'])
+const router = useRouter()
 
-const emit = defineEmits(['update:visible']);
+const dialogVisible = ref(props.visible)
+const statsData = ref<ShortLinkStatsRespDTO | null>(props.statsData)
+const accessLogs = ref<AccessLog[]>([])
 
-// 状态
-const dateRange = ref<[string, string]>(['', '']);
-const loading = ref(false);
-const activeTab = ref('trend');
-const statsData = ref<ShortLinkStatsRespDTO>({} as ShortLinkStatsRespDTO);
-const accessRecords = ref<AccessRecord[]>([]);
-const recordsTotal = ref(0);
-const recordsCurrentPage = ref(1);
-const recordsPageSize = ref(10);
+// 查询参数
+const queryMode = ref('single')  // 'single' 或 'group'
+const dateRange = ref([
+  new Date().toISOString().split('T')[0],
+  new Date().toISOString().split('T')[0]
+])
+const isGroupMode = ref(false)
+const showLogsTable = ref(false)
+const logsLoading = ref(false)
+
+// 分页参数
+const currentPage = ref(1)
+const pageSize = ref(20)
+const totalLogs = ref(0)
+
+// 日期快捷选项
+const dateShortcuts = [
+  {
+    text: '今天',
+    value: () => {
+      const today = new Date().toISOString().split('T')[0]
+      return [today, today]
+    }
+  },
+  {
+    text: '最近一周',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+      return [start.toISOString().split('T')[0], end.toISOString().split('T')[0]]
+    }
+  },
+  {
+    text: '最近一个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 1)
+      return [start.toISOString().split('T')[0], end.toISOString().split('T')[0]]
+    }
+  }
+]
+
+// 图表引用
+const deviceChartRef = ref<HTMLElement>()
+const browserChartRef = ref<HTMLElement>()
+const osChartRef = ref<HTMLElement>()
+const networkChartRef = ref<HTMLElement>()
+const localeChartRef = ref<HTMLElement>()
 
 // 图表实例
-let trendChart: echarts.ECharts | null = null;
-let areaChart: echarts.ECharts | null = null;
-let mapChart: echarts.ECharts | null = null;
-let browserChart: echarts.ECharts | null = null;
-let osChart: echarts.ECharts | null = null;
-let deviceChart: echarts.ECharts | null = null;
-let hourChart: echarts.ECharts | null = null;
-let weekdayChart: echarts.ECharts | null = null;
+let deviceChart: echarts.ECharts | null = null
+let browserChart: echarts.ECharts | null = null
+let osChart: echarts.ECharts | null = null
+let networkChart: echarts.ECharts | null = null
+let localeChart: echarts.ECharts | null = null
 
-// IP位置相关状态
-const selectedIp = ref('');
-const ipLocationData = ref<IPLocationResponse | null>(null);
-const ipDetailTab = ref('basic');
+// 防抖定时器
+let fetchDataTimer: ReturnType<typeof setTimeout> | null = null
 
-// 关闭对话框
-const handleClose = () => {
-  emit('update:visible', false);
-};
+// 处理查询模式变更
+const handleModeChange = (mode: string) => {
+  isGroupMode.value = mode === 'group'
+  fetchStatsData()
+}
 
-// 初始化日期范围
-const initDateRange = () => {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(start.getDate() - 7);
-  
-  const formatDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-  
-  dateRange.value = [formatDate(start), formatDate(end)];
-};
+// 处理分页大小变化
+const handleSizeChange = (size: number) => {
+  pageSize.value = size
+  fetchAccessLogs()
+}
 
-// 日期变化处理
-const handleDateChange = () => {
-  fetchStatsData();
-};
+// 处理页码变化
+const handleCurrentChange = (page: number) => {
+  currentPage.value = page
+  fetchAccessLogs()
+}
+
+// 监听对话框可见性
+watch(() => props.visible, (val) => {
+  dialogVisible.value = val
+  if (val) {
+    // 重置统计数据
+    statsData.value = null
+    
+    // 设置日期范围：起始日期为链接创建日期，结束日期为今天
+    if (!isGroupMode.value && props.linkInfo && props.linkInfo.createTime) {
+      try {
+        // 提取创建日期的纯日期部分 (YYYY-MM-DD)
+        const createDate = props.linkInfo.createTime.split(' ')[0].trim()
+        const endDate = new Date().toISOString().split('T')[0] // 今天
+        console.log(`设置日期范围：${createDate} 至 ${endDate}`)
+        
+        // 设置日期范围但不立即触发查询
+        dateRange.value = [createDate, endDate]
+      } catch (error) {
+        console.error('处理日期格式时出错:', error)
+        // 出错时使用当天日期
+        const today = new Date().toISOString().split('T')[0]
+        dateRange.value = [today, today]
+      }
+    }
+    
+    // 这里不调用 fetchStatsData，等待 dateRange 的 watch 触发
+  }
+})
+
+// 监听对话框关闭
+watch(() => dialogVisible.value, (val) => {
+  emit('update:visible', val)
+})
+
+// 监听查看日志表格状态
+watch(() => showLogsTable.value, (val) => {
+  if (val) {
+    fetchAccessLogs()
+  }
+})
+
+// 监听统计数据变化
+watch(() => props.statsData, (newData) => {
+  if (newData) {
+    statsData.value = newData
+    updateCharts(newData)
+  } else {
+    statsData.value = null
+  }
+}, { deep: true })
+
+// 监听日期范围变化
+watch([dateRange], () => {
+  // 如果对话框可见，则重新获取数据
+  if (dialogVisible.value) {
+    // 防抖处理，避免短时间内多次请求
+    if (fetchDataTimer) {
+      clearTimeout(fetchDataTimer)
+    }
+    fetchDataTimer = setTimeout(() => {
+      fetchStatsData()
+    }, 200)
+  }
+}, { deep: true })
 
 // 获取统计数据
 const fetchStatsData = async () => {
-  if (!props.linkInfo || !props.linkInfo.fullShortUrl || !dateRange.value[0] || !dateRange.value[1]) return;
+  const userStore = useUserStore()
   
-  loading.value = true;
-  try {
-    const res = await statsApi.getShortLinkStats({
-      fullShortUrl: props.linkInfo.fullShortUrl,
-      gid: props.linkInfo.gid,
-      startDate: dateRange.value[0],
-      endDate: dateRange.value[1],
-      enableStatus: 0
-    });
-    
-    statsData.value = res.data;
-    
-    nextTick(() => {
-      initCharts();
-    });
-  } catch (error) {
-    console.error('获取统计数据失败', error);
-  } finally {
-    loading.value = false;
+  // 检查登录状态
+  if (!userStore.checkLogin()) {
+    ElMessage.error('请先登录')
+    dialogVisible.value = false
+    router.push('/login')
+    return
   }
-};
 
-// 获取访问记录
-const fetchAccessRecords = async () => {
-  if (!props.linkInfo || !props.linkInfo.fullShortUrl || !dateRange.value[0] || !dateRange.value[1]) return;
-  
-  loading.value = true;
   try {
-    const res = await statsApi.getShortLinkAccessRecord({
-      fullShortUrl: props.linkInfo.fullShortUrl,
-      gid: props.linkInfo.gid,
-      startDate: dateRange.value[0],
-      endDate: dateRange.value[1],
-      enableStatus: 0,
-      current: recordsCurrentPage.value,
-      size: recordsPageSize.value
-    });
+    const fullShortUrl = props.linkInfo.fullShortUrl
+    const gid = props.linkInfo.gid
+    const [startDate, endDate] = dateRange.value
     
-    accessRecords.value = res.data.records;
-    recordsTotal.value = res.data.total;
+    // 确保日期格式正确 (YYYY-MM-DD)
+    const formatDate = (dateStr: string) => {
+      // 如果日期包含时间部分，只保留日期部分
+      if (dateStr.includes('T')) {
+        return dateStr.split('T')[0]
+      }
+      return dateStr
+    }
+    
+    const formattedStartDate = formatDate(startDate)
+    const formattedEndDate = formatDate(endDate)
+    
+    console.log(`发送统计请求，参数: fullShortUrl=${fullShortUrl}, startDate=${formattedStartDate}, endDate=${formattedEndDate}`)
+
+    // 根据查询模式选择不同的API
+    let statsRes
+    if (isGroupMode.value) {
+      // 获取分组统计数据
+      const response = await statsApi.getShortLinkGroupStats({
+        gid,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate
+      })
+      statsRes = response.data
+    } else {
+      // 获取单个链接统计数据
+      const response = await statsApi.getShortLinkStats({
+        fullShortUrl,
+        gid,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate
+      })
+      statsRes = response.data
+    }
+
+    // 更新数据
+    if (statsRes) {
+      statsData.value = statsRes
+      // 重新初始化图表
+      setTimeout(() => {
+        initCharts()
+      }, 100)
+    }
   } catch (error) {
-    console.error('获取访问记录失败', error);
-  } finally {
-    loading.value = false;
+    console.error('获取统计数据失败', error)
+    ElMessage.error('获取统计数据失败')
+    statsData.value = null
   }
-};
+}
+
+// 获取访问日志
+const fetchAccessLogs = async () => {
+  logsLoading.value = true
+  try {
+    const fullShortUrl = props.linkInfo.fullShortUrl
+    const gid = props.linkInfo.gid
+    const [startDate, endDate] = dateRange.value
+
+    // 根据查询模式选择不同的API
+    let logsRes
+    if (isGroupMode.value) {
+      // 获取分组访问日志
+      const response = await statsApi.getShortLinkGroupAccessRecord({
+        gid,
+        startDate,
+        endDate,
+        current: currentPage.value,
+        size: pageSize.value
+      })
+      logsRes = response.data
+    } else {
+      // 获取单个链接访问日志
+      const response = await statsApi.getShortLinkAccessRecord({
+        fullShortUrl,
+        gid,
+        startDate,
+        endDate,
+        current: currentPage.value,
+        size: pageSize.value
+      })
+      logsRes = response.data
+    }
+
+    // 更新数据
+    accessLogs.value = logsRes.records || []
+    totalLogs.value = logsRes.total || 0
+  } catch (error) {
+    console.error('获取访问日志失败', error)
+    ElMessage.error('获取访问日志失败')
+  } finally {
+    logsLoading.value = false
+  }
+}
 
 // 初始化图表
 const initCharts = () => {
-  initTrendChart();
-  initAreaChart();
-  initMapChart();
-  initBrowserChart();
-  initOsChart();
-  initDeviceChart();
-  initHourChart();
-  initWeekdayChart();
-};
+  if (!statsData.value) return
 
-// 初始化趋势图表
-const initTrendChart = () => {
-  const chartDom = document.getElementById('trend-chart');
-  if (!chartDom) return;
-  
-  trendChart = echarts.init(chartDom);
-  
-  const option = {
-    title: {
-      text: '访问趋势'
-    },
+  // 设备分布图表 - 环形图
+  if (deviceChartRef.value && statsData.value?.deviceStats) {
+    deviceChart = echarts.init(deviceChartRef.value)
+    deviceChart.setOption({
     tooltip: {
-      trigger: 'axis'
+      trigger: 'item',
+        formatter: '{b}: {c} ({d}%)'
     },
     legend: {
-      data: ['PV', 'UV', 'UIP']
+      orient: 'vertical',
+        right: 10,
+        top: 'center',
+        data: statsData.value.deviceStats.map(item => item.device)
+    },
+    series: [
+      {
+          name: '设备类型',
+        type: 'pie',
+          radius: ['40%', '70%'],
+          center: ['40%', '50%'],
+        avoidLabelOverlap: false,
+          itemStyle: {
+            borderRadius: 10,
+            borderColor: '#fff',
+            borderWidth: 2
+          },
+        label: {
+            show: true,
+            position: 'outside',
+            formatter: '{b}: {c}'
+        },
+        emphasis: {
+          label: {
+            show: true,
+              fontSize: 14,
+            fontWeight: 'bold'
+          }
+        },
+          data: statsData.value.deviceStats.map(item => ({
+            name: item.device,
+            value: item.cnt
+          }))
+        }
+      ]
+    })
+  }
+
+  // 浏览器分布图表 - 柱状图
+  if (browserChartRef.value && statsData.value?.browserStats) {
+    browserChart = echarts.init(browserChartRef.value)
+    browserChart.setOption({
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
     },
     grid: {
       left: '3%',
@@ -395,506 +540,283 @@ const initTrendChart = () => {
     },
     xAxis: {
       type: 'category',
-      boundaryGap: false,
-      data: statsData.value.pvUvUipStatsList?.map((item: PvUvUipStats) => item.date) || []
+        data: statsData.value.browserStats.map(item => item.browser),
+        axisLabel: {
+          interval: 0,
+          rotate: 30
+        }
     },
     yAxis: {
       type: 'value'
     },
     series: [
       {
-        name: 'PV',
-        type: 'line',
-        data: statsData.value.pvUvUipStatsList?.map((item: PvUvUipStats) => item.pv) || []
-      },
-      {
-        name: 'UV',
-        type: 'line',
-        data: statsData.value.pvUvUipStatsList?.map((item: PvUvUipStats) => item.uv) || []
-      },
-      {
-        name: 'UIP',
-        type: 'line',
-        data: statsData.value.pvUvUipStatsList?.map((item: PvUvUipStats) => item.uip) || []
-      }
-    ]
-  };
-  
-  trendChart.setOption(option);
-};
+          name: '访问量',
+          type: 'bar',
+          data: statsData.value.browserStats.map(item => item.cnt),
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#83bff6' },
+              { offset: 0.5, color: '#188df0' },
+              { offset: 1, color: '#188df0' }
+            ])
+          }
+        }
+      ]
+    })
+  }
 
-// 初始化地域饼图
-const initAreaChart = () => {
-  const chartDom = document.getElementById('area-chart');
-  if (!chartDom) return;
-  
-  areaChart = echarts.init(chartDom);
-  
-  const option = {
-    title: {
-      text: '地域分布'
-    },
+  // 操作系统分布图表 - 饼图
+  if (osChartRef.value && statsData.value?.osStats) {
+    osChart = echarts.init(osChartRef.value)
+    osChart.setOption({
     tooltip: {
       trigger: 'item',
-      formatter: '{a} <br/>{b}: {c} ({d}%)'
+        formatter: '{b}: {c} ({d}%)'
     },
     legend: {
       orient: 'vertical',
-      left: 10,
-      data: statsData.value.localeCnStats?.map((item: LocaleCnStat) => item.locale) || []
-    },
-    series: [
-      {
-        name: '访问来源',
-        type: 'pie',
-        radius: ['50%', '70%'],
-        avoidLabelOverlap: false,
-        label: {
-          show: false,
-          position: 'center'
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: 16,
-            fontWeight: 'bold'
-          }
-        },
-        labelLine: {
-          show: false
-        },
-        data: statsData.value.localeCnStats?.map((item: LocaleCnStat) => ({
-          value: item.cnt,
-          name: item.locale
-        })) || []
-      }
-    ]
-  };
-  
-  areaChart.setOption(option);
-};
-
-// 初始化中国地图
-const initMapChart = () => {
-  const chartDom = document.getElementById('map-chart');
-  if (!chartDom) return;
-  
-  mapChart = echarts.init(chartDom);
-  
-  // 地图配置
-  // 注意：实际项目中需要加载中国地图数据
-  const option = {
-    title: {
-      text: '访问地图'
-    },
-    tooltip: {
-      trigger: 'item'
-    },
-    visualMap: {
-      min: 0,
-      max: statsData.value.localeCnStats?.[0]?.cnt || 10,
-      left: 'left',
-      top: 'bottom',
-      text: ['高', '低'],
-      calculable: true
-    },
-    series: [
-      {
-        name: '访问量',
-        type: 'map',
-        map: 'china',
-        roam: true,
-        label: {
-          show: true
-        },
-        data: statsData.value.localeCnStats?.map((item: LocaleCnStat) => ({
-          name: item.locale,
-          value: item.cnt
-        })) || []
-      }
-    ]
-  };
-  
-  mapChart.setOption(option);
-};
-
-// 初始化浏览器图表
-const initBrowserChart = () => {
-  const chartDom = document.getElementById('browser-chart');
-  if (!chartDom) return;
-  
-  browserChart = echarts.init(chartDom);
-  
-  const option = {
-    title: {
-      text: '浏览器分布'
-    },
-    tooltip: {
-      trigger: 'item',
-      formatter: '{a} <br/>{b}: {c} ({d}%)'
-    },
-    legend: {
-      orient: 'horizontal',
-      bottom: 0,
-      data: statsData.value.browserStats?.map((item: BrowserStat) => item.browser) || []
-    },
-    series: [
-      {
-        name: '浏览器',
-        type: 'pie',
-        radius: '60%',
-        data: statsData.value.browserStats?.map((item: BrowserStat) => ({
-          value: item.cnt,
-          name: item.browser
-        })) || []
-      }
-    ]
-  };
-  
-  browserChart.setOption(option);
-};
-
-// 初始化操作系统图表
-const initOsChart = () => {
-  const chartDom = document.getElementById('os-chart');
-  if (!chartDom) return;
-  
-  osChart = echarts.init(chartDom);
-  
-  const option = {
-    title: {
-      text: '操作系统分布'
-    },
-    tooltip: {
-      trigger: 'item',
-      formatter: '{a} <br/>{b}: {c} ({d}%)'
-    },
-    legend: {
-      orient: 'horizontal',
-      bottom: 0,
-      data: statsData.value.osStats?.map((item: OsStat) => item.os) || []
+        right: 10,
+        top: 'center',
+        data: statsData.value.osStats.map(item => item.os)
     },
     series: [
       {
         name: '操作系统',
         type: 'pie',
-        radius: '60%',
-        data: statsData.value.osStats?.map((item: OsStat) => ({
-          value: item.cnt,
-          name: item.os
-        })) || []
-      }
-    ]
-  };
-  
-  osChart.setOption(option);
-};
+          radius: '70%',
+          center: ['40%', '50%'],
+          data: statsData.value.osStats.map(item => ({
+            name: item.os,
+            value: item.cnt
+          })),
+        emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+          }
+        }
+      ]
+    })
+  }
 
-// 初始化设备图表
-const initDeviceChart = () => {
-  const chartDom = document.getElementById('device-chart');
-  if (!chartDom) return;
-  
-  deviceChart = echarts.init(chartDom);
-  
-  const option = {
-    title: {
-      text: '设备分布'
-    },
+  // 网络类型分布图表 - 雷达图
+  if (networkChartRef.value && statsData.value?.networkStats) {
+    networkChart = echarts.init(networkChartRef.value)
+    networkChart.setOption({
+      tooltip: {},
+      radar: {
+        indicator: statsData.value.networkStats.map(item => ({
+          name: item.network,
+          max: Math.max(...statsData.value.networkStats.map(i => i.cnt)) * 1.2
+        }))
+      },
+      series: [{
+        name: '网络类型',
+        type: 'radar',
+        data: [{
+          value: statsData.value.networkStats.map(item => item.cnt),
+          name: '访问量',
+          areaStyle: {
+            color: 'rgba(24, 144, 255, 0.2)'
+          }
+        }]
+      }]
+    })
+  }
+
+  // 地区分布图表 - 条形图
+  if (localeChartRef.value && statsData.value?.localeCnStats) {
+    localeChart = echarts.init(localeChartRef.value)
+    localeChart.setOption({
     tooltip: {
-      trigger: 'item',
-      formatter: '{a} <br/>{b}: {c} ({d}%)'
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      grid: {
+        top: '3%',
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
     },
-    legend: {
-      orient: 'horizontal',
-      bottom: 0,
-      data: statsData.value.deviceStats?.map((item: DeviceStat) => item.device) || []
+    xAxis: {
+        type: 'value'
+    },
+    yAxis: {
+        type: 'category',
+        data: statsData.value.localeCnStats.map(item => item.locale),
+        axisLabel: {
+          interval: 0
+        }
     },
     series: [
       {
-        name: '设备',
-        type: 'pie',
-        radius: '60%',
-        data: statsData.value.deviceStats?.map((item: DeviceStat) => ({
+        name: '访问量',
+          type: 'bar',
+          data: statsData.value.localeCnStats.map(item => item.cnt),
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [
+              { offset: 0, color: '#ffd85c' },
+              { offset: 0.5, color: '#ff9a45' },
+              { offset: 1, color: '#ff7343' }
+            ])
+          }
+        }
+      ]
+    })
+  }
+}
+
+// 更新图表数据
+const updateCharts = (data: ShortLinkStatsRespDTO) => {
+  if (!data) return
+  
+  // 更新设备分布图表
+  if (deviceChart && data.deviceStats && Array.isArray(data.deviceStats)) {
+    deviceChart.setOption({
+      series: [{
+        data: data.deviceStats.map(item => ({
           value: item.cnt,
           name: item.device
-        })) || []
-      }
-    ]
-  };
-  
-  deviceChart.setOption(option);
-};
-
-// 初始化小时分布图表
-const initHourChart = () => {
-  const chartDom = document.getElementById('hour-chart');
-  if (!chartDom) return;
-  
-  hourChart = echarts.init(chartDom);
-  
-  const hours = Array.from({length: 24}, (_, i) => `${i}时`);
-  
-  const option = {
-    title: {
-      text: '时段分布'
-    },
-    tooltip: {
-      trigger: 'axis'
-    },
-    xAxis: {
-      type: 'category',
-      data: hours
-    },
-    yAxis: {
-      type: 'value'
-    },
-    series: [
-      {
-        data: statsData.value.hourStats || new Array(24).fill(0),
-        type: 'bar'
-      }
-    ]
-  };
-  
-  hourChart.setOption(option);
-};
-
-// 初始化星期分布图表
-const initWeekdayChart = () => {
-  const chartDom = document.getElementById('weekday-chart');
-  if (!chartDom) return;
-  
-  weekdayChart = echarts.init(chartDom);
-  
-  const weekdays = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
-  
-  const option = {
-    title: {
-      text: '星期分布'
-    },
-    tooltip: {
-      trigger: 'axis'
-    },
-    xAxis: {
-      type: 'category',
-      data: weekdays
-    },
-    yAxis: {
-      type: 'value'
-    },
-    series: [
-      {
-        data: statsData.value.weekdayStats || new Array(7).fill(0),
-        type: 'bar'
-      }
-    ]
-  };
-  
-  weekdayChart.setOption(option);
-};
-
-// 访问记录分页处理
-const handleRecordsSizeChange = (val: number) => {
-  recordsPageSize.value = val;
-  fetchAccessRecords();
-};
-
-const handleRecordsCurrentChange = (val: number) => {
-  recordsCurrentPage.value = val;
-  fetchAccessRecords();
-};
-
-// 监听tab切换
-watch(() => activeTab.value, (newVal) => {
-  if (newVal === 'records') {
-    fetchAccessRecords();
-  } else {
-    nextTick(() => {
-      // 重绘图表
-      trendChart?.resize();
-      areaChart?.resize();
-      mapChart?.resize();
-      browserChart?.resize();
-      osChart?.resize();
-      deviceChart?.resize();
-      hourChart?.resize();
-      weekdayChart?.resize();
-    });
+        }))
+      }]
+    })
   }
-});
 
-// 监听对话框可见性
-watch(() => props.visible, (newVal) => {
-  if (newVal) {
-    initDateRange();
-    fetchStatsData();
+  // 更新浏览器分布图表
+  if (browserChart && data.browserStats && Array.isArray(data.browserStats)) {
+    browserChart.setOption({
+      series: [{
+        data: data.browserStats.map(item => ({
+          value: item.cnt,
+          name: item.browser
+        }))
+      }]
+    })
   }
-});
 
-// 组件卸载前销毁图表实例
+  // 更新操作系统分布图表
+  if (osChart && data.osStats && Array.isArray(data.osStats)) {
+    osChart.setOption({
+      series: [{
+        data: data.osStats.map(item => ({
+          value: item.cnt,
+          name: item.os
+        }))
+      }]
+    })
+  }
+
+  // 更新网络类型分布图表
+  if (networkChart && data.networkStats && Array.isArray(data.networkStats)) {
+    networkChart.setOption({
+      series: [{
+        data: data.networkStats.map(item => ({
+          value: item.cnt,
+          name: item.network
+        }))
+      }]
+    })
+  }
+
+  // 更新地区分布图表
+  if (localeChart && data.localeCnStats && Array.isArray(data.localeCnStats)) {
+    localeChart.setOption({
+      series: [{
+        data: data.localeCnStats.map(item => ({
+          value: item.cnt,
+          name: item.locale
+        }))
+      }]
+    })
+  }
+}
+
+// 监听窗口大小变化
+const handleResize = () => {
+  deviceChart?.resize()
+  browserChart?.resize()
+  osChart?.resize()
+  networkChart?.resize()
+  localeChart?.resize()
+}
+
+// 组件挂载时添加窗口大小变化监听
 onMounted(() => {
-  window.addEventListener('resize', () => {
-    trendChart?.resize();
-    areaChart?.resize();
-    mapChart?.resize();
-    browserChart?.resize();
-    osChart?.resize();
-    deviceChart?.resize();
-    hourChart?.resize();
-    weekdayChart?.resize();
-  });
-});
-
-// 显示IP详情
-const showIpDetail = (ip: string) => {
-  selectedIp.value = ip;
-};
-
-// 关闭IP详情
-const closeIpDetail = () => {
-  selectedIp.value = '';
-  ipLocationData.value = null;
-  ipDetailTab.value = 'basic';
-};
-
-// 处理位置信息加载完成
-const handleLocationLoaded = (data: IPLocationResponse) => {
-  ipLocationData.value = data;
-  console.log('IP位置信息加载完成:', data);
-  
-  // 如果数据加载成功，自动切换到地图选项卡
-  if (data && data.status === '1') {
-    ipDetailTab.value = 'map';
+  // 初始化时如果对话框可见，则获取数据
+  if (dialogVisible.value) {
+    fetchStatsData()
   }
-};
+  window.addEventListener('resize', handleResize)
+})
+
+// 组件卸载时移除窗口大小变化监听
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  // 销毁图表实例
+  deviceChart?.dispose()
+  browserChart?.dispose()
+  osChart?.dispose()
+  networkChart?.dispose()
+  localeChart?.dispose()
+})
 </script>
 
 <style scoped>
-.stats-dialog {
-  font-family: Arial, sans-serif;
+.stats-container {
+  padding: 20px;
 }
 
-.stats-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.query-card {
   margin-bottom: 20px;
 }
 
-.link-info {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.link-info .url {
-  font-weight: bold;
-  font-size: 16px;
-  color: #409eff;
-}
-
-.link-info .origin-url {
-  font-size: 14px;
-  color: #666;
-}
-
-.stats-summary {
-  display: flex;
-  justify-content: space-between;
+.stats-cards {
   margin-bottom: 20px;
+}
+
+.logs-card {
+  margin-bottom: 20px;
+}
+
+.stats-detail {
+  margin-top: 20px;
 }
 
 .stats-card {
-  background-color: #f5f7fa;
-  padding: 20px;
-  border-radius: 4px;
-  flex: 1;
-  text-align: center;
-  margin: 0 10px;
+  margin-bottom: 20px;
 }
 
-.stats-card:first-child {
-  margin-left: 0;
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.stats-card:last-child {
-  margin-right: 0;
-}
-
-.stats-card .label {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 5px;
-}
-
-.stats-card .value {
+.card-value {
   font-size: 24px;
   font-weight: bold;
-  color: #303133;
+  text-align: center;
+  color: #409EFF;
 }
 
-.chart-container {
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.multiple-charts .chart {
-  width: 32%;
-  height: 350px;
-  margin-bottom: 20px;
-}
-
-.chart-container:not(.multiple-charts) .chart {
-  width: 48%;
-  height: 400px;
-  margin-bottom: 20px;
-}
-
-.records-pagination {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-.ip-location-container {
-  margin-bottom: 20px;
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
-  padding: 15px;
-  background-color: #fff;
-}
-
-.location-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.location-header h3 {
-  margin: 0;
-  font-size: 16px;
-  color: #303133;
-}
-
-.ip-detail-tabs {
+.chart {
+  height: 300px;
   width: 100%;
 }
 
-.map-container {
-  width: 100%;
-  height: 400px;
+:deep(.el-card__header) {
+  padding: 10px 20px;
+  border-bottom: 1px solid #EBEEF5;
+  box-sizing: border-box;
 }
 
-.map-placeholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 400px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
+:deep(.el-card__body) {
+  padding: 20px;
 }
 </style> 

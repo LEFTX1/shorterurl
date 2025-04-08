@@ -17,6 +17,7 @@ type ServiceContext struct {
 	LinkRpc                 shortlinkservice.ShortLinkService
 	Redis                   *redis.Redis
 	TokenValidateMiddleware rest.Middleware
+	RedirectStatMiddleware  rest.Middleware
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -33,5 +34,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		LinkRpc:                 shortlinkservice.NewShortLinkService(zrpc.MustNewClient(c.LinkRpc)),
 		Redis:                   redisClient,
 		TokenValidateMiddleware: middleware.NewTokenValidateMiddleware(&c.Auth, redisClient).Handle,
+		RedirectStatMiddleware:  middleware.NewRedirectStatMiddleware(),
 	}
 }

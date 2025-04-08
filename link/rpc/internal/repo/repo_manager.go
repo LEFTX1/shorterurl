@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"google.golang.org/grpc/metadata"
 	"gorm.io/gorm"
 )
 
@@ -74,9 +75,15 @@ func NewRepoManager(common, linkDB, gotoLinkDB, groupDB, userDB *gorm.DB) *RepoM
 
 // GetCurrentUsername 获取当前登录用户名
 func (m *RepoManager) GetCurrentUsername(ctx context.Context) (string, error) {
-	// 从上下文中获取用户名，使用中间件定义的常量
+	// 从metadata中获取用户名
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		if usernames := md.Get("username"); len(usernames) > 0 {
+			return usernames[0], nil
+		}
+	}
+
+	// 如果metadata中没有，尝试从上下文中获取
 	username, ok := ctx.Value("username").(string)
-	// 如果没有找到用户名或为空，返回错误
 	if !ok || username == "" {
 		return "", ErrUserNotLogin
 	}

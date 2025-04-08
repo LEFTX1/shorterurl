@@ -5,6 +5,7 @@ import (
 	"shorterurl/link/rpc/internal/model" // 确保引入了 model 包
 	"time"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/gorm"
 )
 
@@ -135,8 +136,13 @@ func (r *linkAccessStatsRepo) FindPvUvUipStatsByGroup(ctx context.Context, gid, 
 	if err != nil {
 		return nil, err
 	}
+
+	// 添加日志，记录查询到的短链接列表
+	logx.WithContext(ctx).Infof("分组 %s 下的短链接列表: %v", gid, fullShortUrls)
+
 	if len(fullShortUrls) == 0 {
 		// 如果该分组下没有链接，直接返回零值
+		logx.WithContext(ctx).Info("分组下没有短链接")
 		return &PvUvUipStats{}, nil
 	}
 
@@ -151,6 +157,10 @@ func (r *linkAccessStatsRepo) FindPvUvUipStatsByGroup(ctx context.Context, gid, 
 		query = query.Where("date >= ? AND date <= ?", startDate, endDate)
 	}
 
+	// 添加日志，记录SQL查询
+	logx.WithContext(ctx).Infof("统计查询SQL: %v", query.Statement.SQL.String())
+	logx.WithContext(ctx).Infof("统计查询参数: %v", query.Statement.Vars)
+
 	err = query.Take(&stats).Error // 使用 Take 获取单条记录
 	if err != nil {
 		// 如果查询出错（非 gorm.ErrRecordNotFound），返回错误
@@ -160,6 +170,9 @@ func (r *linkAccessStatsRepo) FindPvUvUipStatsByGroup(ctx context.Context, gid, 
 		// 如果是没找到记录，返回零值统计（已被初始化为零值）
 		return &PvUvUipStats{}, nil
 	}
+
+	// 添加日志，记录查询结果
+	logx.WithContext(ctx).Infof("统计查询结果: PV=%d, UV=%d, UIP=%d", stats.Pv, stats.Uv, stats.Uip)
 
 	return &stats, nil
 }

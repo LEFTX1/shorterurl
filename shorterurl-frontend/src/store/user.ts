@@ -1,33 +1,61 @@
 import { defineStore } from 'pinia';
-import { user as userApi } from '@/api';
-import type { UserInfoResp, UserLoginReq, UserRegisterReq, UserUpdateReq } from '@/api/user';
 import { ElMessage } from 'element-plus';
-import router from '@/router';
+import router from '../router';
+import userApi from '../api/user';
+import type { UserLoginReq, UserRegisterReq, UserUpdateReq } from '../api/user';
+
+interface UserState {
+  token: string;
+  username: string;
+  realname: string;
+  isLogin: boolean;
+  isRecycleBinMode: boolean;
+}
 
 export const useUserStore = defineStore('user', {
-  state: () => ({
+  state: (): UserState => ({
     token: localStorage.getItem('token') || '',
     username: localStorage.getItem('username') || '',
     realname: localStorage.getItem('realname') || '',
-    userInfo: null as UserInfoResp | null,
     isLogin: !!localStorage.getItem('token'),
-    viewMode: localStorage.getItem('viewMode') || 'normal' // 'normal' 或 'recycle'
+    isRecycleBinMode: localStorage.getItem('viewMode') === 'recycle'
   }),
   
   getters: {
-    getUserInfo: (state) => state.userInfo,
-    getUsername: (state) => state.username,
-    getRealname: (state) => state.realname,
     getToken: (state) => state.token,
-    getLoginStatus: (state) => state.isLogin,
-    getViewMode: (state) => state.viewMode,
-    isRecycleBinMode: (state) => state.viewMode === 'recycle'
+    getUsername: (state) => state.username,
+    getRealname: (state) => state.realname
   },
   
   actions: {
-    // 设置视图模式
+    // 设置登录信息
+    setLoginInfo(token: string, username: string, realname: string) {
+      if (!token || !username) {
+        throw new Error('无效的登录信息');
+      }
+
+      this.token = token;
+      this.username = username;
+      this.realname = realname;
+      this.isLogin = true;
+      
+      // 保存到本地存储
+      localStorage.setItem('token', token);
+      localStorage.setItem('username', username);
+      localStorage.setItem('realname', realname);
+
+      // 打印调试信息
+      console.log('登录信息已保存:', {
+        token: this.token,
+        username: this.username,
+        realname: this.realname,
+        isLogin: this.isLogin
+      });
+    },
+    
+    // 设置视图模式（正常/回收站）
     setViewMode(mode: 'normal' | 'recycle') {
-      this.viewMode = mode;
+      this.isRecycleBinMode = mode === 'recycle';
       localStorage.setItem('viewMode', mode);
     },
     
@@ -35,21 +63,22 @@ export const useUserStore = defineStore('user', {
     async login(loginForm: UserLoginReq) {
       try {
         const res = await userApi.login(loginForm);
-        this.token = res.data.token;
-        this.username = res.data.username;
-        this.realname = res.data.realname;
-        this.isLogin = true;
+        // 确保token存在且格式正确
+        if (!res.data.token) {
+          throw new Error('登录失败：未获取到token');
+        }
         
-        // 保存到本地存储
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('username', res.data.username);
-        localStorage.setItem('realname', res.data.realname);
+        // 保存登录信息
+        this.setLoginInfo(res.data.token, res.data.username, res.data.realname);
         
-        // 获取用户信息
-        await this.fetchUserInfo();
+        // 打印调试信息
+        console.log('登录响应:', res.data);
         
+        ElMessage.success('登录成功');
         return Promise.resolve(res.data);
-      } catch (error) {
+      } catch (error: any) {
+        console.error('登录失败:', error);
+        ElMessage.error(error.message || '登录失败');
         return Promise.reject(error);
       }
     },
@@ -58,7 +87,7 @@ export const useUserStore = defineStore('user', {
     async register(registerForm: UserRegisterReq) {
       try {
         const res = await userApi.register(registerForm);
-        ElMessage.success('注册成功，请登录');
+        ElMessage.success('注册成功');
         return Promise.resolve(res.data);
       } catch (error) {
         return Promise.reject(error);
@@ -67,11 +96,9 @@ export const useUserStore = defineStore('user', {
     
     // 获取用户信息
     async fetchUserInfo() {
-      if (!this.username) return;
-      
       try {
         const res = await userApi.getUserInfo(this.username);
-        this.userInfo = res.data;
+        this.realname = res.data.realname;
         return Promise.resolve(res.data);
       } catch (error) {
         return Promise.reject(error);
@@ -79,53 +106,27 @@ export const useUserStore = defineStore('user', {
     },
     
     // 更新用户信息
-    async updateUserInfo(updateForm: UserUpdateReq) {
+    async updateUser(updateForm: UserUpdateReq) {
       try {
         const res = await userApi.updateUserInfo(updateForm);
+        if (updateForm.realName) {
+          this.realname = updateForm.realName;
+          localStorage.setItem('realname', updateForm.realName);
+        }
         ElMessage.success('更新成功');
-        
-        // 重新获取用户信息
-        await this.fetchUserInfo();
-        
         return Promise.resolve(res.data);
       } catch (error) {
         return Promise.reject(error);
       }
     },
     
-    // 检查登录状态
-    async checkLogin() {
-      if (!this.token || !this.username) {
-        this.logout();
-        return false;
-      }
-      
-      try {
-        const res = await userApi.checkLogin(this.username, this.token);
-        return res.data.success;
-      } catch (error) {
-        this.logout();
-        return false;
-      }
-    },
-    
     // 退出登录
-    async logout() {
-      if (this.token && this.username) {
-        try {
-          await userApi.logout(this.username, this.token);
-        } catch (error) {
-          console.error('退出登录错误:', error);
-        }
-      }
-      
-      // 清除状态
+    logout() {
       this.token = '';
       this.username = '';
       this.realname = '';
-      this.userInfo = null;
       this.isLogin = false;
-      this.viewMode = 'normal';
+      this.isRecycleBinMode = false;
       
       // 清除本地存储
       localStorage.removeItem('token');
@@ -135,6 +136,29 @@ export const useUserStore = defineStore('user', {
       
       // 跳转到登录页
       router.push('/login');
+    },
+    
+    // 检查登录状态
+    checkLogin(): boolean {
+      const token = this.token;
+      const username = this.username;
+      const isValid = this.isLogin && !!token && !!username;
+      
+      // 打印调试信息
+      console.log('检查登录状态:', {
+        token,
+        username,
+        isLogin: this.isLogin,
+        isValid
+      });
+      
+      // 如果状态无效，清除登录信息
+      if (!isValid && this.isLogin) {
+        console.warn('登录状态无效，执行登出操作');
+        this.logout();
+      }
+      
+      return isValid;
     }
   }
 }); 

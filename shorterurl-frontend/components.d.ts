@@ -41,6 +41,7 @@ declare module 'vue' {
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
+    GroupStatsDialog: typeof import('./src/components/GroupStatsDialog.vue')['default']
     IpLocationCard: typeof import('./src/components/IpLocationCard.vue')['default']
     IpLocationViewer: typeof import('./src/components/IpLocationViewer.vue')['default']
     LinkTable: typeof import('./src/components/LinkTable.vue')['default']

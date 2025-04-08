@@ -58,6 +58,7 @@ type ShortLinkStatsConsumer struct {
 func NewShortLinkStatsConsumer(serviceCtx ServiceContext) *ShortLinkStatsConsumer {
 	// 生成唯一的消费者ID
 	consumerID := fmt.Sprintf("%s%d", ShortLinkStatsConsumerPrefix, time.Now().UnixNano())
+	logx.Infof("[统计消费者] 创建消费者: ID=%s", consumerID)
 
 	// 创建 Redis Stream 包装器
 	redisStream := NewRedisStream(serviceCtx.GetRedis())
@@ -74,15 +75,21 @@ func NewShortLinkStatsConsumer(serviceCtx ServiceContext) *ShortLinkStatsConsume
 
 // Start 启动消费者
 func (c *ShortLinkStatsConsumer) Start() {
+	logx.Infof("[统计消费者] 启动消费者: ID=%s", c.consumerID)
+
 	// 确保消费者组存在
 	if err := c.ensureConsumerGroup(); err != nil {
 		c.logger.Errorf("创建消费者组失败: %v", err)
 		return
 	}
+	logx.Infof("[统计消费者] 消费者组已就绪: %s", ShortLinkStatsGroupName)
 
 	// 启动消费协程
 	c.wg.Add(1)
+	c.running = true
 	go c.consume()
+
+	logx.Infof("[统计消费者] 消费者已启动并开始监听消息")
 }
 
 // Stop 停止消费者处理循环
@@ -98,22 +105,39 @@ func (c *ShortLinkStatsConsumer) Stop() {
 
 // Submit 提交统计记录到Redis Stream
 func (c *ShortLinkStatsConsumer) Submit(record *StatsRecord) {
-	// 将记录序列化为JSON
-	recordJSON, err := json.Marshal(record)
-	if err != nil {
-		logx.Errorf("序列化统计记录失败: %v", err)
-		return
+	// 如果当前日期为空，设置为当前时间
+	if record.CurrentDate.IsZero() {
+		record.CurrentDate = time.Now()
+	}
+
+	logx.Infof("[统计] 接收统计记录: 短链接=%s, GID=%s, UV首次=%v, UIP首次=%v, 设备=%s, 浏览器=%s, 系统=%s",
+		record.FullShortUrl, record.Gid, record.UvFirstFlag, record.UipFirstFlag,
+		record.Device, record.Browser, record.Os)
+
+	// 将记录直接放到字段映射中
+	values := map[string]string{
+		"full_short_url": record.FullShortUrl,
+		"gid":            record.Gid,
+		"user":           record.User,
+		"uv_first_flag":  fmt.Sprintf("%t", record.UvFirstFlag),
+		"uip_first_flag": fmt.Sprintf("%t", record.UipFirstFlag),
+		"ip":             record.Ip,
+		"browser":        record.Browser,
+		"os":             record.Os,
+		"device":         record.Device,
+		"network":        record.Network,
+		"locale":         record.Locale,
+		"current_date":   record.CurrentDate.Format(time.RFC3339),
 	}
 
 	// 发送到Redis Stream
-	values := map[string]string{
-		"data": string(recordJSON),
-	}
-	_, err = c.redisStream.Xadd(ShortLinkStatsStreamKey, "*", values)
+	msgID, err := c.redisStream.Xadd(ShortLinkStatsStreamKey, "*", values)
 	if err != nil {
 		logx.Errorf("发送统计记录到Redis Stream失败: %v", err)
 		return
 	}
+
+	logx.Infof("[统计] 成功发送到Redis Stream, 消息ID: %s", msgID)
 }
 
 // ensureConsumerGroup 确保消费者组存在
@@ -130,6 +154,7 @@ func (c *ShortLinkStatsConsumer) ensureConsumerGroup() error {
 // consume 消费循环
 func (c *ShortLinkStatsConsumer) consume() {
 	defer c.wg.Done()
+	logx.Infof("[统计消费者] 开始消费循环: ID=%s", c.consumerID)
 
 	// 用于保存待确认的消息ID
 	pending := make([]string, 0, BatchCount)
@@ -140,6 +165,7 @@ func (c *ShortLinkStatsConsumer) consume() {
 		select {
 		case <-c.stopChan:
 			// 处理剩余的消息
+			logx.Infof("[统计消费者] 收到停止信号，处理剩余消息")
 			if len(pending) > 0 {
 				c.processPendingMessages(pending)
 			}
@@ -147,12 +173,14 @@ func (c *ShortLinkStatsConsumer) consume() {
 
 		default:
 			// 读取消息
+			logx.Infof("[统计消费者] 尝试从Redis Stream读取消息")
 			messages, err := c.redisStream.Xreadgroup(ShortLinkStatsStreamKey, ShortLinkStatsGroupName, c.consumerID, ">", BatchCount, 1000)
 			if err != nil {
 				if strings.Contains(err.Error(), "circuit breaker is open") {
 					// 熔断器打开，等待一段时间后重试
 					if retryCount < maxRetries {
 						retryCount++
+						logx.Infof("[统计消费者] 熔断器打开，等待后重试 (%d/%d)", retryCount, maxRetries)
 						time.Sleep(time.Second * time.Duration(retryCount))
 						continue
 					}
@@ -166,30 +194,52 @@ func (c *ShortLinkStatsConsumer) consume() {
 			retryCount = 0
 
 			// 处理消息
+			if len(messages) > 0 {
+				logx.Infof("[统计消费者] 读取到 %d 条待处理消息", len(messages))
+			}
+
 			for _, msg := range messages {
 				// 解析消息
 				statsRecord, err := c.parseStreamMessage(msg)
 				if err != nil {
 					c.logger.Errorf("解析消息失败: %v", err)
+					// 即使解析失败，也添加到待确认列表，避免死信
+					pending = append(pending, msg.ID)
 					continue
 				}
 
 				// 处理统计记录
 				if err := c.processMessage(statsRecord); err != nil {
 					c.logger.Errorf("处理统计记录失败: %v", err)
+					// 处理失败的记录也确认，避免死信
+					pending = append(pending, msg.ID)
 					continue
 				}
 
-				// 添加到待确认列表
+				// 处理成功，添加到待确认列表
 				pending = append(pending, msg.ID)
 
 				// 如果待确认消息达到批量大小，进行确认
 				if len(pending) >= BatchCount {
+					logx.Infof("[统计消费者] 确认 %d 条消息", len(pending))
 					if err := c.ackMessages(pending); err != nil {
 						c.logger.Errorf("确认消息失败: %v", err)
+					} else {
+						logx.Infof("[统计消费者] 成功确认 %d 条消息", len(pending))
 					}
 					pending = pending[:0]
 				}
+			}
+
+			// 如果有待确认消息，也进行确认，避免消息堆积
+			if len(pending) > 0 {
+				logx.Infof("[统计消费者] 确认剩余 %d 条消息", len(pending))
+				if err := c.ackMessages(pending); err != nil {
+					c.logger.Errorf("确认剩余消息失败: %v", err)
+				} else {
+					logx.Infof("[统计消费者] 成功确认剩余 %d 条消息", len(pending))
+				}
+				pending = pending[:0]
 			}
 
 			// 如果没有消息，等待一段时间
@@ -220,6 +270,8 @@ func (c *ShortLinkStatsConsumer) ackMessages(ids []string) error {
 
 // parseStreamMessage 解析 Stream 消息为统计记录
 func (c *ShortLinkStatsConsumer) parseStreamMessage(msg StreamMessage) (*StatsRecord, error) {
+	logx.Infof("[统计] 开始解析消息: ID=%s", msg.ID)
+
 	record := &StatsRecord{}
 	var err error
 
@@ -264,11 +316,16 @@ func (c *ShortLinkStatsConsumer) parseStreamMessage(msg StreamMessage) (*StatsRe
 		}
 	}
 
+	logx.Infof("[统计] 解析成功: 短链接=%s, GID=%s, UV首次=%v, UIP首次=%v",
+		record.FullShortUrl, record.Gid, record.UvFirstFlag, record.UipFirstFlag)
+
 	return record, nil
 }
 
 // processMessage 处理统计记录
 func (c *ShortLinkStatsConsumer) processMessage(record *StatsRecord) error {
+	logx.Infof("[统计] 开始处理统计记录: 短链接=%s, GID=%s", record.FullShortUrl, record.Gid)
+
 	ctx := context.Background()
 	commonDB := c.serviceCtx.GetDBs().GetCommon()
 	linkDB := c.serviceCtx.GetDBs().GetLinkDB()
@@ -277,22 +334,60 @@ func (c *ShortLinkStatsConsumer) processMessage(record *StatsRecord) error {
 	if err := c.updateTodayStats(ctx, commonDB, record, record.Gid); err != nil {
 		return fmt.Errorf("更新今日统计失败: %v", err)
 	}
+	logx.Infof("[统计] 更新今日统计成功")
 
 	// 更新基础统计
 	if err := c.updateBaseStats(ctx, linkDB, record, record.Gid); err != nil {
 		return fmt.Errorf("更新基础统计失败: %v", err)
 	}
+	logx.Infof("[统计] 更新基础统计成功: PV增加, UV增加=%v, UIP增加=%v",
+		record.UvFirstFlag, record.UipFirstFlag)
 
 	// 更新地区统计
 	if err := c.updateLocaleStats(ctx, commonDB, record, record.Gid); err != nil {
 		return fmt.Errorf("更新地区统计失败: %v", err)
+	}
+	if record.Locale != "" {
+		logx.Infof("[统计] 更新地区统计成功: 地区=%s", record.Locale)
 	}
 
 	// 更新设备统计
 	if err := c.updateDeviceStats(ctx, commonDB, record, record.Gid); err != nil {
 		return fmt.Errorf("更新设备统计失败: %v", err)
 	}
+	logx.Infof("[统计] 更新设备统计成功: 设备=%s", record.Device)
 
+	// 更新浏览器统计
+	if record.Browser != "" {
+		if err := c.updateBrowserStats(ctx, commonDB, record, record.Gid); err != nil {
+			return fmt.Errorf("更新浏览器统计失败: %v", err)
+		}
+		logx.Infof("[统计] 更新浏览器统计成功: 浏览器=%s", record.Browser)
+	}
+
+	// 更新操作系统统计
+	if record.Os != "" {
+		if err := c.updateOsStats(ctx, commonDB, record, record.Gid); err != nil {
+			return fmt.Errorf("更新操作系统统计失败: %v", err)
+		}
+		logx.Infof("[统计] 更新操作系统统计成功: 系统=%s", record.Os)
+	}
+
+	// 更新网络统计
+	if record.Network != "" {
+		if err := c.updateNetworkStats(ctx, commonDB, record, record.Gid); err != nil {
+			return fmt.Errorf("更新网络统计失败: %v", err)
+		}
+		logx.Infof("[统计] 更新网络统计成功: 网络=%s", record.Network)
+	}
+
+	// 记录访问日志
+	if err := c.insertAccessLog(ctx, commonDB, record); err != nil {
+		return fmt.Errorf("记录访问日志失败: %v", err)
+	}
+	logx.Infof("[统计] 记录访问日志成功")
+
+	logx.Infof("[统计] 统计记录处理完成: 短链接=%s", record.FullShortUrl)
 	return nil
 }
 
@@ -342,214 +437,112 @@ func (c *ShortLinkStatsConsumer) updateLocaleStats(ctx context.Context, tx *gorm
 		adcode = localeInfo["adcode"]
 	}
 
-	// 查询是否已存在当天的地域统计记录
-	var count int64
-	err := tx.Table("t_link_locale_stats").
-		Where("gid = ? AND full_short_url = ? AND province = ? AND city = ? AND del_flag = 0",
-			gid, record.FullShortUrl, province, city).
-		Count(&count).Error
-	if err != nil {
-		return err
-	}
+	// 使用 INSERT ... ON DUPLICATE KEY UPDATE 语法
+	sql := `INSERT INTO t_link_locale_stats 
+            (full_short_url, cnt, province, city, adcode, country, create_time, update_time, del_flag) 
+            VALUES (?, 1, ?, ?, ?, 'CN', ?, ?, 0)
+            ON DUPLICATE KEY UPDATE 
+            cnt = cnt + 1,
+            update_time = ?`
 
-	if count > 0 {
-		// 更新已存在的地域统计记录
-		sql := `UPDATE t_link_locale_stats 
-                SET cnt = cnt + 1,
-                    update_time = ?
-                WHERE gid = ? AND full_short_url = ? AND province = ? AND city = ? AND del_flag = 0`
-
-		err = tx.Exec(sql,
-			time.Now(),
-			gid,
-			record.FullShortUrl,
-			province,
-			city).Error
-	} else {
-		// 创建新的地域统计记录
-		sql := `INSERT INTO t_link_locale_stats 
-                (gid, full_short_url, cnt, province, city, adcode, country, create_time, update_time, del_flag) 
-                VALUES (?, ?, 1, ?, ?, ?, 'CN', ?, ?, 0)`
-
-		err = tx.Exec(sql,
-			gid,
-			record.FullShortUrl,
-			province,
-			city,
-			adcode,
-			time.Now(),
-			time.Now()).Error
-	}
+	err := tx.Exec(sql,
+		// INSERT 部分参数
+		record.FullShortUrl,
+		province,
+		city,
+		adcode,
+		time.Now(),
+		time.Now(),
+		// UPDATE 部分参数
+		time.Now()).Error
 
 	return err
 }
 
 // 更新浏览器统计
 func (c *ShortLinkStatsConsumer) updateBrowserStats(ctx context.Context, tx *gorm.DB, record *StatsRecord, gid string) error {
-	// 查询是否已存在当天的浏览器统计记录
-	var count int64
-	err := tx.Table("t_link_browser_stats").
-		Where("gid = ? AND full_short_url = ? AND browser = ? AND del_flag = 0",
-			gid, record.FullShortUrl, record.Browser).
-		Count(&count).Error
-	if err != nil {
-		return err
-	}
+	// 使用 INSERT ... ON DUPLICATE KEY UPDATE 语法
+	sql := `INSERT INTO t_link_browser_stats 
+            (full_short_url, cnt, browser, create_time, update_time, del_flag) 
+            VALUES (?, 1, ?, ?, ?, 0)
+            ON DUPLICATE KEY UPDATE 
+            cnt = cnt + 1,
+            update_time = ?`
 
-	if count > 0 {
-		// 更新已存在的浏览器统计记录
-		sql := `UPDATE t_link_browser_stats 
-                SET cnt = cnt + 1,
-                    update_time = ?
-                WHERE gid = ? AND full_short_url = ? AND browser = ? AND del_flag = 0`
-
-		err = tx.Exec(sql,
-			time.Now(),
-			gid,
-			record.FullShortUrl,
-			record.Browser).Error
-	} else {
-		// 创建新的浏览器统计记录
-		sql := `INSERT INTO t_link_browser_stats 
-                (gid, full_short_url, cnt, browser, create_time, update_time, del_flag) 
-                VALUES (?, ?, 1, ?, ?, ?, 0)`
-
-		err = tx.Exec(sql,
-			gid,
-			record.FullShortUrl,
-			record.Browser,
-			time.Now(),
-			time.Now()).Error
-	}
+	err := tx.Exec(sql,
+		// INSERT 部分参数
+		record.FullShortUrl,
+		record.Browser,
+		time.Now(),
+		time.Now(),
+		// UPDATE 部分参数
+		time.Now()).Error
 
 	return err
 }
 
 // 更新操作系统统计
-func (c *ShortLinkStatsConsumer) updateOsStats(ctx context.Context, tx *gorm.DB, record *StatsRecord, dateStr string) error {
-	date, _ := time.Parse("2006-01-02", dateStr)
+func (c *ShortLinkStatsConsumer) updateOsStats(ctx context.Context, tx *gorm.DB, record *StatsRecord, gid string) error {
+	// 使用 INSERT ... ON DUPLICATE KEY UPDATE 语法
+	sql := `INSERT INTO t_link_os_stats 
+            (full_short_url, cnt, os, create_time, update_time, del_flag) 
+            VALUES (?, 1, ?, ?, ?, 0)
+            ON DUPLICATE KEY UPDATE 
+            cnt = cnt + 1,
+            update_time = ?`
 
-	// 查询是否已存在当天的操作系统统计记录
-	var count int64
-	err := tx.Table("t_link_os_stats").
-		Where("full_short_url = ? AND date = ? AND os = ? AND del_flag = 0",
-			record.FullShortUrl, date, record.Os).
-		Count(&count).Error
-	if err != nil {
-		return err
-	}
-
-	if count > 0 {
-		// 更新已存在的操作系统统计记录
-		sql := `UPDATE t_link_os_stats 
-                SET cnt = cnt + 1,
-                    update_time = ?
-                WHERE full_short_url = ? AND date = ? AND os = ? AND del_flag = 0`
-
-		err = tx.Exec(sql,
-			time.Now(),
-			record.FullShortUrl,
-			date,
-			record.Os).Error
-	} else {
-		// 创建新的操作系统统计记录
-		sql := `INSERT INTO t_link_os_stats 
-                (full_short_url, date, cnt, os, create_time, update_time, del_flag) 
-                VALUES (?, ?, 1, ?, ?, ?, 0)`
-
-		err = tx.Exec(sql,
-			record.FullShortUrl,
-			date,
-			record.Os,
-			time.Now(),
-			time.Now()).Error
-	}
+	err := tx.Exec(sql,
+		// INSERT 部分参数
+		record.FullShortUrl,
+		record.Os,
+		time.Now(),
+		time.Now(),
+		// UPDATE 部分参数
+		time.Now()).Error
 
 	return err
 }
 
 // 更新设备统计
-func (c *ShortLinkStatsConsumer) updateDeviceStats(ctx context.Context, tx *gorm.DB, record *StatsRecord, dateStr string) error {
-	date, _ := time.Parse("2006-01-02", dateStr)
+func (c *ShortLinkStatsConsumer) updateDeviceStats(ctx context.Context, tx *gorm.DB, record *StatsRecord, gid string) error {
+	// 使用 INSERT ... ON DUPLICATE KEY UPDATE 语法
+	sql := `INSERT INTO t_link_device_stats 
+            (full_short_url, cnt, device, create_time, update_time, del_flag) 
+            VALUES (?, 1, ?, ?, ?, 0)
+            ON DUPLICATE KEY UPDATE 
+            cnt = cnt + 1,
+            update_time = ?`
 
-	// 查询是否已存在当天的设备统计记录
-	var count int64
-	err := tx.Table("t_link_device_stats").
-		Where("full_short_url = ? AND date = ? AND device = ? AND del_flag = 0",
-			record.FullShortUrl, date, record.Device).
-		Count(&count).Error
-	if err != nil {
-		return err
-	}
-
-	if count > 0 {
-		// 更新已存在的设备统计记录
-		sql := `UPDATE t_link_device_stats 
-                SET cnt = cnt + 1,
-                    update_time = ?
-                WHERE full_short_url = ? AND date = ? AND device = ? AND del_flag = 0`
-
-		err = tx.Exec(sql,
-			time.Now(),
-			record.FullShortUrl,
-			date,
-			record.Device).Error
-	} else {
-		// 创建新的设备统计记录
-		sql := `INSERT INTO t_link_device_stats 
-                (full_short_url, date, cnt, device, create_time, update_time, del_flag) 
-                VALUES (?, ?, 1, ?, ?, ?, 0)`
-
-		err = tx.Exec(sql,
-			record.FullShortUrl,
-			date,
-			record.Device,
-			time.Now(),
-			time.Now()).Error
-	}
+	err := tx.Exec(sql,
+		// INSERT 部分参数
+		record.FullShortUrl,
+		record.Device,
+		time.Now(),
+		time.Now(),
+		// UPDATE 部分参数
+		time.Now()).Error
 
 	return err
 }
 
 // 更新网络统计
-func (c *ShortLinkStatsConsumer) updateNetworkStats(ctx context.Context, tx *gorm.DB, record *StatsRecord, dateStr string) error {
-	date, _ := time.Parse("2006-01-02", dateStr)
+func (c *ShortLinkStatsConsumer) updateNetworkStats(ctx context.Context, tx *gorm.DB, record *StatsRecord, gid string) error {
+	// 使用 INSERT ... ON DUPLICATE KEY UPDATE 语法
+	sql := `INSERT INTO t_link_network_stats 
+            (full_short_url, cnt, network, create_time, update_time, del_flag) 
+            VALUES (?, 1, ?, ?, ?, 0)
+            ON DUPLICATE KEY UPDATE 
+            cnt = cnt + 1,
+            update_time = ?`
 
-	// 查询是否已存在当天的网络统计记录
-	var count int64
-	err := tx.Table("t_link_network_stats").
-		Where("full_short_url = ? AND date = ? AND network = ? AND del_flag = 0",
-			record.FullShortUrl, date, record.Network).
-		Count(&count).Error
-	if err != nil {
-		return err
-	}
-
-	if count > 0 {
-		// 更新已存在的网络统计记录
-		sql := `UPDATE t_link_network_stats 
-                SET cnt = cnt + 1,
-                    update_time = ?
-                WHERE full_short_url = ? AND date = ? AND network = ? AND del_flag = 0`
-
-		err = tx.Exec(sql,
-			time.Now(),
-			record.FullShortUrl,
-			date,
-			record.Network).Error
-	} else {
-		// 创建新的网络统计记录
-		sql := `INSERT INTO t_link_network_stats 
-                (full_short_url, date, cnt, network, create_time, update_time, del_flag) 
-                VALUES (?, ?, 1, ?, ?, ?, 0)`
-
-		err = tx.Exec(sql,
-			record.FullShortUrl,
-			date,
-			record.Network,
-			time.Now(),
-			time.Now()).Error
-	}
+	err := tx.Exec(sql,
+		// INSERT 部分参数
+		record.FullShortUrl,
+		record.Network,
+		time.Now(),
+		time.Now(),
+		// UPDATE 部分参数
+		time.Now()).Error
 
 	return err
 }
@@ -598,56 +591,40 @@ func (c *ShortLinkStatsConsumer) updateLinkStats(ctx context.Context, tx *gorm.D
 }
 
 // 更新今日统计
-func (c *ShortLinkStatsConsumer) updateTodayStats(ctx context.Context, tx *gorm.DB, record *StatsRecord, dateStr string) error {
-	date, _ := time.Parse("2006-01-02", dateStr)
-
-	// 检查当前日期是否是记录的日期
+func (c *ShortLinkStatsConsumer) updateTodayStats(ctx context.Context, tx *gorm.DB, record *StatsRecord, gid string) error {
+	// 使用当前日期
 	today := time.Now().Format("2006-01-02")
-	if dateStr != today {
-		return nil // 不是今天的记录，跳过
-	}
+	date, _ := time.Parse("2006-01-02", today)
 
-	// 查询是否已存在今日统计记录
-	var count int64
-	err := tx.Table("t_link_stats_today").
-		Where("full_short_url = ? AND date = ? AND del_flag = 0",
-			record.FullShortUrl, date).
-		Count(&count).Error
+	// 使用 INSERT ... ON DUPLICATE KEY UPDATE 语法
+	sql := `INSERT INTO t_link_stats_today 
+            (full_short_url, date, today_pv, today_uv, today_uip, create_time, update_time, del_flag) 
+            VALUES (?, ?, 1, ?, ?, ?, ?, 0)
+            ON DUPLICATE KEY UPDATE 
+            today_pv = today_pv + 1,
+            today_uv = today_uv + ?,
+            today_uip = today_uip + ?,
+            update_time = ?`
+
+	// 替换参数顺序，确保类型匹配
+	err := tx.Exec(sql,
+		// INSERT 部分的参数
+		record.FullShortUrl,
+		date,
+		boolToInt(record.UvFirstFlag),
+		boolToInt(record.UipFirstFlag),
+		time.Now(),
+		time.Now(),
+		// UPDATE 部分的参数
+		boolToInt(record.UvFirstFlag),
+		boolToInt(record.UipFirstFlag),
+		time.Now()).Error
+
 	if err != nil {
 		return err
 	}
 
-	if count > 0 {
-		// 更新已存在的今日统计记录
-		sql := `UPDATE t_link_stats_today 
-                SET today_pv = today_pv + 1,
-                    today_uv = today_uv + ?,
-                    today_uip = today_uip + ?,
-                    update_time = ?
-                WHERE full_short_url = ? AND date = ? AND del_flag = 0`
-
-		err = tx.Exec(sql,
-			boolToInt(record.UvFirstFlag),
-			boolToInt(record.UipFirstFlag),
-			time.Now(),
-			record.FullShortUrl,
-			date).Error
-	} else {
-		// 创建新的今日统计记录
-		sql := `INSERT INTO t_link_stats_today 
-                (full_short_url, date, today_pv, today_uv, today_uip, create_time, update_time, del_flag) 
-                VALUES (?, ?, 1, ?, ?, ?, ?, 0)`
-
-		err = tx.Exec(sql,
-			record.FullShortUrl,
-			date,
-			boolToInt(record.UvFirstFlag),
-			boolToInt(record.UipFirstFlag),
-			time.Now(),
-			time.Now()).Error
-	}
-
-	return err
+	return nil
 }
 
 // 工具函数：布尔值转为整数

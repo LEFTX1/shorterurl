@@ -44,12 +44,16 @@ func (l *StatsGetGroupLogic) StatsGetGroup(in *pb.GetGroupStatsRequest) (*pb.Get
 		return nil, err
 	}
 
+	l.Logger.Infof("开始获取分组 %s 的统计数据，时间范围: %s 到 %s", in.Gid, in.StartDate, in.EndDate)
+
 	// 1. 获取分组基础访问统计数据 (PV、UV、UIP)
 	pvUvUip, err := l.svcCtx.RepoManager.LinkAccessStats.FindPvUvUipStatsByGroup(l.ctx, in.Gid, in.StartDate, in.EndDate)
 	if err != nil {
 		l.Logger.Errorf("获取分组访问量统计失败: %v", err)
 		return nil, status.Error(codes.Internal, "获取分组访问量统计失败")
 	}
+
+	l.Logger.Infof("基础统计数据: PV=%d, UV=%d, UIP=%d", pvUvUip.Pv, pvUvUip.Uv, pvUvUip.Uip)
 
 	// 如果没有任何访问数据，则返回空结果
 	if pvUvUip == nil || (pvUvUip.Pv == 0 && pvUvUip.Uv == 0 && pvUvUip.Uip == 0) {
@@ -65,11 +69,13 @@ func (l *StatsGetGroupLogic) StatsGetGroup(in *pb.GetGroupStatsRequest) (*pb.Get
 	}
 
 	// 2. 获取每日访问详情
+	l.Logger.Info("开始获取每日访问详情")
 	dailyStats, err := l.svcCtx.RepoManager.LinkAccessStats.ListStatsByGroup(l.ctx, in.Gid, in.StartDate, in.EndDate)
 	if err != nil {
 		l.Logger.Errorf("获取分组每日访问详情失败: %v", err)
 		return nil, status.Error(codes.Internal, "获取分组每日访问详情失败")
 	}
+	l.Logger.Infof("获取到 %d 条每日访问记录", len(dailyStats))
 
 	// 将每日统计数据转换为响应格式
 	daily := make([]*pb.DailyStat, 0)
@@ -103,11 +109,13 @@ func (l *StatsGetGroupLogic) StatsGetGroup(in *pb.GetGroupStatsRequest) (*pb.Get
 	}
 
 	// 3. 获取地区访问详情
+	l.Logger.Info("开始获取地区访问详情")
 	localeStats, err := l.svcCtx.RepoManager.LinkLocaleStats.ListLocaleByGroup(l.ctx, in.Gid, in.StartDate, in.EndDate)
 	if err != nil {
 		l.Logger.Errorf("获取分组地区访问详情失败: %v", err)
 		return nil, status.Error(codes.Internal, "获取分组地区访问详情失败")
 	}
+	l.Logger.Infof("获取到 %d 条地区访问记录", len(localeStats))
 
 	// 计算地区访问总数
 	var localeCnSum int32 = 0
@@ -133,11 +141,13 @@ func (l *StatsGetGroupLogic) StatsGetGroup(in *pb.GetGroupStatsRequest) (*pb.Get
 	}
 
 	// 4. 获取小时访问详情
+	l.Logger.Info("开始获取小时访问详情")
 	hourStats, err := l.svcCtx.RepoManager.LinkAccessStats.ListHourStatsByGroup(l.ctx, in.Gid, in.StartDate, in.EndDate)
 	if err != nil {
 		l.Logger.Errorf("获取分组小时访问详情失败: %v", err)
 		return nil, status.Error(codes.Internal, "获取分组小时访问详情失败")
 	}
+	l.Logger.Infof("获取到 %d 条小时访问记录", len(hourStats))
 
 	// 转换小时统计数据
 	hourStatsArray := make([]int32, 24)
@@ -148,11 +158,13 @@ func (l *StatsGetGroupLogic) StatsGetGroup(in *pb.GetGroupStatsRequest) (*pb.Get
 	}
 
 	// 5. 获取高频访问IP详情
+	l.Logger.Info("开始获取高频访问IP详情")
 	topIpStats, err := l.svcCtx.RepoManager.LinkAccessLogs.ListTopIpByGroup(l.ctx, in.Gid, in.StartDate, in.EndDate)
 	if err != nil {
 		l.Logger.Errorf("获取分组高频访问IP详情失败: %v", err)
 		return nil, status.Error(codes.Internal, "获取分组高频访问IP详情失败")
 	}
+	l.Logger.Infof("获取到 %d 条高频IP访问记录", len(topIpStats))
 
 	// 计算高频访问IP总数
 	ipSum := 0
@@ -211,11 +223,13 @@ func (l *StatsGetGroupLogic) StatsGetGroup(in *pb.GetGroupStatsRequest) (*pb.Get
 	}
 
 	// 6. 获取一周访问详情
+	l.Logger.Info("开始获取一周访问详情")
 	weekdayStats, err := l.svcCtx.RepoManager.LinkAccessStats.ListWeekdayStatsByGroup(l.ctx, in.Gid, in.StartDate, in.EndDate)
 	if err != nil {
 		l.Logger.Errorf("获取分组一周访问详情失败: %v", err)
 		return nil, status.Error(codes.Internal, "获取分组一周访问详情失败")
 	}
+	l.Logger.Infof("获取到 %d 条周访问记录", len(weekdayStats))
 
 	// 转换星期统计数据 (1-7 表示周一到周日)
 	weekdayStatsArray := make([]int32, 7)
@@ -226,11 +240,13 @@ func (l *StatsGetGroupLogic) StatsGetGroup(in *pb.GetGroupStatsRequest) (*pb.Get
 	}
 
 	// 7. 获取浏览器访问详情
+	l.Logger.Info("开始获取浏览器访问详情")
 	browserStats, err := l.svcCtx.RepoManager.LinkBrowserStats.ListBrowserStatsByGroup(l.ctx, in.Gid, in.StartDate, in.EndDate)
 	if err != nil {
 		l.Logger.Errorf("获取分组浏览器访问详情失败: %v", err)
 		return nil, status.Error(codes.Internal, "获取分组浏览器访问详情失败")
 	}
+	l.Logger.Infof("获取到 %d 条浏览器访问记录", len(browserStats))
 
 	// 计算浏览器访问总数
 	var browserSum int32 = 0
@@ -289,11 +305,13 @@ func (l *StatsGetGroupLogic) StatsGetGroup(in *pb.GetGroupStatsRequest) (*pb.Get
 	}
 
 	// 8. 获取操作系统访问详情
+	l.Logger.Info("开始获取操作系统访问详情")
 	osStats, err := l.svcCtx.RepoManager.LinkOsStats.ListOsStatsByGroup(l.ctx, in.Gid, in.StartDate, in.EndDate)
 	if err != nil {
 		l.Logger.Errorf("获取分组操作系统访问详情失败: %v", err)
 		return nil, status.Error(codes.Internal, "获取分组操作系统访问详情失败")
 	}
+	l.Logger.Infof("获取到 %d 条操作系统访问记录", len(osStats))
 
 	// 计算操作系统访问总数
 	var osSum int32 = 0
@@ -352,11 +370,13 @@ func (l *StatsGetGroupLogic) StatsGetGroup(in *pb.GetGroupStatsRequest) (*pb.Get
 	}
 
 	// 9. 获取访客类型统计
+	l.Logger.Info("开始获取访客类型统计")
 	uvTypeStats, err := l.svcCtx.RepoManager.LinkAccessLogs.FindUvTypeCntByGroup(l.ctx, in.Gid, in.StartDate, in.EndDate)
 	if err != nil {
 		l.Logger.Errorf("获取分组访客类型统计失败: %v", err)
 		return nil, status.Error(codes.Internal, "获取分组访客类型统计失败")
 	}
+	l.Logger.Infof("获取到 %d 条访客类型记录", len(uvTypeStats))
 
 	// 转换访客类型统计数据
 	oldUserCnt := 0
@@ -417,11 +437,13 @@ func (l *StatsGetGroupLogic) StatsGetGroup(in *pb.GetGroupStatsRequest) (*pb.Get
 	}
 
 	// 10. 获取设备类型访问详情
+	l.Logger.Info("开始获取设备类型访问详情")
 	deviceStats, err := l.svcCtx.RepoManager.LinkDeviceStats.ListDeviceStatsByGroup(l.ctx, in.Gid, in.StartDate, in.EndDate)
 	if err != nil {
 		l.Logger.Errorf("获取分组设备类型访问详情失败: %v", err)
 		return nil, status.Error(codes.Internal, "获取分组设备类型访问详情失败")
 	}
+	l.Logger.Infof("获取到 %d 条设备类型访问记录", len(deviceStats))
 
 	// 计算设备类型访问总数
 	var deviceSum int32 = 0
@@ -447,11 +469,13 @@ func (l *StatsGetGroupLogic) StatsGetGroup(in *pb.GetGroupStatsRequest) (*pb.Get
 	}
 
 	// 11. 获取网络类型访问详情
+	l.Logger.Info("开始获取网络类型访问详情")
 	networkStats, err := l.svcCtx.RepoManager.LinkNetworkStats.ListNetworkStatsByGroup(l.ctx, in.Gid, in.StartDate, in.EndDate)
 	if err != nil {
 		l.Logger.Errorf("获取分组网络类型访问详情失败: %v", err)
 		return nil, status.Error(codes.Internal, "获取分组网络类型访问详情失败")
 	}
+	l.Logger.Infof("获取到 %d 条网络类型访问记录", len(networkStats))
 
 	// 计算网络类型访问总数
 	var networkSum int32 = 0

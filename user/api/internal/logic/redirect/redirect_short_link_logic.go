@@ -7,12 +7,30 @@ import (
 	"strings"
 
 	"shorterurl/link/rpc/shortlinkservice"
+	"shorterurl/user/api/internal/middleware"
 	"shorterurl/user/api/internal/svc"
 	"shorterurl/user/api/internal/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+)
+
+// 错误码和消息
+const (
+	ErrCodeInvalidShortUri = 400
+	ErrCodeNotFound        = 404
+	ErrCodeForbidden       = 403
+	ErrCodeServerError     = 500
+)
+
+// 错误消息
+const (
+	ErrMsgInvalidShortUri = "请提供有效的短链接"
+	ErrMsgNotFound        = "您访问的短链接不存在或已被删除"
+	ErrMsgForbidden       = "此短链接已过期或被禁用"
+	ErrMsgServerError     = "处理您的请求时发生错误，请稍后再试"
 )
 
 type RedirectShortLinkLogic struct {
@@ -97,19 +115,43 @@ func (l *RedirectShortLinkLogic) renderErrorPage(w http.ResponseWriter, statusCo
 	w.Write([]byte(html))
 }
 
+// 处理gRPC错误
+func (l *RedirectShortLinkLogic) handleGrpcError(err error, w http.ResponseWriter) error {
+	grpcStatus, ok := status.FromError(err)
+	if ok {
+		switch grpcStatus.Code() {
+		case codes.NotFound:
+			l.renderErrorPage(w, ErrCodeNotFound, "链接不存在", ErrMsgNotFound)
+		case codes.PermissionDenied:
+			l.renderErrorPage(w, ErrCodeForbidden, "链接已失效", ErrMsgForbidden)
+		case codes.InvalidArgument:
+			l.renderErrorPage(w, ErrCodeInvalidShortUri, "无效的短链接", ErrMsgInvalidShortUri)
+		default:
+			l.renderErrorPage(w, ErrCodeServerError, "服务器错误", ErrMsgServerError)
+		}
+	} else {
+		l.renderErrorPage(w, ErrCodeServerError, "服务器错误", ErrMsgServerError)
+	}
+	return err
+}
+
 func (l *RedirectShortLinkLogic) RedirectShortLink(req *types.ShortLinkRedirectReq, w http.ResponseWriter, r *http.Request) error {
 	// 保存HTTP响应和请求对象，用于重定向
 	l.response = w
 	l.request = r
 
-	// 1. 记录请求信息
-	l.Logger.Infof("收到短链接跳转请求, ShortUri: %s, IP: %s, UA: %s",
-		req.ShortUri, r.RemoteAddr, r.UserAgent())
+	// 1. 从上下文中获取中间件收集的统计信息
+	stats, ok := l.ctx.Value(middleware.RedirectStatsKey).(*types.RedirectStats)
+	if !ok {
+		l.Logger.Error("未能从上下文中获取统计信息，中间件可能未正确配置")
+		l.renderErrorPage(w, ErrCodeServerError, "服务器错误", ErrMsgServerError)
+		return nil
+	}
 
 	// 2. 参数校验
 	if req.ShortUri == "" {
 		l.Logger.Error("短链接URI为空")
-		l.renderErrorPage(w, http.StatusBadRequest, "无效的短链接", "请提供有效的短链接")
+		l.renderErrorPage(w, ErrCodeInvalidShortUri, "无效的短链接", ErrMsgInvalidShortUri)
 		return nil
 	}
 
@@ -119,39 +161,63 @@ func (l *RedirectShortLinkLogic) RedirectShortLink(req *types.ShortLinkRedirectR
 		return nil
 	}
 
+	// 设置短链接URI
+	if stats.ShortUri == "" {
+		stats.ShortUri = req.ShortUri
+	}
+
 	// 3. 调用RPC服务获取原始URL
-	resp, err := l.svcCtx.LinkRpc.RestoreUrl(l.ctx, &shortlinkservice.RestoreUrlRequest{
+	// 将统计信息添加到RPC上下文
+	ctx := l.ctx
+
+	// 将整个统计信息对象存储到上下文
+	ctx = context.WithValue(ctx, middleware.RedirectStatsKey, stats)
+
+	// 将中文地理位置转换为英文
+	locale := stats.Locale
+	if locale == "本地" {
+		locale = "local"
+	} else if locale == "未知" {
+		locale = "unknown"
+	}
+
+	// 使用metadata添加头信息，确保所有值都是ASCII字符
+	ctx = metadata.AppendToOutgoingContext(ctx,
+		"ip", stats.Ip,
+		"user-agent", stats.UserAgent,
+		"browser", stats.Browser,
+		"os", stats.Os,
+		"device", stats.Device,
+		"network", "unknown", // 使用英文替代中文
+		"locale", locale, // 使用转换后的英文值
+	)
+
+	// 记录请求信息
+	l.Logger.Infof("短链接跳转请求: URI=%s, IP=%s, UA=%s, Browser=%s, OS=%s, Device=%s, Network=%s, Locale=%s",
+		stats.ShortUri, stats.Ip, stats.UserAgent, stats.Browser, stats.Os, stats.Device, stats.Network, stats.Locale)
+
+	// 获取当前用户信息
+	userInfo := l.ctx.Value("userInfo").(*types.UserInfo)
+
+	// 创建新的上下文并添加用户信息
+	ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs(
+		"username", userInfo.Username,
+	))
+
+	resp, err := l.svcCtx.LinkRpc.RestoreUrl(ctx, &shortlinkservice.RestoreUrlRequest{
 		ShortUri: req.ShortUri,
 	})
 
 	// 4. 处理错误情况
 	if err != nil {
 		l.Logger.Errorf("获取原始URL失败: %v", err)
-
-		// 处理gRPC错误状态码
-		grpcStatus, ok := status.FromError(err)
-		if ok {
-			switch grpcStatus.Code() {
-			case codes.NotFound:
-				l.renderErrorPage(w, http.StatusNotFound, "链接不存在", "您访问的短链接不存在或已被删除")
-			case codes.PermissionDenied:
-				l.renderErrorPage(w, http.StatusForbidden, "链接已失效", "此短链接已过期或被禁用")
-			case codes.InvalidArgument:
-				l.renderErrorPage(w, http.StatusBadRequest, "无效的短链接", "请检查您的短链接是否正确")
-			default:
-				l.renderErrorPage(w, http.StatusInternalServerError, "服务器错误", "处理您的请求时发生错误，请稍后再试")
-			}
-		} else {
-			// 非gRPC错误
-			l.renderErrorPage(w, http.StatusInternalServerError, "服务器错误", "处理您的请求时发生错误，请稍后再试")
-		}
-		return err
+		return l.handleGrpcError(err, w)
 	}
 
 	// 5. 确保原始URL存在
 	if resp.OriginUrl == "" {
 		l.Logger.Error("获取到的原始URL为空")
-		l.renderErrorPage(w, http.StatusBadRequest, "无效的链接", "此短链接指向的原始URL不存在")
+		l.renderErrorPage(w, ErrCodeInvalidShortUri, "无效的链接", "此短链接指向的原始URL不存在")
 		return nil
 	}
 
